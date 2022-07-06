@@ -11,6 +11,7 @@
 #Objective: Generalize the Cause-Effect model:
 #(now, not only for middle, but for any 'kernel' function )
 #the hard part: remove all automatic calls for cause (& effect) 
+
 ## Methodology: 
 ### categorize functions to their usage class: 1. partition () , 2. sort()
 ## replace every vital necessary un[]
@@ -42,10 +43,11 @@
 ### count number of function calls 
 #### Completed: depreciate goleft & goright 
 
+#
 ## Issue: with makeVector (reason: v's output is interesting, but erroneous )
 ## idea: checkCond is calling them 
 
-### the thing : no direction relationship with index 
+### the thing : no direct relationship with index 
 ### solution: look for a higher order function that is calling them 
 
 #= 
@@ -60,6 +62,7 @@ view(v, firstindex(v[1]):lastindex(v[length(v)]))
 
 update: euclidDist( bug 
 # check all euclidDist values 
+#lesson learned :always check: length(_view)  === Nothing return -1 first-thing
 
 
 =#
@@ -68,6 +71,17 @@ update: euclidDist( bug
 import Base: @propagate_inbounds
 global msg = "Unexpected Error"
 
+#--------
+
+euclidDist(a::Int64, b::Int64) = 0 <= a && 0 <= b ? abs(max(a, b) - min(a, b)) + 1 : 0 #+ 1 : 0 #-1 #both a,b > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
+#euclidDistDifference(a::Int64, b::Int64) = 0 <= a && 0 <= b ? abs(max(a, b) - min(a, b)) : 0 #+ 1 : 0 #-1 #both a,b > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
+euclidDistDifference(a::Int64, b::Int64) = 0 < a && 0 < b ? abs(max(a, b) - min(a, b)) : 0 #+ 1 : 0 #-1 #both a,b > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
+
+#euclidDist(3, 1)
+
+euclidDist(3, 1) #+ 1 # 1 2 3  #valid value 
+
+#euclidDist(3, 1)
 
 function intervalLength(a, b)
 
@@ -82,14 +96,6 @@ end
 
 #intervalLength(3,1)
 
-euclidDist(a::Int64, b::Int64) = 0 <= a && 0 <= b ? abs(max(a, b) - min(a, b)) + 1 : 0 #+ 1 : 0 #-1 #both a,b > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
-euclidDistDifference(a::Int64, b::Int64) = 0 <= a && 0 <= b ? abs(max(a, b) - min(a, b)) : 0 #+ 1 : 0 #-1 #both a,b > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
-
-#euclidDist(3, 1)
-
-euclidDist(3, 1) #+ 1 # 1 2 3  #valid value 
-
-#euclidDist(3, 1)
 
 
 function isEven(a, b) # review#1 corrected: adds offset adjustment #review#2: ; offset = 1 #offset is Independent 
@@ -109,6 +115,9 @@ function isEven(a, b) # review#1 corrected: adds offset adjustment #review#2: ; 
     end
 end
 
+# isEven 
+
+"""checks the Evenity of a numuber , via modular arithmetic """
 function isEven(number) # =  #review#2: offset & number are independent 
 
     isItEven = nothing
@@ -132,6 +141,15 @@ function isEven(number) # =  #review#2: offset & number are independent
 
     return isItEven
 end
+
+#---------
+# sumInterval
+#scaffolding function 
+"""calculates the Sum of Indicies""" #scaffold
+sumInterval(a::Int64, b::Int64) = a > 0 && b > 0 ? abs(b) + abs(a) : 0
+
+
+#----
 
 function getIsWhole(a::Int64, b::Int64)
 
@@ -178,442 +196,315 @@ getSubtractedValue(true)#1
 getSubtractedValue(false)#2
 #getSubtractedValue
 
-### A:  calcTotalMiddles
-function calcTotalMiddles(arr) #name displays what it supposed to do 
-
-    res = length(arr) - 2
-    println("init calcTotalMiddles; currentValue (from bound pts to middles left) = length(arr) - 2= ", res)
-    # res >=0 ? return res;  : return nothing 
-    if res > 0
-        return res
-    elseif res <= 0
-        return 0 # -1 
-    end
-end
 
 intervalLength(1, 3) #sumInterval(1,3)
 #intervalLength2(1,3) Wrong, remove it,Please 
 
 intervalLength(1, 10)
 
-function calcTotalMiddles(a, b) #name displays what it supposed to do 
-
-    res = intervalLength(a, b) - 2
-    println("currentValue (from bound pts to middles left)  = intervalLength(a, b) - 2 =", res)
-    # res >=0 ? return res;  : return nothing 
-    if res > 0
-        return res
-    elseif res <= 0
-        return 0 #-1
-    end
-end
-
-
-#--------
-"""for a given vector, calculate currentValue"""
-#checkCurrentValue!(a, b, currentValue)
-#--------
-"""before kernel: callMiddle (cause): checks isStop """
-#calls checkCurrentValue
-global theEnd = false # has only 2 values false or true 
-function doInit(a::Int64, b::Int64)
-
-    currentVal = calcVerteciesLeft!(a, b, nothing) # checkCurrentValue!(a, b) #<----
-    println("initialized currentValue = ", currentVal)
-    return currentVal
-end
-
-function initCurrentValue(a::Int64, b::Int64) #vital
-
-    # currentValue = checkCurrentValue!(a, b) #<----
-    # println("initialized currentValue = ", currentValue)
-    currentVal = doInit(a, b)
-    return currentVal
-end
-
-#warning not using arr ! the input
-function initCurrentValue(arr::Array{Int64,1}) #vital
-
-    a = firstindex(arr)
-    b = lastindex(arr)
-    # currentValue = checkCurrentValue!(arr)
-    currentVal = doInit(a, b)
-    return currentVal
-end
-
-
-""" called after function Criteria """ # scaffold #light #Best
-function calcVerteciesLeft!(a::Int64, b::Int64, currentValue) # =nothing) # ,formula)
-
-    isWhole = isEven(a, b)
-    try
-        #  if theEnd == true
-        #      return  #true
-        # else
-        # msg = "Unexpected Error"
-        if currentValue === nothing #&& theEnd == false # or ===
-            currentValue = calcTotalMiddles(a, b) #initCurrentValue(a, b)  #intervalLength(a, b) - 2 # calcTotalMiddles(arr) # #A()= length(arr) - 2 
-        # println("now, currentValue =   ", currentValue)
-        elseif currentValue !== nothing #&& theEnd == false # subtract from currentValue (1 or 2 ) , subtract B() 
-            #uncomment me 
-            # currentValue -= getSubtractedValue(isWhole) #<--------- the issue not one value (same as interval)
-            #println("currentVaule = ", currentValue) # = [1, 3] 
-            # println("typeof(currrentValue) = ", eltype(currentValue))
-
-            tmp = getSubtractedValue(isWhole)
-            currentValue -= tmp
-            println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-            println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-
-            if currentValue <= 0
-                currentValue = 0
-                #theEnd = true
-                return
-            end
-        else
-            throw(error(msg))
-        end
-
-        return currentValue
-    catch UnexpectedError
-        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-#=
-function calcVerteciesLeft!(a::Int64, b::Int64, isWhole::Bool, currentValue=nothing) # ,formula)
-    # great subtle error detected 
-   # msg = "Unexpected Error"
-    try
-       # msg = "Unexpected Error"
-        if currentValue === nothing # or ===
-            currentValue = initCurrentValue(a, b)  #intervalLength(a, b) - 2 # calcTotalMiddles(arr) # #A()= length(arr) - 2 
-        # println("now, currentValue =   ", currentValue)
-        elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B() 
-            currentValue -= getSubtractedValue(isWhole)
-            println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
-            println("typeof(currrentValue) = ", typeof(currentValue))
-
-            println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-            println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-
-            if currentValue < 0
-                currentValue = 0
-            end
-        else
-            throw(error(msg))
-        end
-        return currentValue
-    catch UnexpectedError
-        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-=#
-
-# Custom counter: calcVerteciesLeft! [Erroneous]
-
-""" A custom counter: an event driven, self-decrementing function  
-called upon progess with any  Function Criteria )
-initialized automatically, since first run, hence it goes at least once 
-
-checks 
-""" # scaffold #light #Best
-function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
-
-    # 
-    # msg = "Unexpected Error"
-    isWhole = isEven(length(arr))
-    try
-        # msg = "Unexpected Error"
-        if currentValue === nothing # or ===
-            currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2  #correct move 
-        elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B() 
-            currentValue -= getSubtractedValue(isWhole)
-            println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
-            # println("typeof(currrentValue) = ", typeof(currentValue))
-
-            println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-            # println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-            if currentValue <= 0 #  the last step 
-                currentValue = 0 #-100 #0
-
-            end
-
-            #elseif currentValue == 0 
-            #        return currentValue
-
-        else
-            throw(error(msg))
-        end
-        return currentValue
-    catch UnexpectedError
-        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-
-function calcVerteciesLeft!(_view::SubArray{Int64,1}, currentValue) # ,formula)
-
-    # 
-    # msg = "Unexpected Error"
-    isWhole = isEven(length(_view))
-    try
-        # msg = "Unexpected Error"
-        if currentValue === nothing # or ===
-            currentValue = calcTotalMiddles(_view) # #A()= length(arr) - 2  #correct move 
-        elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B() 
-            currentValue -= getSubtractedValue(isWhole)
-            println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
-            # println("typeof(currrentValue) = ", typeof(currentValue))
-
-            println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-            # println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-            if currentValue <= 0 #  the last step 
-                currentValue = 0 #-100 #0
-
-            end
-
-            #elseif currentValue == 0 
-            #        return currentValue
-
-        else
-            throw(error(msg))
-        end
-        return currentValue
-    catch UnexpectedError
-        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-
-#1 function implementation
-#=
-function calcVerteciesLeft!(arr::Array{Int64,1}, isWhole::Bool; currentValue) # ,formula)
-    # 
-   #msg = "Unexpected Error"
-    try
-       # msg = "Unexpected Error"
-        if currentValue === nothing # or ===
-            currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2  #correct move 
-        elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B() 
-            currentValue -= getSubtractedValue(isWhole)
-            println("currentValue = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
-            println("typeof(currrentValue) = ", typeof(currentValue))
-
-            println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-            println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-            if currentValue <= 0
-                currentValue = 0
-            end
-        else
-            throw(error(msg))
-        end
-        return currentValue
-    catch UnexpectedError
-        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-=#
-
-#-----testing
-currentValue = nothing
-arr = [1, 4, 8]
-#calcVerteciesLeft! calls calcTotalMiddles
-if currentValue === nothing # or ===
-    currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2 
-elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B() 
-    currentValue -= getSubtractedValue(isWhole)
-    println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
-    println("typeof(currrentValue) = ", typeof(currentValue))
-
-    println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
-    println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-    if currentValue <= 0
-        currentValue = 0
-    end
-end
-
-#correct values were  provided # checked 
-#TODO: depreciate 
-#
-function makeVector(tuple)
-    return collect(tuple)
-end
-
-
-#the following does not work (as expected )
-#=
-function makeView(arr::Array{Int64,1}, range)
-    v = @view arr[range]
-    return v
-end
-=#
-# make View
-
-function makeView(a, b)
-    return view(collect(a:b), a:b)
-end
-
-@assert makeView(1:3) == makeView(1, 3)
-
-#-----
-### makeExample
-#ab[1]:ab[]
-
 1:2
-
 (1:2)[1]
 (1:2)[length(1:2)]
 
 (1:2)[1]:(1:2)[length(1:2)]
 collect(1:2)
 
-euclidDist(1,3) #3  #TODO: use it for any remap 
-euclidDistDifference(1, 3) #TODO: 2 # use it for any remap2  # its context is to subtract 
+euclidDist(1, 3) #3 # for remap  #TODO: use it for any remap 
+euclidDistDifference(1, 3) # for remap2 #euclidDistDifference(1, 3) #TODO: 2 # use it for any remap2  # its context is to subtract 
 #i.e. TODO: to be replaced by -(1,3)
 
 #-------
-function makeView(ab::UnitRange)#compiles
-    a = ab[1]
-    b = ab[2]
-    println("b = ", b)
-    v = collect(a:b)
-    return view(v, firstindex(v):lastindex(v))
-   # return view(collect(ab), (ab)[1]:(ab)[length(ab)])
-end
 
-makeView(1:2)#done 
-#=
-function makeView(_view::SubArray, range) # Bug # this is not the  the way
-
-    v = @view _view[range]
-    return v
-end
-=#
 #Done 
 
+#Hint: Question the Need for a remap:
 
-res = makeView(1, 9)
-typeof(res)
+# checkNextView 
+
+## next View, from a view, alont 
+"""main:  checks from from only a view """
+function checkNextView(_view)
+    if length(_view) === Nothing
+        return -1
+        #but a view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
+    elseif length(_view) >= 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed))
+        a = firstindex(_view)
+        b = lastindex(_view)
+
+        println("firstindex(x)+1:lastindex(x)-1", firstindex(x)+1:lastindex(x)-1)
+        x = collect(a:b)
+        return view(x, firstindex(x)+1:lastindex(x)-1)
+    end
+end
+
+""" specific: for a given bounds a, b, calculates the next view """
+function checkNextView(_view, a, b)
+    if length(_view) === Nothing
+        return -1
+        #but a view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
+    elseif length(_view) >= 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed))
+        println("firstindex(x)+1:lastindex(x)-1", firstindex(x)+1:lastindex(x)-1)
+        x = collect(a:b)
+
+        return view(x, firstindex(x)+1:lastindex(x)-1)
+    end
+end
+#-------
+#-----------
+# doCompare
+
+## doCompare: compare two indicies, on a vector Array 
+#index, value space  [vital]
+#requires: oldSchoolSwap
+## BoundsError: attempt to access 2-element view(::Vector{Int64}, 1:2) with eltype Int64 at index [3]
+@inline function doCompare(a, b, arr::Array{Int64,1}) #works 
+
+    #[1...8] length = 8+1 -1 = 8 
+
+    _length = copy(length(arr))
+
+    if a < _length && b < _length && a >= 0 && b >= 0 # && b >= m2 # if a <= _length && b <= _length 
+        # aContent = arr[a] #<-------
+        # bContent = arr[b]
+
+        contentSwapped = nothing
+        # try
+        # Base.@propagate_inbounds 
+        # if aContent > bContent # arr[a] > arr[b] n# <--- critial decision 
+        #Base.@propagate_inbounds  
+        a, b, contentSwapped = oldSchoolSwap(a, b, arr) #swapContent(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
+        #    contentSwapped = true   #arr[a], arr[b]
+        println("at index a = ", a, " b = ", b, ", aContent = ", arr[a], " , bContent = ", arr[b])
+
+        #Base.@inbounds 
+        #TODO: situation where both contents are equal # current: do nothing 
+        # elseif 
+
+        # elseif aContent <= bContent  # arr[a] < arr[b] #review#1 #<----- # includes bothContents are equal 
+        #don't swap # return values  
+        #  return 
+        #    contentSwapped = false #arr[a], arr[b]
+        #@inbounds a[st], a[ed] = a[st] , a[ed]        #an inbounds swap 
+
+        #  elseif aContent == bContent # arr[a] == arr[b] #contents the same Can increase the count (in a dictionary?) 
+        #a<b Always
+        #   if a < b
+        #     contentSwapped = false  #arr[a], arr[b]
+        #do nothing 
+        #else? 
+        #end
+        #catch UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function 
+        #    @error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
+        #end
+        return a, b, contentSwapped #arr[a], arr[b]
+
+    elseif a == _length || b == _length
+        return   #getLastElement2(a, b)
+
+    end
+end
+## doCompare: compare two indicies, on a view 
+#--------------
+
+#index, value space  [vital]
+@inline function doCompare(a, b, _view::SubArray) # 9-8
+    _length = copy(length(_view)) #ok 
+    if a == b # scalar 
+        # v = collect(a:b)
+        # _view = view(v, firstindex(v):lastindex(v))
+    
+        return a, a, nothing
+    elseif a < _length && b < _length && a >= 0 && b >= 0
+        # aContent = _view[a] #view(_view, a) #arr[a]
+        #   bContent = _view[b] #view(_view, b) #arr[b]
+    
+        contentSwapped = nothing
+    
+        #  if aContent > bContent # arr[a] > arr[b]
+        v = collect(a:b) # collect(a, b)# collect(a, b + 1) # # content 
+        _view = view(v, firstindex(v):lastindex(v)) # correct  # indecies
+        println("a = ", a, " b = ", b)
+    
+        println("Index = findall((x -> x == _view[a]), _view))(a) = ", findall((x -> x == _view[a]), _view)(a))
+        println("Index = firstindex(findall((x -> x == _view[b]), _view))(b) = ", firstindex(findall((x -> x == _view[b]), _view))(b))
+    
+    
+        a, b, contentSwapped = oldSchoolSwap(firstindex(findall((x -> x == _view[a]), _view))(a), firstindex(findall((x -> x == _view[b]), _view))(b), _view) #<-- 
+        # swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
+    
+        #a, b = oldSchoolSwap(a, b, _view) 
+        # contentSwapped = true   #arr[a], arr[b]
+    
+        #  elseif aContent > bContent
+        #do nothing 
+        #  contentSwapped = false
+        #  end
+        return a, b, contentSwapped
+    elseif isUnitDistanceReached(a, b) == true # 3, 4 ,d = 1 
+        _view = collect(a:b)
+        _view = view(_view, firstindex(_view):lastindex(_view))
+        a, b, contentSwapped = oldSchoolSwap(a, b, _view) # # swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap #<-
+        return a, b, contentSwapped
+        # elseif a == a == _length-1 || b == _length-1 
+        #     return isUnitDistanceReached(a,b) #1, 2)
+    elseif a == _length || b == _length # last step  #scalar 
+        # isUnitDistanceReached(a,b)
+        # return getLastElement2(a, b)
+        # return end 
+        # return isUnitDistanceReached(a,b) #1, 2)
+        return a,b, nothing  #isEndReached(a, b) #1, 1)
+    
+    end
+end
+#-------
+#TODO: finish the recursive checkNextView(_view)
+""" checks the next view, of type `naive`, via a function call, recursively 
+
+```input:
+_view: current, selected view 
+a: current Lower Bound 
+b: current Upper Bound 
+```
+
+```output: 
+if 
+
+```
+"""
+function checkNextView!(_view, a, b) # warning: a,b unused 
+    if length(_view) === Nothing
+        return #-1
+    elseif length(_view) == 1
+        #TODO: Contemplate the usefulness of including a different dataType ( i.e. scalar typeof _view[1] )
+        return _view[1]  #scalar: either a, or b
+
+    elseif length(_view) == 2
+        #only return the current _view  
+        #return 
+        v = collect(a:b) #|> 
+        _view = view(_view, firstindex(v):lastindex(v))
+        #TODO: comparebounds 
+        a, b, isSwapped = doCompare(a, b, _view)# compare & sort 
+
+        return _view
+        #but a view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
+    elseif length(_view) == 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed)) # can be 3 (3->1 )
+        #1 do something useful with new input fetch input 
+        v = collect(a:b) # |> 
+
+        _view = view(v, firstindex(v):lastindex(v))
+        #TODO: compareTriad 
+
+        println("firstindex(x)+1:lastindex(x)-1", firstindex(_view)+1:lastindex(_view)-1)
+        #2 calculate the next output : using a naive Algorithm
+        a = first(_view)
+        b = last(_view)
+
+        #x = collect(a:b)
+        if a + 1 <= b - 1 #  boundcheck is required 
+            #return view(x, firstindex(x)+1:lastindex(x)-1)
+            return checkNextView!(_view, a + 1, b - 1)
+        end
+    elseif length(_view) == 2 * 2 # 
+        a = first(_view)
+        b = last(_view)
+        m1 = _view[firstindex(_view)+1]
+        m2 = _view[lastindex(_view)-1]
+
+        compareQuartet(a, m1, m2, b, _view)
+
+    elseif length(_view) > 4
+        #Subdivide further  
+    end
+
+end
+
+function checkNextView!(_view)
+    if length(_view) === Nothing
+        return #-1
+    elseif length(_view) == 1
+        #TODO: Contemplate the usefulness of including a different dataType ( i.e. scalar typeof _view[1] )
+        return _view[1]  #scalar: either a, or b
+
+    elseif length(_view) == 2
+        #only return the current _view 
+        a = firstindex(_view)
+        b = lastindex(_view)
+        return _view = collect(a:b) |> _view -> _view -> view(_view, a:b)
+        #but a view can be at least 3(makes sense; length  3->1) , or even 2 FOR 1 VIEW (We are finding the nextView )
+    elseif length(_view) >= 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed)) # can be 3 (3->1 )
+        #1 do something useful with new input fetch input 
+        a = firstindex(_view)
+        b = lastindex(_view)
+        _view = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        println("firstindex(x)+1:lastindex(x)-1", firstindex(_view)+1:lastindex(_view)-1) #<-------
+        #2 calculate the next output : using a naive Algorithm
+        a = firstindex(_view)
+        b = lastindex(_view)
+
+        #x = collect(a:b)
+        if a + 1 <= b - 1 # m1(/m2)  boundcheck is required 
+            #return view(x, firstindex(x)+1:lastindex(x)-1)
+            return checkNextView!(_view, a + 1, b - 1)
+        end
+    end
+end
+
+#checkNextView()
 # in divide conquer: while dividing 
 #3 5 becomes 
-remap(3, 5)# 1 , 3  
+a = 3;
+b = 5;
+#try fix remap : Try view
+#TODO: CheckNextView: check this Implementation: #note: needcheckNextView to to recursive i.e.
+_view = nothing # TODO: replace with checkNextView!
+_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #input
+checkNextView!(_view) #<----------
+#_view = collect(a:b) |> a = a + 1;b = b + 1 |> a + 1 <= b - 1 ? _view -> view(x, firstindex(a + 1):lastindex(b - 1)) : return  #Note: collect(a:b) is rendered unused 
 
-remap2(3, 5) 
+_view = _view = collect(3:5) |> _view -> view(_view, firstindex(_view)+1:lastindex(_view)-1):return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
+#_view = a = a + 1 && b =  b + 1 <= b - 1 ? _view -> view(_view, firstindex(_view)+1:lastindex(_view) -1) : return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
+_view = _view -> checkNextView(_view) #TODO: Complete CheckNextView()  # checks CheckNextView (returns the nextView )
+println(_view)
+println(typeof(_view))
 
-#TODO: adjust remap , update: removed +1 #Dome 
-function remap(a::Int64, b::Int64) #Bug found # 1 2  abs(max(a, b) - min(a, b)) + 1 ; 2 -1 = 1 + 1 = 2  # <----
-    b = euclidDist(a, b) #+ 1 # + 1 #warning you added 1 to the end: recheck new bounds (are all ranges fit) - some got to be out 
-    a = 1 #always start at this #or offset 
-    return a, b
-end
-function remap2(a::Int64, b::Int64) #Bug found # 1 2  abs(max(a, b) - min(a, b)) + 1 ; 2 -1 = 1 + 1 = 2  # <----
-    b = euclidDistDifference(a, b) #+ 1 # + 1 #warning you added 1 to the end: recheck new bounds (are all ranges fit) - some got to be out 
-    a = 1 #always start at this #or offset 
-    return a, b
-end
-#=
-function makeView2(_a,_b)
-    v = makeVector(_a:_b)
-    res = remap(v[1], v[length(v)])
-    return view(v, res[1]:length(res))
+#remappedInterval = remap(3, 5)# 1 , 3  # depreciated
 
-end
+#euclidDist(remappedInterval[1], remappedInterval[2]) # 3
+#-(remappedInterval[2],remappedInterval[1]) # 2 
 
-res = makeView2(1,9)
-typeof(res)
-=#
+#Solution:
+_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+
+v = collect(1:9)
+# res = view(v,firstindex(v): lastindex(v))
+# typeof(res)
+
 #------
-arr = [1, 4, 8]
-
-currentVal = calcVerteciesLeft!(arr, 2) #true #works (with an arr as input argument) 
-currentVal = calcVerteciesLeft!(arr, nothing) #  false # nothing(start):init 
-currentVal = calcVerteciesLeft!(arr, currentVal)  #  false # 0 
-
-currentVal = calcVerteciesLeft!(1, 3, nothing) #1 #error  # does not work  #fatal error adds calcTotalMiddles(a,b)#fixed 
-currentVal = calcVerteciesLeft!(arr, currentVal) # false 0 
-
-#calcTotalMiddles(arr) #1 middle in a 3 items # true #erroneous use calcVerteciesLeft!
-#---- correct 
-calcVerteciesLeft!(1, 9, 4) #  # when 1 it returns 0 ( guess: returns )
-
-calcVerteciesLeft!(1, 2, nothing)
-
-v = collect(1:3)
-_view = makeView(v, firstindex(v):length(v))
-calcVerteciesLeft!(_view, nothing)# 0 # correct 
-
-v = collect(1:2)
-_view = makeView(v, firstindex(v):length(v))
-calcVerteciesLeft!(_view, nothing)# 0 # correct 
-
-#2. initialize currentValue to nothing 
-currentValue = nothing
 
 a = 1
 b = 9
 
 #fabricate view from points only 
 v = collect(1:9)
-_view = view(fi)
-makeView(v, 1:9)
 
-calcVerteciesLeft!(a, b, currentValue) # faulty Error
-
-function handleCurrentValue(currentValue)
-
-    if currentValue <= 0 # isStop(currentValue) == 0 #useful for a recursion #check if done 
-        #stoppage condition 
-        println("currentValue == 0 actual = ", currentValue)
-        return true #0
-    #end
-    else
-        #instead 
-        #callMiddle!(a, m1,) #TODO: compllete this logic
-        #create view 
-        #callMiddle!(a,b,view)
-        #isWhole == true ? callMiddle(m1, b) : callMiddle(m2, b)
-        return false
-    end
-end
-#=
-function checkCurrentValue!(a::Int64, b::Int64; currentValue) #vital 
-
-    currentValue = calcVerteciesLeft!(a, b, currentValue) # initCurrentValue mot defined 
-    #  if currentValue == 0 
-    #      return 0
-    # end
-    return currentValue
-
+#_view = length(_view)> 2 ?_view -> view(_view,firstindex(_view),lastindex(_view)) : return 
+if length(_view) > 2
+    _view -> view(_view, firstindex(_view):lastindex(_view))
+else
+    return
 end
 
+#-----
 
-function checkCurrentValue!(arr::Array{Int64,1}; currentValue) #vital 
-    isWhole = isEven(arr) #getIsWhole(arr)
-    currentValue = calcVerteciesLeft!(arr, isWhole, currentValue)
-    return currentValue
-end
+view(v, 1:9)
 
-""" for a given view, calculate currentValue"""
-function checkCurrentValue!(_view::SubArray; currentValue=nothing) # =nothing) #vital 
-    isWhole = isEven(arr) # getIsWhole(_view)
-    currentValue = calcVerteciesLeft!(_view, isWhole, currentValue)
-    return currentValue
-end
-currentVal = nothing
-=#
 ## from points to vector 
 v = collect(1:3)
-_view = view(v, firstindex(v): length(v)) #view(v, firstindex(v), length(v)) #v, firstindex(v):length(v))  #makeView(
+_view = view(v, firstindex(v):lastindex(v)) #view(v, firstindex(v): length(v)) #v, firstindex(v):length(v)) 
 #currentVal = checkCurrentValue!(_view, currentVal)
 #currentVal = checkCurrentValue!(_view, currentVal) # currentValue = 1 # correct #<------
-
-calcVerteciesLeft!(1, 3, nothing) #1 #not correct  #checkCurrentValue!(1,3) #erroneous 
-a
-b
-currentValue
-currentValue = calcVerteciesLeft!(a, b, currentValue)
 
 
 
@@ -633,13 +524,16 @@ isEven(length([1, 2, 3]))
 #isEven(length([1, 2, 3]) + 1) #Rule: in isEven always add 1 to the total length  
 #---------
 
+# Sort & Swap 
+
+## swapContent on a vector array 
 function swapContent(aContent, bContent, arr)#; offset=1) #new! # a,b,indicies in arr  
 
     contentSwapped = nothing
-    #a = findall(x -> x == aContent, arr)
+    #a = findall(_view -> _view == aContent, arr)
     #a = a[offset]
 
-    #b = findall(x -> x == bContent, arr)
+    #b = findall(_view -> _view == bContent, arr)
     #b = copy(b[length(b)])   # -offset])
     a = firstindex(arr)
     b = lastindex(arr)
@@ -660,6 +554,7 @@ function swapContent(aContent, bContent, arr)#; offset=1) #new! # a,b,indicies i
     return a, b, contentSwapped #returns index (more practical)
 end
 
+## swapContent on a view 
 function swapContent(aContent, bContent, _view::SubArray)#; offset=1) #new! # a,b,indicies in arr  
 
     # Hint: what if the there are multiple values ( of the same )
@@ -688,6 +583,9 @@ function swapContent(aContent, bContent, _view::SubArray)#; offset=1) #new! # a,
     return a, b, contentSwapped #returns index (more practical)
 end
 #---------
+# oldSchoolSwap 
+
+## oldSchoolSwap on a vector array 
 """ 
 Swaps two items in a vector 
 
@@ -701,7 +599,7 @@ then swapping indicies has to happen, to ensure the process consistency of this 
 
 
 """
-function oldSchoolSwap(a, b, arr::Array{Int64,1}) #a,b,indecies in arr  
+function oldSchoolSwap(a, b, arr::Array{Int64,1}) #a,b,indicies in arr  
 
     #check left-most bound is lower than right most bound, if not, replace indicies 
     if a > b
@@ -734,9 +632,9 @@ function oldSchoolSwap(a, b, arr::Array{Int64,1}) #a,b,indecies in arr
     return a, b, contentSwapped  #  _first, _last  #a, b
 end
 
+## oldSchoolSwap on a View 
 """ 
 Swaps two items in a view 
-
 
 indices, has to be correctly sorted, as expected 
 Additional condition : first input must be lower tham 2nd one 
@@ -744,33 +642,38 @@ Additional condition : first input must be lower tham 2nd one
 Note: 
 if the first input argument (for the lower bound a) is larger than b 
 then swapping indicies has to happen, to ensure the process consistency of this function 
+
 """
-function oldSchoolSwap(a, b, _view::SubArray) #a,b,indecies in arr  
+# oldSchoolSwap on a view 
+function oldSchoolSwap(a, b, _view::SubArray) #a,b,indicies in arr  
 
     #check left-most bound is lower than right most bound, if not, replace indicies 
     if a > b
         a, b = b, a
+        contentSwampped = true 
     end
     contentSwapped = nothing
 
-    aContent = _view[a]
-    bContent = _view[b]
+#its view[aId] = a 
+    aContent = a #_view[a] #<----- Rational mid(index)= 8
+    bContent = b #_view[b-1] # issue was here 
     #_first = nothing
     #_last = nothing
 
     #comparing contents 
     if aContent > bContent
-        _view[a], _view[b] = _view[b], _view[a] #swap
+        #_view[a], _view[b] = _view[b], _view[a] #swap
+        aContent,bContent = bContent, aContent
         contentSwapped = true
         #   _first = arr[a]
         #  _last = arr[b]
-        println(_view[a], " ", _view[b], contentSwapped)
-
+        println(aContent, " ", bContent,contentSwapped) #_view[b], contentSwapped)
+    
     elseif aContent <= bContent
         # arr[a], arr[b] = arr[a], arr[b] # nothing 
         contentSwapped = false
-        println(_view[a], " ", _view[b], contentSwapped)
-
+        println(aContent, " ", bContent, " contentSwapped = ", contentSwapped)  #_view[b], contentSwapped)
+    
         #  elseif aContent == bContent
         #personal preference solution , the first one close to lower bound  is at first 
         #a < b always! but here, we are assuming the assumption was not ta
@@ -778,12 +681,12 @@ function oldSchoolSwap(a, b, _view::SubArray) #a,b,indecies in arr
         #arr[a], arr[b] = arr[a], arr[b] #do nothing 
         #     contentSwapped = false
         #     println(_view[a]," " ,_view[b], contentSwapped)
-
+    
         #= elseif a > b #swap 
             arr[a], arr[b] = arr[b], arr[a] #ture 
             contentSwapped = true
             println(arr[a], arr[b], contentSwapped)
-
+    
         else #do nothing or 
             # throw(error("Unexpected Error ))
         end =#
@@ -795,6 +698,12 @@ function oldSchoolSwap(a, b, _view::SubArray) #a,b,indecies in arr
     return a, b, contentSwapped  #  _first, _last  #a, b
 end
 #--------
+println("_view = ", typeof(_view)) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
+
+v = collect(first(_view):last(_view))
+println("v = ", v)
+
+_view[lastindex(_view)] # <---
 euclidDist(a, b) #1
 b
 euclidDist(a, b)
@@ -804,309 +713,25 @@ v = collect(a:b)
 view([1, 2, 3, 4, 5], 1:5)
 view(v, firstindex(v):lastindex(v)) #Correct-Form # ==view(v, remap(a, b)) 
 # view(v, remap(a, b)) #v[length(v)])
+# _view = collect(a:b) |> view(v, firstindex(v):lastindex(v))
+_view = collect(a:b) |> v -> view(v, firstindex(v):lastindex(v))
 #end
 euclidDistDifference(1, 1)
 euclidDistDifference(a, b)
 a
 b
-(m2 + 1, b - 1)
+# (m2 + 1, b - 1)
 
-### Patch for doCompare
-
-
-function getLastElement(a, b)
-
-    if euclidDistDifference(a, b) == 0 #1 #0
-        return
-    else
-    
-        #remap TODO: remap true form 
-        #return view(v, remap(a, b)) #v[length(v)])
-        
-        v = collect(a:b) #+1)
-        return view(v, firstindex(v):lastindex(v)) #not view(v, firstindex(v), lastindex(v))
-    end
-end
-
-function getLastElement2(a, b) #
-    if euclidDistDifference(a, b) == 0 #1 #0
-        return -1, -1, nothing
-    else
-        v = collect(a:b) #+1)
-        
-        return view(v, firstindex(v): lastindex(v))
-    end
-end
-
-#-----------
-## comparing two indicies, in a view 
-#index, value space  [vital]
-@inline function doCompare(a, b, _view::SubArray)
-
-    _length = copy(length(_view)) #ok 
-    if a < _length && b < _length && a >= 0 && b >= 0
-        # aContent = _view[a] #view(_view, a) #arr[a]
-        ``#   bContent = _view[b] #view(_view, b) #arr[b]
-    
-        contentSwapped = nothing
-    
-        #  if aContent > bContent # arr[a] > arr[b]
-        v = collect(a, b)# collect(a, b + 1) #
-    
-        _view = view(v, firstindex(v), lastindex(v)) #<------------------
-        a, b, contentSwapped = oldSchoolSwap(a, b, _view) # # swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
-       
-        #a, b = oldSchoolSwap(a, b, _view) 
-        # contentSwapped = true   #arr[a], arr[b]
-    
-        #  elseif aContent > bContent
-        #do nothing 
-        #  contentSwapped = false
-        #  end
-        return a, b, contentSwapped
-    elseif a == _length || b == _length # last step 
-        return getLastElement2(a, b)
-    
-    end
-end
-
-#index, value space  [vital]
-@inline function doCompare(a, b, arr::Array{Int64,1}) #works 
-
-    #[1...8] length = 8+1 -1 = 8 
-
-    _length = copy(length(arr))
-
-    if a < _length && b < _length &&  a >= 0 && b >= 0 # && b >= m2 # if a <= _length && b <= _length 
-        # aContent = arr[a] #<-------
-        # bContent = arr[b]
-
-
-        contentSwapped = nothing
-        # try
-        # Base.@propagate_inbounds 
-        # if aContent > bContent # arr[a] > arr[b] n# <--- critial decision 
-        #Base.@propagate_inbounds  
-        a, b, contentSwapped = oldSchoolSwap(a, b, arr) #swapContent(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
-        #    contentSwapped = true   #arr[a], arr[b]
-        println("at index a = ", a, " b = ", b, ", aContent = ", arr[a], " , bContent = ", arr[b])
-        #Base.@inbounds 
-        #TODO: situation where both contents are equal # current: do nothing 
-        # elseif 
-
-        # elseif aContent <= bContent  # arr[a] < arr[b] #review#1 #<----- # includes bothContents are equal 
-        #don't swap # return values  
-        #  return 
-        #    contentSwapped = false #arr[a], arr[b]
-        #@inbounds a[st], a[ed] = a[st] , a[ed]        #an inbounds swap 
-
-        #  elseif aContent == bContent # arr[a] == arr[b] #contents the same Can increase the count (in a dictionary?) 
-        #a<b Always
-        #   if a < b
-        #     contentSwapped = false  #arr[a], arr[b]
-        #do nothing 
-        #else? 
-        #end
-        #catch UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function 
-        #    @error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
-        #end
-        return a, b, contentSwapped #arr[a], arr[b]
-
-    elseif a == _length || b == _length
-        return getLastElement2(a, b)
-
-    end
-end
-
-arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-oldSchoolSwap(1, 2, arr)
-oldSchoolSwap(5, 6, arr)
-#additional condition : first input must be lower tham 2nd one 
-oldSchoolSwap(6, 5, arr)
-arr
-arr
-
-arr[length(arr)]
-
-# compare Triad & Quartet
 #---------
-function compareTriad(a, m1, b, arr::Array{Int64,1})
+# Middle 
 
-    try
-        # if arr[a] > arr[b]
-        a, b, _isSwapped = doCompare(a, b, arr)
-        println("twinMiddles [a, b]= ", a, " ", b, " checked ")
-        # end
-        #  if arr[a] > arr[m1]
-        a, m1, _isSwapped = doCompare(a, m1, arr)
-        println(" [a, m1]= ", a, " ", m1, " checked ")
-        #  end
-        # if arr[m1] > arr[b]
-        m1, b, _isSwapped = doCompare(m1, b, arr)
-        println(" [a, m1]= ", m1, " ", b, " checked ")
-        #  end
-        #=
-                a, b, _isSwapped = doCompare(a, b, arr)#view(arr, a:b)) #compare bounds
-                a, m1, _isSwapped = doCompare(a, m1, arr) #view(arr, a:m1))
+## Middle of Two Points 
 
-                #no need for remap, (context: arr is giiven, & not altered in this one - remap not needed at all )
-                m1, b, _isSwapped = doCompare(m1, b, arr) #view(arr, m1:b))
-        =#
-        # push!(Middles, m1)
-        println("a, m1, b = ", a, " ", m1, " ", b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-
-function compareTriad(a, m1, b, _view) #applied remap
-
-    try
-        #a=0;m1 =0;m2=0;b=0;
-        _isSwapped = nothing
-        if _view[m1] > _view[b]
-            m1, m2, _isSwapped = doCompare(m1, b, _view)
-            println("twinMiddles [m1, m2]= ", m1, " ", m2, " checked ")
-        end
-        if _view[a] > _view[b]
-            a, b, _isSwapped = doCompare(a, b, _view)
-            println(" [a, b]= ", a, " ", b, " checked ")
-        end
-        if _view[a] > arr[m1]
-            a, m1, _isSwapped = doCompare(a, m1, _view)
-            println(" [a, m1]= ", a, " ", m1, " checked ")
-        end
-        #=
-        a, b, _isSwapped = doCompare(a, b, view(_view, a:b)) #compare bounds' content
-        a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
-
-        m1, b = remap(m1, b)
-        println("@view: m1, b = ", m1, b)
-        m1, b, _isSwapped = doCompare(m1, b, view(_view, m1:b)) #<------- remap is required 
-        =#
-
-        #push!(Middles, m1)
-        println("a, m1, b = ", a, m1, b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-#---------
-## Comparing Four numbers, in a vector 
-
-""" input vector array , applys view  on each Interval """
-function compareQuartet(a, m1, m2, b, arr::Array{Int64,1}) #<-------- input expecting indicies 
-
-    try
-        twinMiddles = nothing
-
-        # apply view(arr, a:b)
-        #=
-            compareQuartet(a, m1, m2, b, arr)
-        =#
-
-        #  if arr[m1] > arr[b]
-        m1, b, _isSwapped = doCompare(m1, b, arr)
-        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
-        #  end
-        #  if arr[a] > arr[b]
-        a, b, _isSwapped = doCompare(a, b, arr)
-        println(" [a, b]= ", a, " ", b, " swapped ")
-        #  end
-        # if arr[a] > arr[m1]
-        a, m1, _isSwapped = doCompare(a, m1, arr)
-        println(" [a, m1]= ", a, " ", m1, " swapped ")
-        #  end
-
-        # println("a, m2, b = ", a, m2, b)
-        # if arr[m2] > arr[b]
-        m2, b = doCompare(m2, b, arr)  #view(arr, m2:b)) #<------
-        # end
-        #m2, b, _isSwapped = doCompare(m2, b, view(arr, m2:b))
-
-        twinMiddles = [m1, m2] # vector (Array{Int64, 1})
-        println("twinMiddles [m1, m2]= ", m1, " ", m2)
-        # push!(Middles, twinMiddles) #TODO: push each _isSwapped to swapped[] vector, as well 
-        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ? #no this is much practical
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-
-""" input vector array , applys view  on each Interval """
-function compareQuartet(a, m1, m2, b, _view::SubArray)
-
-    try
-        println("entering compareQuartet")
-        #  twinMiddles = nothing
-
-        # apply view(arr, a:b)
-        #=
-            compareQuartet(a, m1, m2, b, arr)
-        =#
-        #   m1, m2, _isSwapped = doCompare(m1, m2, view(_view, m1:m2)) #compare twinMiddles' content 
-
-        #   a, b, _isSwapped = doCompare(a, b, view(_view, a:b)) #compare bounds' content
-
-        #   a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
-
-        #  if _view[m1] > _view[b]
-        m1, b, _isSwapped = doCompare(m1, b, _view)
-        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
-        #  end
-        #  if _view[a] > _view[b]
-        a, b, _isSwapped = doCompare(a, b, _view)
-        println(" [a, b]= ", a, " ", b, " swapped ")
-        #  end
-        #  if _view[a] > _view[m1]
-        a, m1, _isSwapped = doCompare(a, m1, _view)
-        println(" [a, m1]= ", a, " ", m1, " swapped ")
-        #  end
-        #m2, b = remap(m2, b)
-        # println("a, m2, b = ", a, m2, b)
-        #  if _view[m2] > _view[b]
-        m2, b = doCompare(m2, b, _view)  #view(arr, m2:b)) #<------
-        #  end
-
-
-        #=  m2, b = remap(m2, b)
-          println(" m2,b = ", m2, b)
-          m2, b = doCompare(m2, b, view(_view, m2:b))=#
-
-
-        #twinMiddles = [m1, m2] # vector (Array{Int64, 1})
-        println("twinMiddles [m1, m2]= ", [m1, m2])
-        #        push!(Middles, twinMiddles)
-        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ?
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-
-end
-
-#TODO: exmperimental compareQuartet with no input argumrnt view , returns view 
-
-#unused functions
-#unused 
-""" called after compare Quartet """
-function remapCompare(m2, b, _view::SubArray)
-
-    m2, b = remap(m2, b)
-    println(" m2,b = ", m2, b)
-    m2, b = doCompare(m2, b, view(_view, m2:b))
-
-end
-#---------
 @propagate_inbounds function middle(a::Int64, b::Int64) # b  + a -1  # Acceptable #review#2 ; offset = 1 #rule-found: offset only used in an array (at its start)
 
     try
         _sum = sumInterval(a, b)  #    b + a - 1  # distance between them  <---- Error 
-        println("a , b =", a, " ", b)
+        println("a , b =", a, " ", b) # a , b =1 9
         println("sum = ", _sum)
         isItEven = isEven(_sum)# #even is a proxy for divisibility # TODO: surround by a copy()  #homeMade Heuristic  <------
         println("iseven  = ", isItEven)
@@ -1147,757 +772,197 @@ end
         @error "Unexpected error occured" exception = (UnexpectedError, catch_backtrace()) #<-----
     end
 end
+#-------
+#doCompare 
+
+#-----------
+function isUnitDistanceReached(a, b)
+
+    if euclidDistDifference(a, b) <= 1  || euclidDistDifference(a, b) == 0 #TODO: chage inside the function 
+        return true
+    else
+       # v = collect(a:b)
+       # _view = view(v, firstindex(v):lastindex(v))
+        m1, m2, isWhole = middle(a, b) #a - 1, a, b, b + 1, _view) #<-----sumInterval not defined 
+        v = collect(m1:m2) # collect(first(m1): last(m2) ) 
+        # compareBounds
+        a, b, contentSwapped = doCompare(m1, m2, view(v,firstindex(v):lastindex(v)))  #v) # <-----
+        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
+        return false
+    end
+
+
+end
+
+function isUnitDistanceReached(a, b,kernel)
+
+    if euclidDistDifference(a, b) <= 1 || euclidDistDifference(a, b) == 0 #TODO: chage inside the function 
+        return true
+    else
+        # v = collect(a:b)
+        # _view = view(v, firstindex(v):lastindex(v))
+        m1, m2, _flag = kernel(a, b) #a - 1, a, b, b + 1, _view) #<-----sumInterval not defined 
+        # lower = 4 , upper = 5
+        v = collect(m1:m2)
+        # compareBounds
+        _view = view(v, firstindex(v):lastindex(v))
+        a, b, contentSwapped = doCompare(firstindex(m1, _view), firstindex(m2, _view), _view)  #v) # <-----
+        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
+        #TODO: a,b, contentSwapped  (record, stats relation)
+        return false
+    end
+
+
+end
+
+#---------------------
 
 middle(1, 3)
-#---------
 
-"""calls middle on bounds a,b then calls cause( & effect model) for a vector"""
-@propagate_inbounds function callMiddle!(a::Int64, b::Int64, arr::Array{Int64,1})
+m1, m2, _isSWapped = middle(1,9)
+#next take 
 
-    try
-        # Reviewr#2: removed distance() should be here ( distance is only in isStop )
-        #distance = euclidDistDifference(a,b) # response = isStop(a, b, arr)
+#a newM1 #m1, m2  # m2, b 
+_m1,_m2, _isSwapped = middle(1,m1-1)
+isUnitDistanceReached(1, m1 - 1)
+#isEndReached(1,m1-1)
 
-        if a != b && a > 0 && b > 0 # only condition we require 
-            #contentSwapped = []  #nothing
-            # _isSwapped = nothing
-            m1, m2, isWhole = middle(a, b) #gets middle of a length (in rational positive integer ) <---ERROR: no iterate(Nothing)
-            #TOOO: do sth different from middle(a,b)
-            cause(a, b, arr)
-            # if a !=b 
+_m1,_m2, _isSwapped = middle(m1,m2)
+isUnitDistanceReached(m1, m2) #  - 1)
+#isEndReached(m1,m2)
 
-            #  doCompare()
-            #compareTriad / compareQuartet 
-            #code
-            #optimization: Q.do we use euclidDist between verticies: a, m1, m2, b ? A. Possible; at this point: further processing is not necessaily needed, as of result 
-            #review2: comment: euclidDist won't come alone, but with isNotDivide: better yet is, after finished handling Ms, contentSwapped, call explore (that has all desired functions)
-
-            # return [a, b], 
-            #return m1, m2
-            #return [m1,m2]
-            # return [m1, m2]
-            return m1, m2, isWhole  # lastindex(contentSwapped): min= 0, max=4 #edited!
-
-        #return a, m1, m2, b #indices (practical) # Q. shouldn't we return their content (no, unless we're working with some `DataStructure` i.e. trees, where content is necessary to be read )
-
-        elseif a == b # 1, 1 , arr #singleton 
-            #register as a leaf (binTree)
-            return 0, 0, nothing # 0, 0, 0 # depends on Expected return return
-
-        else
-            throw(error("UnexpectedError occured"))
-        end
-    catch UnexpectedError
-        @error "UnexpectedError occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-#middle(1,3)
-#cause(1,3,[1,2,3]) #finished successfully (?)
-#depreciate
-@propagate_inbounds function callMiddle!(a::Int64, b::Int64, _view)#::SubArray)
-
-    try
-        # Reviewr#2: removed distance() should be here ( distance is only in isStoppingCondition )
-        #distance = euclidDistDifference(a,b) # response = isStop(a, b, arr)
-
-        if a != b && a > 0 && b > 0 # only condition we require 
-            #contentSwapped = []  #nothing
-            # _isSwapped = nothing
-            m1, m2, isWhole = middle(a, b) #gets middle of a length (in rational positive integer ) <---ERROR: no iterate(Nothing)
-
-            #check
-            v = makeVector((a:b))
-            view1 = makeView(v, firstindex(v):length(v))
-            # v = makeVector((1:3))
-            # _view = makeView(v, firstindex(v):length(v))
-            #view1 = view(_view, a, b)
-
-            #cause(a, b, view(_view, a, b)) dice the Interval
-            cause(a, b, view1)
-            # if a !=b 
-
-            #  doCompare()
-            #compareTriad / compareQuartet 
-            #code
-            #optimization: Q.do we use euclidDist between verticies: a, m1, m2, b ? A. Possible; at this point: further processing is not necessaily needed, as of result 
-            #review2: comment: euclidDist won't come alone, but with stoppingCondition: better yet is, after finished handling Ms, contentSwapped, call explore (that has all desired functions)
-
-            # return [a, b], 
-            #return m1, m2
-            #return [m1,m2]
-            # return [m1, m2]
-            return m1, m2, isWhole  # lastindex(contentSwapped): min= 0, max=4 #edited!
-
-        #return a, m1, m2, b #indices (practical) # Q. shouldn't we return their content (no, unless we're working with some `DataStructure` i.e. trees, where content is necessary to be read )
-
-        elseif a == b # 1, 1 , arr #singleton 
-            #register as a leaf (in a binTree)
-            return 0, 0, nothing # 0, 0, 0 # depends on Expected return return
-
-        else
-            throw(error("UnexpectedError occured"))
-        end
-    catch UnexpectedError
-        @error "UnexpectedError occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-
-
-function isStoppingCondition(a::Int64, b::Int64, currentValue) #vital
-
-    #m1, m2, isWhole = callMiddle(a, b) #Occurs before this function 
-    println("isStoppingCond...  currentValue passed")
-    #isWhole = getIsWhole(arr)
-    #currentValue = calcVerteciesLeft!(arr, isWhole)
-    currentValue = calcVerteciesLeft!(a, b, currentValue) #checkCurrentValue!(a, b, currentValue) #decrements 1 from current value (isWhole) or 2 (!isWhole)
-
-    return currentValue #handleCurrentValue(currentValue)
-
-
-end
-
-"""after kernel function: callMiddle: checks  """ #input: 3 numbers 
-
-function isStoppingCondition(a::Int64, b::Int64, currentValue) #vital #practical #adds currentValue as input 
-    #m1, m2, isWhole = callMiddle(a, b) #Occurs before this function 
-
-    currentValue = calcVerteciesLeft!(a, b, currentValue) #checkCurrentValue!(a, b, currentValue) #decrements 1 from current value (isWhole) or 2 (!isWhole)
-
-    #calcUnexplored
-    return currentValue #handleCurrentValue(currentValue)
-
-end
-
-function isStoppingCondition(arr::Array{Int64,1}, currentValue) # =2::Int64) #vital
-    #m1, m2, isWhole = callMiddle(a, b) #Occurs before this function 
-
-    #currentValue = calcVerteciesLeft!(arr, isWhole)
-    currentValue = calcVerteciesLeft!(arr, currentValue)  #checkCurrentValue!(arr, currentValue) #decrements 1 from current value (isWhole) or 2 (!isWhole)
-
-    return currentValue  #handleCurrentValue(currentValue)
-
-end
-
-function isStoppingCondition(_view::SubArray, currentValue) #vital
-    #m1, m2, isWhole = callMiddle(a, b) #Occurs before this function 
-
-
-    #  currentValue = checkCurrentValue!(_view, currentValue)    #checkCurrentValue!(_view, currentValue) #decrements 1 from current value (isWhole) or 2 (!isWhole)
-    currentValue = calcVerteciesLeft!(_view, currentValue)
-    #calcUnexplored
-    return currentValue # handleCurrentValue(currentValue)
-
-end
-
-#kernel #is passed 
-#isStoppingCondition #is passed (either stop, or continue)
+_m1,_m2, _isSwapped = middle(m2+1,b)
+isUnitDistanceReached(m2+1, b)
+#isEndReached(m2 + 1, b)
 
 #---------
-# scaffolding function 
-"""sum of indicies""" #scaffold
-sumInterval(a::Int64, b::Int64) = a > 0 && b > 0 ? abs(b) + abs(a) : 0
 
+### getLastElement2 
+""" a patch for only euclidDistDifference """
 
-#----
-#=
-remap(1, 10) #missing 1 at last  +1 #fixed 
-remap(5, 10) # correct 
+function getLastElement2(a, b) #
+    if euclidDistDifference(a, b) == 0 #1 #0
 
+        return -1, -1, nothing
+    elseif euclidDistDifference(a, b) == 1
+        #return the index of either a, or b: 
+        return a, a, view([a], firstindex([a]):lastindex([a]))  #nothing
+    else
+        v = collect(a:b) #+1)
 
-#requires compareQuartet, compareTriad 
-#a ::Int64, m1::Int64, m2::Int64, b::Int64, ::Bool, ::Vector{Int64})
-function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, arr::Array{Int64,1})
-    isWhole = copy(getIsWhole(arr))
-
-    if isWhole == true
-
-        #m region  
-        #compare content (of 3-Fractal: a, m, b )
-
-        compareTriad(a, m1, b, _view) #ok #issue: arr [should be view ] #hillarious : was b1 instead of b    #compareTriad(..,_view)
-        newView = view(_view, a:m1)
-        println("CheckCond(): isWhole ==True, a = ", a, " m1= ", m1, " newView = ", newView)
-        #Ideal return newView 
-        # goleft!(a, m1, newView) # middle om am Interval  #using subview  #was a,m1 #<----- then here (first left I see a:m1 the same i.e )
-
-        #remap is required 
-        m1, b = remap(m1, b) #pts remap 
-        print("remapping m1, b = ", m1, b)
-
-        # view2 = view(_view, m1:b) #issue: building proper view - subarray of an array #was m1,b
-        # goright!(view(_view, m1:b)) # middle om am Interval 
-
-    elseif isWhole == false
-        compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
-        #view1 = view(arr, a:m1) #correct result 
-        #Index changes: need for Remapping: m2, b 
-        #b- m2 #difference 
-        #the fix for the following view: 
-        m2, b = remap(m2, b) #done
-        #adjust index for merging m1m2 step:
-        #m2 -= 1
-        #b -= 1
-        # b = euclidDistDifference(m2, b) #+1 
-        # m2 = 1
-        view2 = view(_view, m2:b)
-
-        goleft!(view(_view, a:m1)) #go left iteratively #
-        # goright!(view2) ##go left iteratively # 
-
-        goright!(view2, remap(m2, b))
+        return view(v, firstindex(v):lastindex(v))
     end
 end
 
-## Idea: traverse using _stack; Q. is traverse ready?
-""" check condition, for a particular _view"""
-function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, arr::Array{Int64,1}) #is there a way to convert view to arr  
 
-    if isWhole == true
-        #m region  
-        #compare content (of 3-Fractal: a, m, b )
+#-------------
+## passing two indicies points 
+euclidDistDifference(3,4)
 
-        compareTriad(a, m1, b, arr) #ok #issue: arr [should be view ] #hillarious : was b1 instead of b    #compareTriad(..,_view)
+function isEndReached(a, b) # compiles 
 
-        #Do:
-        #view1 = view(arr, a:m1) #correct result 
-        #view2 = view(arr, m1:b) #unneeded 
-        #effect(a, m1, _view) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m1, b, view2) #<---------- # 3:5
-        #to go left: fix a, decrease b #(but we start with a:m1) -  verified 
-        newView = view(arr, a:m1)
-        println("CheckCond(): isWhole ==True, a = ", a, " m1= ", m1, " newView = ", newView)
-
-        #        goleft!(a, m1, newView) #using subview  #was a,m1 #<----- then here (first left I see a:m1 the same i.e )#depreciate
-
-        #remap required 
-        m1, b = remap(m1, b)
-        print("remapping m1, b = ", m1, b)
-
-        # view2 = view(_view, m1:b) #issue: building proper view - subarray of an array #was m1,b
-        goright!(view(arr, m1:b))
-
-    elseif isWhole == false
-        #check bounds  compare content: (of 4-Fractal: a,m1,m2,b )
-        #2 middles become one  a ... m1 nc, m1 m2 =1 (n/A) m2 b1
-        #should be                  m1  nc, d(m1 m2)=0 m1-m2=0  (m2 loses its previous position to become 1 with m1 )
-        # 5 6   7 8 9 
-        # (5 6) 7 8 9 #  [-1 ]
-        #5 nc 6 7 8 
-        #2. length -= 1  
-        # remapForm1m2 
-
-
-        compareQuartet(a, m1, m2, b, arr) #compare arr values at 4 index points: a,m1,m2,b  #ok
-        #view1 = view(arr, a:m1) #correct result 
-        #Index changes: need for Remapping: m2, b 
-        #b- m2 #difference 
-        #the fix for the following view: 
-        m2, b = remap(m2, b) #done
-        #adjust index for merging m1m2 step:
-        #m2 -= 1
-        #b -= 1
-        # b = euclidDistDifference(m2, b) #+1 
-        # m2 = 1
-        view2 = view(arr, m2:b) #issue: building proper view - subarray of an array  #<----------------error  #was m2,b
-        #TODO: handle interval m1,m2 as well (for completeness: we got to compare all vertex intervals )
-
-
-        #effect(a, m1, view1) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m2, b, view2) #<---------- # 3:5
-
-        goleft!(view(arr, a:m1)) #go left iteratively #
-        # goright!(view2) # goright!(m2, b, view(view2, m2:b)) #go right iteratively #<---------
-
-        #goright!(view2) ##go left iteratively # 
-
-        goright!(view2, remap(m2, b))
+    if euclidDistDifference(a, b) == 1#0 #1 #TODO: chage inside the function 
+        return true
+    else
+        v = collect(a:b)
+        _view = view(v, firstindex(v):lastindex(v))
+        compareQuartet(a - 1, a, b, b + 1, _view)
+        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
+        return false
     end
 
 end
 
-function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _view::SubArray) #is there a way to convert view to arr  
+#---------------
 
-    if isWhole == true
-        #m region  
-        #compare content (of 3-Fractal: a, m, b )
+## passing a custom kernel 
 
-        compareTriad(a, m1, b, _view) #ok #issue: arr [should be view ] #hillarious : was b1 instead of b    #compareTriad(..,_view)
+function isEndReached(a, b, kernel)
 
-        #Do:
-        #view1 = view(arr, a:m1) #correct result 
-        #view2 = view(arr, m1:b) #unneeded 
-        #effect(a, m1, _view) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m1, b, view2) #<---------- # 3:5
-        #to go left: fix a, decrease b #(but we start with a:m1) -  verified 
-        # newView = view(_view, a:m1)
-        println("a = ", a, " m1= ", m1, " newView = ", newView)
-
-        goleft!(a, m1, newView) #using subview  #was a,m1 #<----- then here (first left I see a:m1 the same i.e )
-
-        #remap required  # not required: not under this context  
-        m1, b = remap(m1, b)
-        print("m1, b = ", m1, b)
-
-        # view2 = view(_view, m1:b) #issue: building proper view - subarray of an array #was m1,b
-        # effect(m1, b, view(_view, m1:b)) #isStoppingCondition() #TODO: requires: currentValue
-        return m1, b, isWhole
-    elseif isWhole == false
-        #check bounds  compare content: (of 4-Fractal: a,m1,m2,b )
-        #2 middles become one  a ... m1 nc, m1 m2 =1 (n/A) m2 b1
-        #should be                  m1  nc, d(m1 m2)=0 m1-m2=0  (m2 loses its previous position to become 1 with m1 )
-        # 5 6   7 8 9 
-        # (5 6) 7 8 9 #  [-1 ]
-        #5 nc 6 7 8 
-        #2. length -= 1  
-        # remapForm1m2 
-
-
-        compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
-        #view1 = view(arr, a:m1) #correct result 
-        #Index changes: need for Remapping: m2, b 
-        #b- m2 #difference 
-        #the fix for the following view: 
-        m2, b = remap(m2, b) #done
-        #adjust index for merging m1m2 step:
-        #m2 -= 1
-        #b -= 1
-        # b = euclidDistDifference(m2, b) #+1 
-        # m2 = 1
-        #  view2 = view(_view, m2:b) #issue: building proper view - subarray of an array  #<----------------error  #was m2,b
-        #TODO: handle interval m1,m2 as well (for completeness: we got to compare all vertex's intervals )
-
-
-        #effect(a, m1, view1) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m2, b, view2) #<---------- # 3:5
-
-        #  goleft!(view(_view, a:m1)) #go left iteratively # Redundant 
-        #  goright!(view2) # goright!(m2, b, view(view2, m2:b)) #go right iteratively #<---------
-
-        # effect(m2, b, view(_view, m2:b))
-        return m2, b, isWhole
+    if euclidDistDifference(a, b) == 1#0 #1  #TODO: chage inside the function 
+        return true
+    else
+        v = collect(a:b)
+        _view = view(v, firstindex(v):lastindex(v))
+        kernel(a - 1, a, b, b + 1, _view)
+        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
+        return false
     end
+
 
 end
 
-function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, _view::SubArray) #is there a way to convert view to arr  
+_length = copy(length(_view)) #ok 
+if a == b # scalar 
+    # v = collect(a:b)
+    # _view = view(v, firstindex(v):lastindex(v))
 
-    isWhole = getIsWhole(a, b)
+    return a, a, nothing
+elseif a < _length && b < _length && a >= 0 && b >= 0
+    # aContent = _view[a] #view(_view, a) #arr[a]
+    #   bContent = _view[b] #view(_view, b) #arr[b]
 
-    if isWhole == true
-        #m region  
-        #compare content (of 3-Fractal: a, m, b )
-        compareTriad(a, m1, b, _view) #ok #issue: arr [should be view ] #hillarious : was b1 instead of b    #compareTriad(..,_view)
+    contentSwapped = nothing
 
-        #Do:
-        #view1 = view(arr, a:m1) #correct result 
-        #view2 = view(arr, m1:b) #unneeded 
-        #effect(a, m1, _view) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m1, b, view2) #<---------- # 3:5
-        #to go left: fix a, decrease b #but we start with a:m1 - interval is verified 
-        # newView = view(_view, a:m1)
-        println("a = ", a, " m1= ", m1, " newView = ", view(_view, a:m1))
+    #  if aContent > bContent # arr[a] > arr[b]
+    v = collect(a:b) # collect(a, b)# collect(a, b + 1) #
 
-        #        goleft!(a, m1, newView) #using subview  #was a,m1 #<----- then here (first left I see a:m1 the same i.e )
+    _view = view(v, firstindex(v):lastindex(v)) # correct 
+    a, b, contentSwapped = oldSchoolSwap(a, b, _view) #<-- 
+    # swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
 
-        #remap required 
-        m1, b = remap(m1, b)
+    #a, b = oldSchoolSwap(a, b, _view) 
+    # contentSwapped = true   #arr[a], arr[b]
 
-        print("m1, b = ", m1, b, view(_view, m1:b))
-
-        # view2 = view(_view, m1:b) #issue: building proper view - subarray of an array #was m1,b
-        # effect(m1, b, view(_view, m1:b)) #isStoppingCondition() #TODO: requires: currentValue
-        return m1, b, isWhole
-    elseif isWhole == false
-        #check bounds  compare content: (of 4-Fractal: a,m1,m2,b )
-        #2 middles become one  a ... m1 nc, m1 m2 =1 (n/A) m2 b1
-        #should be                  m1  nc, d(m1 m2)=0 m1-m2=0  (m2 loses its previous position to become 1 with m1 )
-        # 5 6   7 8 9 
-        # (5 6) 7 8 9 #  [-1 ]
-        #5 nc 6 7 8 
-        #2. length -= 1  
-        # remapForm1m2 
-
-
-        compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
-        #view1 = view(arr, a:m1) #correct result 
-        #Index changes: need for Remapping: m2, b 
-        #b- m2 #difference 
-        #the fix for the following view: 
-        m2, b = remap(m2, b) #done
-        print("m1, b = ", m2, b, view(_view, m2:b))
-        #adjust index for merging m1m2 step:
-        #m2 -= 1
-        #b -= 1
-        # b = euclidDistDifference(m2, b) #+1 
-        # m2 = 1
-        #  view2 = view(_view, m2:b) #issue: building proper view - subarray of an array  #<----------------error  #was m2,b
-        #TODO: handle interval m1,m2 as well (for completeness: we got to compare all vertex intervals )
-
-
-        #effect(a, m1, view1) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
-        #effect(m2, b, view2) #<---------- # 3:5
-
-        #  goleft!(view(_view, a:m1)) #go left iteratively # Redundant 
-        #  goright!(view2) # goright!(m2, b, view(view2, m2:b)) #go right iteratively #<---------
-
-        # effect(m2, b, view(_view, m2:b))
-        return m2, b, isWhole
-    end
+    #  elseif aContent > bContent
+    #do nothing 
+    #  contentSwapped = false
+    #  end
+    return a, b, contentSwapped
+elseif isUnitDistanceReached(a, b) == true # 3, 4 ,d = 1 
+    _view = collect(a:b)
+    _view = view(_view, firstindex(_view):lastindex(_view))
+    a, b, contentSwapped = oldSchoolSwap(a, b, _view) # # swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap #<-
+    return a, b, contentSwapped
+    # elseif a == a == _length-1 || b == _length-1 
+    #     return isUnitDistanceReached(a,b) #1, 2)
+elseif a == _length || b == _length # last step  #scalar 
+    # return getLastElement2(a, b)
+    # return end 
+    # return isUnitDistanceReached(a,b) #1, 2)
+    return a,a,nothing #isUnitDistanceReached(a, b) #isEndReached(a, b) #1, 1)
 
 end
+#------
+a = 1;
+b = 2;
+v = collect(1:2)
+_view = view(v, firstindex(v):lastindex(v)) # BoundsError: firstindex(v), lastindex(v) ; correct
+
+_length = copy(length(_view)) #ok # a,b =  2 
+#if a < _length && b < _length && a >= 0 && b >= 0
+# aContent = _view[a] #view(_view, a) #arr[a]
+#   bContent = _view[b] #view(_view, b) #arr[b]
+
+contentSwapped = nothing
+
+#  if aContent > bContent # arr[a] > arr[b]
+v = collect(a:b) # collect(a, b)# collect(a, b + 1) #
+
+_view = view(v, firstindex(v):lastindex(v)) #<------------------
+a, b, contentSwapped = oldSchoolSwap(a, b, _view) # 
+# swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
+
+#a, b = oldSchoolSwap(a, b, _view) 
+# contentSwapped = true   #arr[a], arr[b]
+
+#  elseif aContent > bContent
+#do nothing 
+#  contentSwapped = false
+#  end
+return a, b, contentSwapped
 
 #---------
-#TODO: make cause!
-
-function goleft!(a::Int64, b::Int64, arr::Array{Int64,1}) #compiles correctly #todo: update a,b
-
-    #to go left: fix a, decrease b
-    # effect(a, b, arr)
-    #a!=b ? 
-    #eval cause once on original vector array
-    #a = firstindex(arr)
-    # b = lastindex(arr)
-    cause(a, b, arr) #we can keep it as it 
-
-    # cause(a, b, view(arr, a, b))
-
-    #build a view 
-    checkLeftCondition(arr)
-    #=
-    if a != b  #<-----------
-        #a != b ? cause(a, b, arr) : endAlgorithmSafely(arr) # return
-
-        #a is the same 
-        #q. can i get away without remapping here? NO # Yes! (reason remap: is not  for arr )
-  #      b = b - 1 #update b #ok
-     #   a, b = remap(a, b) #after remap 
-
-        #b = euclidDistDifference(a, b) + 1
-        #a = 1 #always start at this
-       # #newView = view(arr, a, b) #update view  #was b-1 #ok got remapped
-        #isStop() here 
-
-        b - a > 1 ? goleft!(firstindex(view(arr, a, b)), lastindex(view(arr, a, b)), view(arr, a, b)) : endAlgorithmSafely(view(arr, a, b))
-        #  b - a > 1 ? goleft!(a, b, view(arr, a, b)) : endAlgorithmSafely(view(arr, a, b)) # return #was b - 1 #it's remapped #Q. why play with intervals manually?
-
-    else #a ==b i.e. scalar value 
-        #endAlgorithmSafely(arr) 
-        endAlgorithmSafely()    #action: return only 
-    end
-    =#
-end
-
-function goleft!(a::Int64, b::Int64, _view) #compiles correctly #todo: Update a,b
-
-    #to go left, fix a, decrease b
-
-    # call cause on original view once 
-    cause(a, b, _view)
-
-    # cause(a, b, view1) #: endAlgorithmSafely(view1) # return
-    # checkLeftCondition(_view)  #unneeded
-
-    #b-a >0 #b-a>1 
-end
-
-function goleft!(_view::SubArray)
-    a = firstindex(_view)
-    b = lastindex(_view)
-
-    cause(a, b, _view)
-    # checkLeftCondition(_view) #unneeded
-
-end
-
-arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-=#
-#------------
-# custom Kernel functions 
-function kernel(a, b, consumedFunction)
-
-    return consumedFunction(a, b)
-end
-
-function kernel(a, b, consumedFunction)
-
-    return consumedFunction(a, b)
-end
-
-function kernel(a, b, arr::Array{Int64,1}, consumedFunction)
-
-    return consumedFunction(a, b, arr)
-end
-
-#_view
-function kernel(a, b, _view::SubArray, consumedFunction)
-
-    return consumedFunction(a, b, _view)
-end
-
-view(v, v)
-kernel(a, b, view(v, v), middle!)
-#kernel(a, b, arr, middle!)
-#------------# infinite loop (no StackOverflowError)
-#=
-#experimental passing consumed function as input argument parameter # calling kernel in the body
-function cause(a::Int64, b::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
-
-    currentValue = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    condition = handleC-urrentValue(currentValue)
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, arr, consumedFunction) #middle)
-        #callMiddle!(a, b, arr) # arr) #TODO: replace with middle + isEven
-        checkCond(a, m1, m2, b, arr) #includes: compare values #<---- #checkCond2
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-=#
-
-#preferred
-function cause(a::Int64, b::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
-
-    currentValue = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    condition = handleCurrentValue(currentValue)
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, arr, consumedFunction) #, middle)
-        #callMiddle!(a, b, arr) # arr) #TODO: replace with middle + isEven
-        checkCond(a, m1, m2, b, arr) #includes: compare values #<---- #checkCond2
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
-#TODO: t 
-#preferred
-function cause(a::Int64, b::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, arr) #, middle)
-        #callMiddle!(a, b, arr) # arr) #TODO: replace with middle + isEven
-        checkCond(a, m1, m2, b, arr) #includes: compare values #<---- #checkCond2
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
-function cause(a::Int64, b::Int64, _view::SubArray, kernel) #in: _view  #uses view #error #no isStop(a,b,view) ==false 
-
-    ##if isStop(a, b, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
-    #isStop(a, b, view) #Error here
-    #isStop(a, b, view(collect(a:b), a:b))
-    condition = isStoppingCondition(arr, currentValue) #(a, b, _view) #isstop(a, b, _view) #depreciate this  #TODO Questiona: change it ?
-
-    if condition == true # the actual utility of function #out: view : arr , a:b 
-        return #0 #last return #correctChoice
-    elseif condition == false
-        #elseif condition == false
-        #kernel function = callMiddle!(a,b,arr )
-        # return callMiddle(a, b) # m1,m2,isWhole 
-        #       v = makeVector((a:b)) # overdone 
-        #_view = makeView(arr,v)
-        #        _view = makeView(_view,v)
-
-        m1, m2, isWhole = kernel(a, b, _view) # arr) #new range new middle #<------------
-
-        #--------
-        # a,b remapping
-        #no need, in this context 
-        #why: the bounds a,b haven't been updated
-        #--------
-        checkCond(a, m1, m2, b, isWhole, _view) #includes: compare values #<----
-        return m1, m2, isWhole #TODO: continue logic
-
-    end
-
-    #m1,m2,isWhole = callMiddle() #checkCond(a,m1,m2,b,view) #is it acceptable to pass it a view?
-end
-
-function cause(a::Int64, b::Int64, _view::SubArray, kernel) #in: _view  #uses view #error #no isStop(a,b,view) ==false 
-
-    ##if isStop(a, b, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
-    #isStop(a, b, view) #Error here
-    #isStop(a, b, view(collect(a:b), a:b))
-    condition = isStoppingCondition(arr, currentValue) #(a, b, _view) #isstop(a, b, _view) #depreciate this  #TODO Questiona: change it ?
-
-    if condition == true # the actual utility of function #out: view : arr , a:b 
-        return #0 #last return #correctChoice
-    elseif condition == false
-        #elseif condition == false
-        #kernel function = callMiddle!(a,b,arr )
-        # return callMiddle(a, b) # m1,m2,isWhole 
-        #       v = makeVector((a:b)) # overdone 
-        #_view = makeView(arr,v)
-        #        _view = makeView(_view,v)
-
-        m1, m2, isWhole = kernel(a, b, _view) # arr) #new range new middle #<------------
-
-        #--------
-        # a,b remapping
-        #no need in this context 
-        #why: the bounds a,b haven't been updated
-        #--------
-        checkCond(a, m1, m2, b, isWhole, _view) #includes: compare values #<----
-        return m1, m2, isWhole #TODO: continue logic
-
-    end
-
-    #m1,m2,isWhole = callMiddle() #checkCond(a,m1,m2,b,view) #is it acceptable to pass it a view?
-end
-
-view(collect(a:b), (a:b))
-#cause(a, b, view(collect(a:b), a:b), middle) #TODO:uncomment Me
-
-#currentValue
-# init
-#before first cause, call init 
-function cause(a::Int64, b::Int64, arr::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #(a, b, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = callMiddle!(a, b, arr) # arr)
-        checkCond(a, m1, m2, b, isWhole, arr) #includes: compare values #<----
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-#strategy pass-in an arr, for now  #
-#---------
-#start 
-# let ar1 be a view , subarray of the main a,b = 1,9
-ar1 = [1, 3]
-length(ar1) - 2 # should be 0 (special case: ending make it 1 so that if is checked 1 more time )
-firstindex(ar1)
-firstindex(ar1) - (length(ar1) - 2) # 1 (1 middle left)
-currentValue = nothing
-#currentValue = initCurrentValue(arr) # 1 #correct
-#currentValue = initCurrentValue(ar1[1], ar1[2]) # 1 i.e.  #correct 
-calcVerteciesLeft!(ar1[1], ar1[2], currentValue) # 1 
-numMiddles = currentValue # 1 #FYI 
-
-stopFlag = isStoppingCondition(a, b, currentValue) #correct 
-stopFlag = isStoppingCondition(a, b, 2) #when currentValue>1 should be false 
-#callMiddle!
-#m1, m2, isWhole = middle(ar1[1], ar1[2]) # callMiddle!(firstindex(ar1), lastindex(ar1), ar1) #should be true #true  # odd members have an actual middle 
-#isWhole = getIsWhole(ar1[1],ar1[2])
-#stopFlag = isStoppingCondition(a, b, ar1) #<------- KNOWN ISSUE (checkVerticiesLeft) # logic Discrepency either ar1, nothing or a,b,nothing (not both)
-#subtle discripence : check both flows 
-stopFlag = isStoppingCondition(a, b, nothing)
-stopFlag = isStoppingCondition(ar1, nothing) # we're only concerned with the given interval 
-
-#update currentValue 
-
-
-#todo: remapping function from indicies to values 
-#checkCond(1, m1, m2, 3, isWhole, [1, 2, 3]) #deprecate
-
-
-
-#Rule: cause must always get the updated a & b (of the current view )
-
-function cause(a::Int64, b::Int64, _view::SubArray) #in: _view  #uses view #error #no isStop(a,b,view) ==false 
-
-    ##if isStop(a, b, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
-    #isStop(a, b, view) #Error here
-    #isStop(a, b, view(collect(a:b), a:b))
-    condition = isStoppingCondition(arr, currentValue) #(a, b, _view) #isstop(a, b, _view) #depreciate this  #TODO Questionale change it 
-
-    if condition == true # the actual utility of function #out: view : arr , a:b 
-        return #0 #last return #correctChoice
-    elseif condition == false
-        #elseif condition == false
-        # return callMiddle(a, b) # m1,m2,isWhole 
-        m1, m2, isWhole = callMiddle!(a, b, arr) # arr) #new range new middle  #<----
-        #--------
-        # a,b remapping
-        #no need in this context 
-        #why: the bounds a,b haven't been updated
-        #--------
-        #TODO: checkCond or checkCond2
-        checkCond(a, m1, m2, b, isWhole, _view) #includes: compare values #<----
-        return m1, m2, isWhole #TODO: continue logic
-
-    end
-
-    #m1,m2,isWhole = callMiddle() #checkCond(a,m1,m2,b,view) #is it acceptable to pass it a view?
-end
-
-currentValue
-#init
-#before first cause, call init 
-function cause(a::Int64, b::Int64, arr::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #(a, b, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = callMiddle!(a, b, arr) # arr)
-        checkCond(a, m1, m2, b, isWhole, arr) #includes: compare values #<----
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
-#isStoppingCondition(arr, currentValue)  
-
-function cause(a::Int64, b::Int64, arr::Array{Int64,1}, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = callMiddle!(a, b, arr) # arr) #correct
-        checkCond(a, m1, m2, b, arr) #includes: compare values #<---- #checkCond2
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
-function cause(a::Int64, b::Int64, _view::SubArray, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(_view, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = callMiddle!(a, b, _view) # arr) #correct
-        checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
-### new Idea : use of kernel as input 
-#a m1-1 m1+1 b 
-
-#a m1-1 m2+1 b 
-
-# CompareBounds  
-#
-
-
 # hint: experimental 
 """ compares  two points of indices , which are subsets of an arr """
 function compareBounds(pt1, pt2, arr::Array{Int64,1})
@@ -1925,43 +990,871 @@ end
 
 """ compares  a point & an interval of indices , which are subsets of an arr """
 function compareBounds(pt, interval, arr::Array{Int64,1})
+    interval = collect(interval)
     return compareTriad(pt, interval[1], interval[2], arr)
 end
 
 """ compares  a point & an interval of indices , which are subsets of a _view """
 function compareBounds(pt, interval, _view::SubArray)
+    interval = collect(interval)
     return compareTriad(pt, interval[1], interval[2], _view)
 end
 """ compares two intervals of indices , which are subsets of  arr """
 function compareBounds(interval1, interval2, arr::Array{Int64,1})
     # return compareQuartet(arr[interval1[1]], arr[interval1[2]], arr[interval2[1]], arr[interval2[2]], arr)
+    interval1 = collect(interval1)
+    interval2 = collect(interval2)
     return compareQuartet(interval1[1], interval1[2], interval2[1], interval2[2], arr)
 end
 """ compares two intervals of indices , which are subsets of  _view """
 function compareBounds(interval1, interval2, _view::SubArray)
-    return compareQuartet(interval1[1], interval1[2], interval2[1], interval2[2], _view)
+    interval = collect(interval)
+    return compareQuartet(interval1[1], interval1[2], interval2[1], interval2[2], _view)# hugely experimental #TODO: apply union
 end
 
 function compareBounds(pt, interval1, _view::SubArray)
+    interval = collect(interval)
     return compareTriad(pt, interval1[1], interval1[2], _view)
 end
+
+
+
+#doCompare 
+arr = collect(1:7)
+_length = copy(length(arr))
+a = firstindex(arr);
+b = lastindex(arr);
+if a < _length && b < _length && a >= 0 && b >= 0 # && b >= m2 # if a <= _length && b <= _length 
+    # aContent = arr[a] #<-------
+    # bContent = arr[b]
+
+    contentSwapped = nothing
+    # try
+    # Base.@propagate_inbounds 
+    # if aContent > bContent # arr[a] > arr[b] n# <--- critial decision 
+    #Base.@propagate_inbounds  
+    a, b, contentSwapped = oldSchoolSwap(a, b, arr) #swapContent(arr[a], arr[b], arr)  #an inbounds swap #actual array swap 
+    #    contentSwapped = true   #arr[a], arr[b]
+    println("at index a = ", a, " b = ", b, ", aContent = ", arr[a], " , bContent = ", arr[b])
+
+    #Base.@inbounds 
+    #TODO: situation where both contents are equal # current: do nothing 
+    # elseif 
+
+    # elseif aContent <= bContent  # arr[a] < arr[b] #review#1 #<----- # includes bothContents are equal 
+    #don't swap # return values  
+    #  return 
+    #    contentSwapped = false #arr[a], arr[b]
+    #@inbounds a[st], a[ed] = a[st] , a[ed]        #an inbounds swap 
+
+    #  elseif aContent == bContent # arr[a] == arr[b] #contents the same Can increase the count (in a dictionary?) 
+    #a<b Always
+    #   if a < b
+    #     contentSwapped = false  #arr[a], arr[b]
+    #do nothing 
+    #else? 
+    #end
+    #catch UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function 
+    #    @error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
+    #end
+    return a, b, contentSwapped #arr[a], arr[b]
+
+elseif a == _length || b == _length
+    return getLastElement2(a, b)
+
+end
+
+#=
+function isUnitDistanceReached(a, b, kernel)
+
+    if euclidDistDifference(a, b) == 1  #TODO: chage inside the function 
+        return true
+    else
+        v = collect(a:b)
+        _view = view(v, firstindex(v):lastindex(v))
+        #check the bounds' sanity check #TODO:
+        kernel(a - 1, a, b, b + 1, _view)
+        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
+        return false
+    end
+
+
+end
+=#
+#rule for isUnitDistanceReached
+# d(1,2) <= 1 
+
+isUnitDistanceReached(1, 3) # <----
+isUnitDistanceReached(1, 1) # <----
+isUnitDistanceReached(1,2) # d(1,2) =1
+isUnitDistanceReached(1,3)
+
+#------
+# doCompare Function 
+
+## Patch for doCompare
+
+### getLastElement 
+""" a patch for euclidDistDifference """
+function getLastElement(a, b)
+
+    if euclidDistDifference(a, b) == 0 #1 #0
+        return
+    else
+
+        #remap TODO: remap true form 
+        #return view(v, remap(a, b)) #v[length(v)])
+
+        v = collect(a:b) #+1)
+        return view(v, firstindex(v):lastindex(v)) #not view(v, firstindex(v): lastindex(v))#_view = collect(a:b) |> v-> view(v, firstindex(v):lastindex(v))
+    end
+end
+
+
+
+
+arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+oldSchoolSwap(1, 2, arr)
+oldSchoolSwap(5, 6, arr)
+#additional condition : first input must be lower tham 2nd one 
+oldSchoolSwap(6, 5, arr)
+arr
+arr
+
+arr[length(arr)]
+
+#---------
+# Compareing Three Numbers, as a  Triad (compareTriad)
+#=
+## compareTriad for a vector array 
+function compareTriad(a, m1, b, arr::Array{Int64,1})
+
+    try
+        if a !== Nothing && m1 !== Nothing && b !== Nothing
+            _isSwapped = nothing
+
+            a, b, _isSwapped = doCompare(a, b, arr)
+            println("twinMiddles [a, b]= ", a, " ", b, " checked ")
+
+            a, m1, _isSwapped = doCompare(a, m1, arr)
+            println(" [a, m1]= ", a, " ", m1, " checked ")
+
+            m1, b, _isSwapped = doCompare(m1, b, arr)
+            println(" [a, m1]= ", m1, " ", b, " checked ")
+
+            if a === nothing || b === nothing || m1 === nothing
+                return nothing
+            else
+                return a, b, m1
+            end
+
+            #else throw(error(""))
+        end
+
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+    #catch 
+
+end
+=#
+#=
+## compareTriad for any 3 indices
+function compareTriad(a, m1, b) #Used 
+
+    try
+        _isSwapped = nothing
+        if a < b
+            isInReverse = false
+        elseif a > b
+            isInReverse = true
+        end
+        v = nothing
+        first = nothing
+        second = nothing
+
+
+        isInReverse == false ? v = collect(a:m1) : v = collect(m1:a)  #ok 
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = a
+            second = m1
+        else
+            first = m1
+            second = a
+        end
+        first, second, _isSwapped = doCompare(first, second, _view)
+        println(" [a, m1]= ", a, " ", m1, " checked ")
+
+
+        isInReverse == false ? v = collect(m1:b) : v = collect(b:m1) #ok 
+        _view = collect(m1:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = m1
+            second = b
+        else
+            first = b
+            second = m1
+        end
+        first, second, _isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [m1, b]= ", m1, " ", b, " checked ")
+
+        isInReverse == false ? v = collect(a:b) : v = collect(b:a) #ok 
+        _view = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = a, second = b
+        else
+            first = b, second = a
+        end
+        a, b, _isSwapped = doCompare(a, b, _view)
+        println(" [a, b]= ", a, " ", b, " checked ")
+
+        println("a, m1, b = ", a, m1, b)
+        if a === nothing || b === nothing || m1 === nothing
+            return nothing
+        else
+            return a, b, m1
+        end
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+=#
+
+## compareTriad: on a arr  # done 
+function compareTriad(a, m1, b, arr::Array{Int64,1}) # erroneous function [ there is no context , i.e. arr ]
+
+    try
+        #    if a !== Nothing && m1 !== Nothing && b !== Nothing && arr !== Nothing
+
+        if a !== Nothing && m1 !== Nothing && b !== Nothing && arr !== Nothing
+
+            _isSwapped = nothing
+
+            #_view = collect(a:m1)
+            #suggest: use a,b as bounds of the current _view 
+            #  a != b ? _view = view(_view, firstindex(a):lastindex(b)) : return "a ==b scalar: a = ", a, " b = ", b
+
+            #it boils down to lowerbound & upperBound
+            # a, m1,  or m1+1 , b
+
+            lowerBound = m1 - 1
+
+            if a != lowerBound  #(a != m1 - 1 )# fail-safe mechanism 
+
+            #v = collect(a:lowerBound)
+            #length(v)
+
+                a, lowerBound, _isSwapped = doCompare(a, lowerBound, arr) # [a, m1]= 1 2 checked
+            
+            #if a === Nothing && lowerBound === Nothing && _isSwapped == Nothing # retry: #lowerBound = m1  #TODO: check doCompare returns nothing, nothing,nothing when a==b 
+            else
+            #lowerBound = m1
+            #    a, lowerBound, _isSwapped = doCompare(a, lowerBound, arr)
+                throw(error("boundsEqualError"))
+            
+            end
+           #= =#
+            #decide: do you continue the 
+
+            elseif a == lowerBound #m1 # fallback  
+                # a, m1, _isSwapped = 1, 1, nothing
+                a, lowerBound, _isSwapped = a, a, nothing
+                #TODO: can we retry here, with a different lowerBound, as well? 
+
+            end
+
+
+            #decide the upperBound (from lowerBound) w
+            #if lowerBound == m-1 ||  lowerBound == m
+
+            upperBound == lowerBound + 1
+            println(" upperBound = ", upperBound)
+
+            # a, m1, _isSwapped = doCompare(a, m1, _view) # [a, m1]= 1 2 checked  # <-----
+            #println(" [a, m1]= ", a, " ", m1, " checked ")
+
+            # mid = m1 + 1 # or (m1) , b 
+            #rule: once lowerBound is determined, so do the upperBound, as well 
+            #--------
+            if upperBound != b
+
+                #if mid != b 
+                #  if upperBound != b # fine 
+
+                upperBound, b, _isSwapped = doCompare(upperBound, b, arr) # [a, m1]= 1 2 checked
+                #  else # fallback  # Activated #where it fails   if view == 0 # throw error 
+
+                #should throw(error())
+                println(" upperBound , b] checked ", upperBound, " _isSwapped = ", _isSwapped)
+
+            else
+                upperBound == b # or length () throw error 
+                #m == b # does not exist 
+                println("upperBound == b upperBound = ", upperBound, " b = ", b)
+                #   p upperBound , " ", b, " checked ")
+            end
+
+            #UncommentMe (or not ? )
+
+       # elseif  a === Nothing && m1 === Nothing && b !== Nothing && arr !== Nothing # should be throw(error...)
+            #return
+        #    throw(error("Unexpected Error Reason : "))
+       # end
+   #end # My Bad 
+        #==#
+        if a != b
+            a, b, _isSwapped = doCompare(a, b, arr)
+        elseif a == b # fallback 
+            a, b, _isSwapped = a, a, nothing
+
+        end
+        println(" [a, b]= ", a, " ", b, " checked ")
+        println("a, m1, b = ", a, m1, b)
+        #  if a === nothing || b === nothing || m1 === nothing
+        #      return nothing, nothing, nothing
+        # else
+        #==#
+        return a, b, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
+    #  end
+    # else 
+    #     return nothing, nothing, nothing
+    #end
+    # end
+
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace()) # <---- #attempt to access 0-element Vector{Any} at index [1]
+    end
+end
+
+# rule : compareTriad should not have isEven comparison ( as it is trivial we are dealing with only a triad: a m1 ,b)
+#left is a question of interval set-up: a,m1 m1+1 , b or a, m1-1, m1 b #depends on situation -deep 
+
+## compareTriad: for a view # applied fail-safe mechanism 
+function compareTriad(a, m1, b, _view::SubArray) #corrected 
+
+    try
+        upperBound = 0
+        lowerBound = 0 #nothing
+        if a !== Nothing && m1 !== Nothing && b !== Nothing && _view !== Nothing
+
+            _isSwapped = nothing
+
+            #_view = collect(a:m1) |> 
+            #suggest: use a,b as bounds of the current _view 
+            #  a != b ? _view = view(_view, firstindex(a):lastindex(b)) : return "a ==b scalar: a = ", a, " b = ", b
+            # 1 ,3 + 1 =4//2 =2  m1: 
+            #either    
+            #boils down to lowerbound & upperBound
+
+            # a , m1-1 ;  m1 b 
+
+            # a, m1,  or m1+1 , b
+            lowerBound = m1 - 1
+
+            if a != lowerBound  #(a != m1 - 1 )# fail-safe mechanism 
+
+                v = collect(a:lowerBound)
+                length(v)
+                a, lowerBound, _isSwapped = doCompare(a, lowerBound, _view) # [a, m1]= 1 2 checked
+
+                if a === Nothing && lowerBound === Nothing && _isSwapped == Nothing # retry: #lowerBound = m1  #TODO: check doCompare returns nothing, nothing,nothing when a==b 
+                    lowerBound = m1
+                    a, lowerBound, _isSwapped = doCompare(a, lowerBound, _view)
+
+
+                end
+
+                #decide: do you continue the 
+            elseif a == lowerBound #m1 # fallback  
+                # a, m1, _isSwapped = 1, 1, nothing
+                a, lowerBound, _isSwapped = a, a, nothing
+                #TODO: can we retry here, with a different lowerBound, as well? 
+
+            end
+
+            #decide the upperBound (from lowerBound) w
+            #if lowerBound == m-1 ||  lowerBound == m
+            upperBound == lowerBound + 1
+            println(" upperBound = ", upperBound)
+
+            # a, m1, _isSwapped = doCompare(a, m1, _view) # [a, m1]= 1 2 checked  # <-----
+            # println(" [a, m1]= ", a, " ", m1, " checked ")
+
+            # mid = m1 + 1 # or (m1) , b 
+            #rule: once lowerBound is determined, so do the upperBound, as well 
+            #--------
+            if upperBound != b
+                v = collect(upperBound:b)
+                _view = view(_view, firstindex(v):lastindex(v)) #mid):lastindex(b))  # (_view, _view)
+                # mid, b, _isSwapped = mid < b && length(_view)>1 ?
+
+                # if upperBound < b && length(_view) > 1 # you can safely pick 1 (either mean the same )
+                #   upperBound, b, _isSwapped = doCompare(upperBound, b, _view) #: return  #doCompare(m1, b, _view) #<-------
+
+                #if mid != b 
+                #  if upperBound != b # fine 
+                upperBound, b, _isSwapped = doCompare(upperBound!, b, _view) # [a, m1]= 1 2 checked
+                #  else # fallback  # Activated #where it fails   if view == 0 # throw error 
+                #  mid, b, _isSwapped = 1, 1, nothing
+                #should throw(error())
+                #println(" [upperBound b] checked ", upperBound)
+                println(" upperBound , b] checked ", upperBound, " _isSwapped = ", _isSwapped)
+            else
+                upperBound == b # or length () throw error 
+                #m == b # does not exist 
+                println("upperBound == b upperBound = ", upperBound, " b = ", b)
+                # println("upperBound == b upperBound = ",upperBound, " b = ", b )
+                #   p upperBound , " ", b, " checked ")
+            end
+
+        else # should be throw(error...)
+            #return
+            throw(error("Unexpected Error Reason : "))
+        end
+
+        v = collect(a:b)
+        _view = view(v, firstindex(v):lastindex(v))
+
+        if a != b
+            a, b, _isSwapped = doCompare(a, b, _view)
+        elseif a == b # fallback 
+            a, b, _isSwapped = a, a, nothing
+
+        end
+
+        println(" [a, b]= ", a, " ", b, " checked ")
+        println("a, m1, b = ", a, m1, b)
+        #  if a === nothing || b === nothing || m1 === nothing
+        #      return nothing, nothing, nothing
+        # else
+        return a, b, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
+    #  end
+    # else 
+    #     return nothing, nothing, nothing
+    #end
+    # end
+
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace()) # <---- #attempt to access 0-element Vector{Any} at index [1]
+    end
+end
+
+#---------
+
+# compareQuartet
+
+## compareQuartet: on a vector array
+##in a vector, as a Quartet 
+
+""" Comparing 4 numbers: a,b & middles: m1,m2 , input vector array , applys view  on each Interval """
+function compareQuartet(a, m1, m2, b, arr::Array{Int64,1}) #<-------- input expecting indicies 
+
+    try
+        twinMiddles = nothing
+
+        #1
+        a, m1, isSwapped = doCompare(a, m1, arr)
+        println("twinMiddles [a, m1]= ", m1, " ", m2, " swapped ")
+
+        #2
+        m1, m2, isSwapped = doCompare(m1, m2, arr)
+        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
+        #3
+        a, m2, isSwapped = doCompare(a, m2, arr)
+        println("twinMiddles [a, m2]= ", a, " ", m2, " swapped ")
+
+        #4
+        m1, b, _isSwapped = doCompare(m1, b, arr)
+        println("twinMiddles [m1, b]= ", m1, " ", b, " swapped ")
+
+        #5
+        m2, b, _isSwapped = doCompare(m2, b, arr)
+        println("twinMiddles [m2, b]= ", m2, " ", b, " swapped ")
+
+        #6
+        a, b, _isSwapped = doCompare(a, b, arr)
+        println(" [a, b]= ", a, " ", b, " swapped ")
+
+        twinMiddles = [m1, m2] # vector (Array{Int64, 1})
+        println("twinMiddles [m1, m2]= ", m1, " ", m2)
+        # push!(Middles, twinMiddles) #TODO: push each _isSwapped to swapped[] vector, as well 
+        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ? #no this is much practical
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+
+## compareQuartet: in General 
+#=
+"""# compareQuartet with no input argument view , returns  a dynamic view for each pair of points """
+function compareQuartet(a, m1, m2, b)
+
+    try
+
+        println("entering compareQuartet")
+        _view = nothing
+        isInReverse = nothing
+
+        if a < b
+            isInReverse = false
+        elseif a > b
+            isInReverse = true
+        end
+        v = nothing
+        first = nothing
+        second = nothing
+
+        #1
+        isInReverse == false ? v = collect(a:m1) : v = collect(m1:a)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+        if isInReverse == false
+            first = a
+            second = m1
+        else
+            first = m1
+            second = a
+        end
+        first, second, isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [a, m1]= ", m1, " ", m2, " swapped ")
+
+        #2
+        isInReverse == false ? v = collect(m1:m2) : v = collect(m2:m1)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = m1
+            second = m2
+        else
+            first = m2
+            second = m1
+        end
+        first, second, isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
+        #3
+        isInReverse == false ? v = collect(a:m2) : v = collect(m2:a)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = a
+            second = m2
+        else
+            first = m2
+            second = a
+        end
+        first, second, isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [a, m2]= ", a, " ", m2, " swapped ")
+
+        #4
+        isInReverse == false ? v = collect(m1:b) : v = collect(b:m1)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = m1
+            second = b
+        else
+            first = b
+            second = m1
+        end
+        first, second, _isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [m1, b]= ", m1, " ", b, " swapped ")
+
+        #5
+        isInReverse == false ? v = collect(m2:b) : v = collect(b:m2)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = m2
+            second = b #<-----
+        else
+            first = b
+            second = m2
+        end
+
+        first, second, _isSwapped = doCompare(first, second, _view)
+        println("twinMiddles [m2, b]= ", m2, " ", b, " swapped ")
+
+        #6
+        isInReverse == false ? v = collect(a:b) : v = collect(b:a)
+        _view = v |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        if isInReverse == false
+            first = a, second = b
+        else
+            first = b, second = a
+        end
+        first, second, _isSwapped = doCompare(first, second, _view)
+        println(" [a, b]= ", a, " ", b, " swapped ")
+
+        println("twinMiddles [m1, m2]= ", [m1, m2])
+
+        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles (this is Practical)
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+=#
+#mynote: its a bit easier : there is a clear distinction between m1 & m2 
+# compareQuartet 
+#1.applied input parameter check for Nothing  condition 
+function compareQuartet(a, m1, m2, b, arr:: Array) #Warning 
+
+    try
+
+        println("entering compareQuartet")
+
+        if a !== Nothing && m1 !== Nothing && m2 != Nothing && b !== Nothing && arr !== Nothing
+            _isSwapped = nothing
+        
+            _isEven = copy(isEven(a, b))
+        
+            if _isEven == true # a m1 m1+1  b 
+        
+                lowerBound = m1
+                upperBound = m1 + 1
+        
+                #1
+                a, lowerBound, isSwapped = doCompare(a, lowerBound, _view) #<------
+                println("twinMiddles [a, m1]= ", a, " ", lowerBound, " swapped =", isSwapped)
+            elseif _isEven == false # a m1 m2 b 
+                lowerBound = m1
+                upperBound = m2 # which is always equal to m + 1
+        
+            end
+        
+            #1
+        
+            a, lowerBound, _isSwapped = doCompare(a, lowerBound, arr) #<------
+            println("twinMiddles [a, lowerBound]= ", a, " ", lowerBound, " _isSwapped ", _isSwapped)
+            #2
+            lowerBound, upperBound, _isSwapped = doCompare(lowerBound, upperBound, arr)
+            println("twinMiddles [lowerBound, m2]= ", lowerBound, " ", m2, " swapped ", _isSwapped)
+            #3
+            a, upperBound, _isSwapped = doCompare(a, upperBound, arr)
+            println("twinMiddles [a, m2]= ", a, " ", upperBound, " swapped ", _isSwapped)
+        
+            #4
+            lowerBound, b, _isSwapped = doCompare(lowerBound, b, arr)
+            println("twinMiddles [lowerBound, b]= ", lowerBound, " ", b, " _isSwapped =  ", _isSwapped)
+        
+            #5
+            upperBound, b, _isSwapped = doCompare(upperBound, b, arr)
+            println("twinMiddles [m2=upperBound , b]= ", upperBound, " ", b, " _isSwapped =", _isSwapped)
+        
+            #6
+            a, b, _isSwapped = doCompare(a, b, arr)
+            println(" [a, b]= ", a, " ", b, " _isSwapped = ", _isSwapped)
+        
+        
+            #twinMiddles = [m1, m2] # vector (Array{Int64, 1})
+            println("twinMiddles [m1, upperBound]= ", [lowerBound, upperBound])
+            #        push!(Middles, twinMiddles)
+        
+        elseif a == Nothing || b == Nothing || m1 == Nothing || m2 == Nothing 
+            # should be throw(error...)
+            #return
+            throw(error("Unexpected Null Error Reason :  a or b or m1 or m2 = Nothing+-'[l0] "))
+        #end
+    end
+        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ?
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+
+## compareQuartet: on a view 
+""" input vector array , applied on a view  (on each Interval) """
+function compareQuartet(a, m1, m2, b, _view::SubArray)
+
+    try
+
+        println("entering compareQuartet")
+
+        #1
+        a, m1, isSwapped = doCompare(a, m1, _view) #<------
+        println("twinMiddles [a, m1]= ", m1, " ", m2, " swapped ")
+        #2
+        m1, m2, isSwapped = doCompare(m1, m2, _view)
+        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
+        #3
+        a, m2, isSwapped = doCompare(a, m2, _view)
+        println("twinMiddles [a, m2]= ", a, " ", m2, " swapped ")
+
+        #4
+        m1, b, _isSwapped = doCompare(m1, b, _view)
+        println("twinMiddles [m1, b]= ", m1, " ", b, " swapped ")
+        #5
+        m2, b, _isSwapped = doCompare(m2, b, _view)
+        println("twinMiddles [m2, b]= ", m2, " ", b, " swapped ")
+        #6
+        a, b, _isSwapped = doCompare(a, b, _view)
+        println(" [a, b]= ", a, " ", b, " swapped ")
+
+
+        #twinMiddles = [m1, m2] # vector (Array{Int64, 1})
+        println("twinMiddles [m1, m2]= ", [m1, m2])
+        #        push!(Middles, twinMiddles)
+        return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ?
+    catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+
+
+
+
+
+#kernel #is passed 
+#isStoppingCondition #is passed (either stop, or continue)
+
+
+#=
+remap(1, 10) #missing 1 at last  +1 #fixed 
+remap(5, 10) # correct 
+
+
+#requires compareQuartet, compareTriad 
+#a ::Int64, m1::Int64, m2::Int64, b::Int64, ::Bool, ::Vector{Int64})
+function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, arr::Array{Int64,1})
+    isWhole = copy(getIsWhole(arr))
+
+    if isWhole == true
+
+        #m region  
+        #compare content (of 3-Fractal: a, m, b )
+
+        compareTriad(a, m1, b, _view) #ok #issue: arr [should be view ] #hillarious : was b1 instead of b    #compareTriad(..,_view)
+        newView = view(_view, a:m1)
+        println("CheckCond(): isWhole ==True, a = ", a, " m1= ", m1, " newView = ", newView)
+        #Ideal return newView 
+        # goleft!(a, m1, newView) # middle om am Interval  #using subview  #was a,m1 #<----- then here (first left I see a:m1 the same i.e )
+
+        #remap is required 
+        m1, b = remap(m1, b) #pts remap 
+        print("remapping m1, b = ", m1, b)
+        _view = collect(m1:b) |> v-> view(v, firstindex(v):lastindex(v))
+
+        # view2 = view(_view, m1:b) #issue: building proper view - subarray of an array #was m1,b
+        # goright!(view(_view, m1:b)) # middle om am Interval 
+
+    elseif isWhole == false
+        compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
+        #view1 = view(arr, a:m1) #correct result 
+        #Index changes: need for Remapping: m2, b 
+        #b- m2 #difference 
+        #the fix for the following view: 
+        m2, b = remap(m2, b) #done
+
+        _view = collect(m2:b) |> v-> view(v, firstindex(v):lastindex(v))
+        #adjust index for merging m1m2 step:
+        #m2 -= 1
+        #b -= 1
+        # b = euclidDistDifference(m2, b) #+1 
+        # m2 = 1
+        view2 = view(_view, m2:b)
+        _view = collect(m2:b) |> v-> view(v, firstindex(v):lastindex(v))
+
+        goleft!(view(_view, a:m1)) #go left iteratively #
+        # goright!(view2) ##go left iteratively # 
+
+        goright!(view2, remap(m2, b))
+    end
+end
+
+
+#---------
+
+
+# custom Kernel functions
+
+## kernel: of Two Point
+function kernel(a, b, consumedFunction)
+
+    return consumedFunction(a, b)
+end
+
+
+## kernel: of a Vector Array 
+function kernel(a, b, arr::Array{Int64,1}, consumedFunction)
+
+    return consumedFunction(a, b, arr)
+end
+
+## kernel: of a View
+function kernel(a, b, _view::SubArray, consumedFunction)
+
+    return consumedFunction(a, b, _view)
+end
+
+view(v, v)
+kernel(a, b, view(v, v), middle!)
+#kernel(a, b, arr, middle!)
+
+#---------
+#start 
+# let ar1 be a view , subarray of the main a,b = 1,9
+ar1 = [1, 3]
+length(ar1) - 2 # should be 0 (special case: ending make it 1 so that if is checked 1 more time )
+firstindex(ar1)
+firstindex(ar1) - (length(ar1) - 2) # 1 (1 middle left)
+currentValue = nothing
+#currentValue = initCurrentValue(arr) # 1 #correct
+#currentValue = initCurrentValue(ar1[1], ar1[2]) # 1 i.e.  #correct 
+#calcVerteciesLeft!(ar1[1], ar1[2], currentValue) # 1 
+numMiddles = currentValue # 1 #FYI 
+
+#stopFlag = isStoppingCondition(a, b, currentValue) #correct 
+#stopFlag = isStoppingCondition(a, b, 2) #when currentValue>1 should be false 
+#callMiddle!
+#m1, m2, isWhole = middle(ar1[1], ar1[2]) # callMiddle!(firstindex(ar1): lastindex(ar1), ar1) #should be true #true  # odd members have an actual middle 
+#isWhole = getIsWhole(ar1[1],ar1[2])
+#stopFlag = isStoppingCondition(a, b, ar1) #<------- KNOWN ISSUE (checkVerticiesLeft) # logic Discrepency either ar1, nothing or a,b,nothing (not both)
+#subtle discripence : check both flows 
+#stopFlag = isStoppingCondition(a, b, nothing)
+#stopFlag = isStoppingCondition(ar1, nothing) # we're only concerned with the given interval 
+
+#update currentValue 
+
+
+#todo: remapping function from indicies to values 
+#checkCond(1, m1, m2, 3, isWhole, [1, 2, 3]) #deprecate
+
+
+
+
+### new Idea : use of kernel as input 
+#a m1-1 m1+1 b 
+
+#a m1-1 m2+1 b 
+
+# CompareBounds  
+#
+
+=#
 
 arr = collect(1:7)
 pts = [1, 3, 4, 7]
 #pts[1] # proxy for a lower bound 
-compareBounds(pts[1], pts[2], arr) #inpu # solved 
+#compareBounds(pts[1], pts[2], arr) #input # solved #requires pts #Bounds Error 
 #---------
 compareQuartet(1, 2, 3, 4, [1, 2, 3, 4])  # 1 4 2 3  # <-----
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) # 1 4 2 3 # corrected  
 
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) #compareQuartet: doCompare
 
-function checkCondition(a::Int64, m1::Int64, m2::Int64, b::Int64) #error #subtle  
+function checkCondition(a::Int64, m1::Int64, m2::Int64, b::Int64, arr::Array{Int64,1}) #error #subtle  
 
     lowerbound = m1 - 1 #m1-1
     upperbound = nothing #m2+1
-    if cond == true  #2 middle m1: next check bounds a,m1 m1, b
+    if cond == true  #2 twin middles m1,m2: next check bounds a,m1 m1, b
         upperbound = m1 + 1
+        # doCompare(a,m1)
+        doCompare(a, m2, arr) #uses arr
+        #doCompare(a,b)
+        #docompare(m1,m2)
+        compareQuartet(a, m1, m2, b, arr)
 
         if a < lowerbound # m1 - 1 #
             v, _view = newView(a, lowerbound)
@@ -1986,7 +1879,7 @@ function checkCondition(a::Int64, m1::Int64, m2::Int64, b::Int64) #error #subtle
         end
 
 
-    elseif cond == false  #isEven(a,b) == #twin middles 
+    elseif cond == false  #isEven(a,b) == #one middle m1 (with a,b) 
         # 1,3  4, 7 , 8, 9
         upperbound = m2 + 1
         if a < lowerbound  #m - 1
@@ -2009,108 +1902,19 @@ function checkCondition(a::Int64, m1::Int64, m2::Int64, b::Int64) #error #subtle
     end
 end
 
-"""Event-Driven function  """
-function cause(a::Int64, b::Int64, _view, kernel, currentValue, i) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(_view, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, _view, i) # arr) #correct
-        # checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        #check new bounds m1 m2 
-
-        checkCondition(a, m1, m2, b)
-
-    end
-end
-"""Event-Driven function  """
-function cause(a::Int64, b::Int64, arr, kernel, currentValue, i) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, arr, i) # arr) #correct
-        # checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        #check new bounds m1 m2 
-
-        checkCondition(a, m1, m2, b)
-
-    end
-end
-
-function cause(a::Int64, b::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, arr) # arr) #correct
-        # checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        #check new bounds m1 m2 
-
-        checkCondition(a, m1, m2, b)
-
-    end
-end
-
-#preferred 
-function cause(a::Int64, b::Int64, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(_view, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        m1, m2, isWhole = kernel(a, b, _view) # arr) #correct
-        # checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        #check new bounds m1 m2 
-        cond = copy(isEven(a, b))
-        if cond == true  #2 middle m1: next check bounds a,m1 m1, b
-
-            v, _view = newView(a, m1)
-            compareBounds(v[1], v[2], _view)
-
-            #v, _view = newView(m1, m2)
-            #compareBounds(v[1], v[2], _view)
-
-            v, _view = newView(m2, b)
-            compareBounds(v[1], v[2], _view)
-
-        elseif cond == false  #isEven(a,b) == #twin middles 
-            # 1,3  4, 7 , 8, 9
-
-            if a < m - 1
-                v, _view = newView(a, m1 - 1) #  a != m1-1 or a< m -1 
-                compareBounds(v[1], v[2], _view)
-            end
-            v, _view = newView(m1, m2) # 4, 7 
-            compareBounds(v[1], v[2], _view)
-
-            if m2 + 1 < b
-                v, _view = newView(m2 + 1, b) # 8, 9 
-                compareBounds(v[1], v[2], _view)
-            end
-        end
-
-        #return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-        #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-        # isStop(1, 2, view([1, 2], 1:2)) #was 
-
-    end
-end
-
 #TODO: check usability 
+#=
 function makeView(_a, _b)
     v = collect(_a:_b)
 
     return view(v, firstindex(v):lastindex(v))
-   # return view(v, (res1:res2)) #view(v, (1:length(res))) #view(v, res1, res2) #res[1]:res[length(res)])#perfect 
+    # return view(v, (res1:res2)) #view(v, (1:length(res))) #view(v, res1, res2) #res[1]:res[length(res)])#perfect 
 end
 
-makeView(1, 9)#done
-
-#res = NewView(1, 9)
+view(v, 1: 9)#done
+=#
+v = collect(1:9)
+res = view(v, firstindex(v):lastindex(v))
 
 typeof(res)
 v
@@ -2118,69 +1922,15 @@ view(v, v)
 
 #TODO: Check use of NewView 
 function NewView(_a, _b)
-
-    v = makeVector((_a:_b))  
-    _view = view(v, firstindex(v),lastindex(v))
-   #  _view = makeView(res[1], res[2]) #(res[1]:res[length(res)]))
+    v = collect(_a:_b)
+    _view = view(v, firstindex(v):lastindex(v))
+    #  _view = view(v,firstindex(v): lastindex(v)) #(res[1]:res[length(res)]))
 
     return v, _view
 end
 
-#new : use of kernel as input  #TODO:
-function cause(pts, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
-
-    condition = isStoppingCondition(_view, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
-    if condition == true
-        return #0 
-    elseif condition == false
-        a = pts[1]
-        b = pts[2]
-        m1, m2, isWhole = kernel(a, b, _view) # arr) #correct
-        # checkCond(a, m1, m2, b, _view) #includes: compare values #<---- #checkCond2
-        # compareBounds(a,b,_view)
-        #Pts...sth #TODO: recheckc
-
-        #TODO: traverse(pts)
-        if isEven(a, b) == true #1 middle m1
-            compareBounds(a, m1, b, _view)
-
-            #  compareBounds(a, m1)
-        else
-            #return m1, m2, isWhole #simulates returning sth vvaluable # idea: isFinishedFlag ::Bool
-            #isStop(a, b, view(arr, a:b))  #working  #correct use of view (on arr, from a, to b) #view(collect(a:b), a:b)) #atomic operation only allowed
-            # isStop(1, 2, view([1, 2], 1:2)) #was 
-        end
-    end
-end
-#-------------
-#effect #depreciated
-""" from arr , get the view(arr, a:b)"""
-function effect(a::Int64, b::Int64, _view::SubArray) # = view(_view, a, b)) 
-
-    #to subarray the view 
-    #=
-    condition = isStop(a, b, _view)
-    if condition == true
-        return
-    elseif condition == false
-    =#
-    #a != b ? 
-    #cause(offset, length(_view), _view) #view(_view, a:b)) #: return  # cause(a, b, view(_view, a:b))  #<-------
-    cause(a, b, _view)
-    #end
-end
-#--------
-#preferred 
-function effect(a::Int64, b::Int64, arr::Array{Int64,1}, kernel, currentValue)
-
-    cause(a, b, arr, kernel, currentValue)
-end
-function effect(a::Int64, b::Int64, _view::SubArray, kernel, currentValue)
-
-    cause(a, b, _view, kernel, currentValue)
-end
-
 #-------
+
 function checkSumIsEven(a::Int64, b::Int64)
 
     _sum = sumInterval(a, b) #    b + a - 1  # distance between them  <---- Error 
@@ -2206,7 +1956,7 @@ lower = Int(floor(mid))
 upper = Int(ceil(mid))
 #---------------------------
 
-# ow, you have a triad of Points (1,2,3), which can compare & sort
+# ow, you have a triad of Points (1,2,3) , which can compare & sort
 
 #Int(floor(5.5))
 
@@ -2329,37 +2079,14 @@ end=#
 #Q.how to make intervals from points 
 #Q2. why to have those (faster than intrvals )
 #-----------
-#intent finding a wat to depreciate goright! , goleft! 
-
-#=
-#depreciate 
-function traverseRight(lowerBound::Int64, upperBound::Int64)
-
-    interval = lowerBound:upperBound #UnitRange
-    v = makeVector((interval))
-    newView = makeView(v, interval)
-    # goright!(lowerBound, upperBound, newView)
-    return newView
-end
-#depreciate 
-function traverseLeft(lowerBound::Int64, upperBound::Int64)
-
-    interval = lowerBound:upperBound #UnitRange
-    v = makeVector((interval))
-    newView = makeView(v, interval)
-    # goleft!(lowerBound, upperBound, newView)
-    return newView
-
-end
-=#
-
+#
 #at least 1 partition function 
 """ gets _stack of ranges """
-function partition(a::Int64, b::Int64, kernel=middle, currentValue)
+function partition(a::Int64, b::Int64, currentValue, kernel=middle)
 
     m1, m2, isItEven = kernel(a, b) # here, we dunno if it's singleMiddle or twinMiddles 
 
-    currentValue = calcVerteciesLeft!(a, b, currentValue) # valuable utility
+    # currentValue = calcVerteciesLeft!(a, b, currentValue) # valuable utility # errorneous# Unused
     #Infered Rule 1: left side is always a, m1 
 
     # Inferred rule 2    right side b is always last
@@ -2371,109 +2098,151 @@ function partition(a::Int64, b::Int64, kernel=middle, currentValue)
     #finally, 
 
     ##Left-side Processing
+    _view1 = collect(a:m1) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
-    interval = copy(a:m1)
-    v = makeVector((interval))
-    newView = makeView(v, interval)
-    # goleft!(a, m1, newView) # goleft!(a, m1, view(newView, a:m1))
-    #TODO: cause!(a, m1, newView)
 
+    compareBounds(a, m1, _view)
     #traverse middle (if isItEven==false)
     if isItEven == false
         #m1,m2 
         #TODO: call cause 
-        v = makeVector((m1:m2))
-        makeView(v, v[1]:length(v))
+        _view2 = collect(m1:m2) |> _view -> view(_view, firstindex(_view):lastindex(_view))
         #kernel function 
-
         # callCause(m1, m2)
-
+        doCompare(m1, m2, _view)
         #cause
     end
-    ##traverse right
-    traverseLeft(1, m1 - 1)
+    ##traverse left
+    traverseLeft(a, m1 - 1)
     #singleMiddle: m1 
     if isItEven == true
         #nextInterval remapping: m1, b
         # m1, b = remap(m1, b) # why remap here 
+        _view = collect(m1:b) |> v -> view(v, firstindex(v):lastindex(v))
         #Todo: call 
+        lowerbound = 0
+        upperbound = 0
+        pts = []
+        if a < m1 - 1 # 2 # a, m1-1 
+            lowerbound = a
+            upperbound = m1 - 1
+            traverseRight(lowerbound, upperbound)
+            push!(pts, lowerbound)
+            push!(pts, upperbound)
 
-        traverseRight(m1, b)
-
+        elseif a == m1 - 1 # 1  # a 
+            lowerbound = a
+            upperbound = a
+            push!(pts, lowerbound)
+            #b is possible uncompared #TOOO: add a  bool flag 
+        end
+        _view1 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        compareBounds(lowerbound, upperbound, _view1)
+        # compare a, m1-1 
+        if m1 < b # +2 : m1, b 
+            lowerbound = m1
+            upperbound = b
+            push!(pts, lowerbound)
+            push!(pts, lowerbound)
+        elseif m1 == b # m1 == b  # + 1  : b 
+            lowerbound = b
+            upperbound = b
+            #b is uncompared #TOOO: add bool flag 
+        end # m1 , b 
+        _view2 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        compareBounds(lowerbound, upperbound, _view1)
+        #TODO: finalize : check if there is a a true bool value i.e. there exists some uncompared bool flag 
+        # if ther is , then the sole point has got to be compared with with the other interval
+        # 
         #twinMiddle: m1 , m2 
     elseif isItEven == false
-        #nextInterval remapping: m2, b
-        #  m2, b = remap(m2, b)
-        traverseRight(m2, b)
 
+        lowerbound = 0
+        upperbound = 0
+        if a < m1 - 1
+            lowerbound = a
+            upperbound = m1 - 1
+            traverseRight(lowerbound, upperbound)
+        else
+            lowerbound = a
+            upperbound = a
+
+        end
+        _view1 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        compareBounds(lowerbound, upperbound, _view1)
+        if m1 < m2
+            lowerbound = m1
+            upperbound = m2
+            traverseRight(lowerbound, upperbound)
+            # _view2 = collect(lowerbound:upperbound) |> _view -> view(x, firstindex(x): lastindex(x))
+        else
+            lowerbound = m1
+            upperbound = m1
+        end
+        _view2 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+        if m2 + 1 < b
+            lowerbound = m2 + 1
+            upperbound = b
+            traverseRight(lowerbound, upperbound)
+            #  _view3 = collect(lowerbound:upperbound) |> x -> view(x, firstindex(x): lastindex(x))
+        else
+            lowerbound = b
+            upperbound = b
+        end
+        _view3 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        #TODO: use _view3 
     else
         throw(error(msg))
     end
 
 end
 
-
+_stack = [[1, 3], [4, 7]]
 typeof(_stack)
+
+#-------
+function rangesToPts(ranges) #checked
+
+    _length = copy(length(ranges))
+    idMid = Integer(ceil(_length / 2)) # 1 # dof = {1,2} 0 #missing #TODO: complete 
+    pts = []
+    for i in 1:length(ranges)
+        # push
+        a = ranges[i][1]
+        b = ranges[i][length(ranges[i])] #[2]
+        ranges[idMid+idMid][2] #<----------  ranges do exist
+        println("a = ", a)
+        println("b = ", b)
+        push!(pts, a) # every odd has an a value 
+        push!(pts, b) # every even has a b value 
+    end
+    return pts
+end
+
 
 pts = rangesToPts(_stack)
 
 #compareBounds() #TODO: Check 
 pts
 
-function cause!(_stack, kernel)
-    if _stack > 0
-        interval = pop!(_stack)
-        a = interval[1]
-        b = interval[2]
-        effect!(a, b, kernel)
-    end
 
-end
+_view = collect(5:6) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
-middle!(1, 3)
-
-function effect!(a, b, _stack, kernel=middle)
-
-    if _stack > 0
-        m1, m2, isWhole = kernel(a, b)
-        #haandling # traverse 
-
-    end
-    # cause!(a, b, _stack, kernel)
-end
-
-v = makeVector((5:6))
-_view = makeView(v, v[1]:length(v))
 #callCause(5, 6, _view) # depreciate 
 #cause(5, 6, _view)
+
 currentValue = nothing
-cause(a, b, _view, calliddle, currentValue)
-cause(a, b, arr, middle, currentValue)
+
 
 interval = copy(1:3)
-v = makeVector((interval))
-newView = makeView(v, interval)
-goleft!(1, 5, newView)
+
+_view = collect(interval) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+#-----------
 
 
-"""remaps the right side """ 
-function processRightSide(isItEven::Bool, m1::Int64, m2::Int64, b::Int64)
+#------------
 
-    #Right-side partitioning 
-    if isItEven == true  # This part is for sorting only (not for partitioning)
-        # a Single Middle: m1 
-        #Right: m1 (with b )
-        m1, b = remap(m1, b) #deep #TODO #either m1, b [remap] or m1,b-1 [remap2]
-        return m1, b
-    elseif isItEven == false
-        # a twinMiddles: m1, m2
-        #Right: m2 (with b )
-        m2, b = remap(m2, b) 
-        return m2, b
-    end
-end
-
-#-------------
 
 function getIsWhole(arr::Array{Int64,1})
     isWhole = firstindex(arr) + lastindex(arr) % 2 == 0
@@ -2489,14 +2258,12 @@ end
 #sort()
 #-compare(a,b,view)
 
-3 - 1 + 1
+# 3 - 1 + 1
 intervalLength(1, 4) # same as +(1,4)
 
 # Compare 
 """ a universal compare: compares & sorts contents according to the structure of a given interval, (a,b)"""
-#unimplemented: no such function with niput arguments specified 
-
-function Compare(a, b, arr::Array{Int64,1}) # should 
+function Compare(a, b, arr::Array{Int64,1}) # should #unimplemented: no such function with niput arguments specified 
     #implicit docompare() function 
     m1, m2, isWhole = middle(a, b)
     _length = copy(intervalLength(a, b))
@@ -2511,7 +2278,7 @@ function Compare(a, b, arr::Array{Int64,1}) # should
             throw(error("Unexpected Error Occured"))
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
@@ -2531,16 +2298,118 @@ function Compare(a, b, _view::SubArray) #
             throw(error("Unexpected Error Occured"))
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
-#new ; the under a new light 
+#----
+# Map Points 
+## Map on an array
+""" maps indicies to a Array values """
+function mapPts(pts, arr::Array{Int64,1}) #ok
+
+    vals = []
+    _length = length(pts)
+    for i in 1:2:_length
+        idx = pts[i]
+        append!(vals, arr[idx])
+        idx = pts[i+1]
+        append!(vals, arr[idx])
+    end
+    return vals
+end
+
+## Map on a View
+""" maps indicies to a SubArray values """
+function mapPts(pts, _view::SubArray) #ok
+
+    vals = []
+
+    for i in 1:length(pts) # _length
+        idx = pts[i]
+
+        append!(vals, _view[idx])
+    end
+    return vals
+end
+
+## Event-Driven: map an array 
+"""Event-Driven"""
+function mapPts(pts, arr::Array{Int64,1}, i::Int64) #ok
+
+    vals = []
+    _length = length(pts)
+    # for i in 1:2:_length
+    if i <= _length
+        idx = pts[i]
+        append!(vals, arr[idx])
+        idx = pts[i+1]
+        append!(vals, arr[idx])
+        i = i + 2
+    end
+    return vals
+end
+
+## Event-Driven: map an array 
+
+"""Event-Driven"""
+function mapPts(pts, _view::SubArray, i)
+    vals = []
+    _length = copy(length(_view))
+    #for i in 1:_length  #length(pts) # _length
+    if i <= _length #  i in 1:_length  # if i in 1:_length  if works, instead of for 
+        idx = pts[i]
+
+        append!(vals, _view[idx])
+        i = i + 1
+    end
+    return vals, i
+end
+
+
+##  map Points  new function  #TODO: check 
+#=maps=#
+
+"""Event-Driven function:
+maps points on a vector array arr, with respect to index i 
+"""
+# Map Points (MapPts!) with a vector array 
+function mapPts!(pts, arr::Array{Int64,1}, i) # TODO: sanity check : use of i 
+
+    vals = []
+
+    #for i in 1:length(pts) # _length
+    if i > 1
+        idx = popat!(pts, i) #pts[i]
+        append!(vals, arr[idx]) # accumulates 
+        i -= 1
+    end
+    return vals
+end
+
+# Map Points (MapPts!) with a view 
+function mapPts!(pts, _view::SubArray, i) # TODO: sanity check : use of i 
+
+    vals = []
+
+    #for i in 1:length(pts) # _length
+    if i > 1
+        idx = popat!(pts, i) #pts[i]
+        append!(vals, _view[idx]) # accumulates 
+        i -= 1
+    end
+    return vals
+end
+
+mapPts([1, 3], [1, 2, 3], 1)
+
+#------
+#TODO: Recheck Compare , the under a new light #requires: mapPts
 
 function Compare(pts, arr::Array{Int64,1}, i) # should be sanity checked #< --------
     #implicit docompare() function 
     #  m1, m2, isWhole = kernel(a, b, arr)
-    vals = mapPts(pts, arr, i)             #<-------- sanity check 
+    vals = mapPts(pts, arr, i)       #<-------- sanity check 
     _length = copy(length(vals))
     try
         if length == 2
@@ -2556,18 +2425,18 @@ function Compare(pts, arr::Array{Int64,1}, i) # should be sanity checked #< ----
             m1 = vals[2]
             m2 = vals[3]
             b = vals[4]
-            return compareQuartet(a, m1, m2, b, arr)
+            return compareQuartet(a, m1, m2, b, arr) #<------
 
         else
-            throw(error("Unexpected Error Occured"))
+            throw(error("Unexpected Error Occured")) #<------
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
 
-#kernel has not enough utility 
+#TODO: kernel is not utilitzed
 function Compare(pts, _view::SubArray, i) # should be sanity checked #< --------
 
     #implicit docompare() function 
@@ -2594,20 +2463,20 @@ function Compare(pts, _view::SubArray, i) # should be sanity checked #< --------
             throw(error("Unexpected Error Occured"))
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
-Compare([1, 3], arr, 1)
-#=
- function Compare(pts, _view::SubArray,kernel,i) # should be sanity checked #< --------
+
+
+function Compare(pts, _view::SubArray, kernel, i) # should be sanity checked #< --------
     #implicit docompare() function 
-    m1, m2, isWhole = kernel(a, b,_view)
-    vals = mapPts(pts,_view,i)             #<-------- sanity check 
+    m1, m2, isWhole = kernel(a, b, _view)
+    vals = mapPts(pts, _view, i)             #<-------- sanity check 
     _length = copy(length(vals))
     try
         if length == 2
-          return   doCompare(vals[1], vals[2], _view)
+            return doCompare(vals[1], vals[2], _view)
         elseif _length == 3 #length(_view == 3) #took the easy way, what if view is large? only way is from a,b 
             a = vals[1]
             m1 = vals[2]
@@ -2623,9 +2492,9 @@ Compare([1, 3], arr, 1)
 
         else
             throw(error("Unexpected Error Occured"))
-        end
+        end #<---
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
@@ -2655,14 +2524,14 @@ function Compare(pts, arr::Array{Int64,1}, kernel, i) # should be sanity checked
             throw(error("Unexpected Error Occured"))
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
 
-function Compare(a, b, _view::SubArray,kernel) # should 
+function Compare(a, b, _view::SubArray, kernel) # should 
     #implicit docompare() function 
-    m1, m2, isWhole = kernel(a, b,_view)
+    m1, m2, isWhole = kernel(a, b, _view)
     _length = copy(intervalLength(a, b))
     try
         if _length #length(_view == 3) #took the easy way, what if view is large? only way is from a,b 
@@ -2675,11 +2544,17 @@ function Compare(a, b, _view::SubArray,kernel) # should
             throw(error("Unexpected Error Occured"))
         end
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
-=#
+#----
+
+#test: _stack
+#_stack = []
+length(_stack)
+#_item = pop!(_stack) # [1,3]
+
 #2. sort()
 
 """ Compares & sorts points based on the structure of the view, whether a triad or quartet of points """
@@ -2687,20 +2562,30 @@ function CompareSort(a, b, arr::Array{Int64,1})
 
     #implicit docompare() function 
     m1, m2, isWhole = middle(a, b) # callMiddle!(a,b,_view)
-
+    res = nothing
+    _first = copy(firstindex(arr))
+    _last = copy(lastindex(arr))
     try
-        if length(arr) == 3
-            compareTriad(a, m1, b, arr)
+        if length(arr) == 1
+            isEndReached(_first, _last)
+            return
+
+        elseif length(arr) == 2
+            isUnitDistanceReached(_first, _last)
+        elseif length(arr) == 3
+
+            res = compareTriad(a, m1, b, arr) # <---
 
         elseif length(arr) == 4
-            compareQuartet(a, m1, m2, b, arr)
+            res = compareQuartet(a, m1, m2, b, arr)
 
         else
             throw(error("Unexpected Error Occured"))
         end
         println(arr)
+        return res
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
@@ -2709,30 +2594,45 @@ function CompareSort(a, b, _view::SubArray)
 
     #implicit docompare() function 
     m1, m2, isWhole = middle(a, b) # callMiddle!(a,b,_view)
-
+    res = nothing
+    _first = copy(firstindex(arr))
+    _last = copy(lastindex(arr))
     try
-        if length(_view) == 3
-            compareTriad(a, m1, b, _view)
+        if length(arr) == 1
+            isEndReached(_first, _last)
+
+        elseif length(arr) == 2
+            isUnitDistanceReached(_first, _last)
+
+        elseif length(_view) == 3
+            res = compareTriad(a, m1, b, _view)
 
         elseif length(_view) == 4
-            compareQuartet(a, m1, m2, b, _view)
+            res = compareQuartet(a, m1, m2, b, _view)
 
         else
             throw(error("Unexpected Error Occured"))
         end
         println(_view)
+        return res
     catch UnexpectedError
-        @error "Unexpected Error Occured" exception = (UnexpectedError, back_trace())
+        @error "Unexpected Error Occured" exception = (UnexpectedError, catch_backtrace())
     end
 
 end
 
-#test: _stack
-#_stack = []
-length(_stack)
-_item = pop(_stack) # [1,3]
-
 #---------
+#Compare([1, 2], [1, 2, 3], 1) #<--------- sanity check 
+#Compare(1, 3, [1, 2, 3], 1)
+CompareSort(1, 3, [1, 2, 3]) # returns answer (with error )
+i = 1 #i.e. for example , let i be equal to 1
+vals = mapPts(pts, _view, i)           #compiles 
+_length = copy(length(vals))
+
+
+
+
+
 
 pts = [2, 3, 1]
 
@@ -2764,7 +2664,7 @@ interval[2]
 
 #view definition  howTo
 
-newView = view(makeVector((lastB:interval[2])), lastB:interval[2]) #works by adding the colon to th
+newView = collect(lastB:interval[2]) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #works by adding the colon to th
 
 #newView = view(makeVector((lastB, interval[2])), makeVector((lastB:interval[2]))) # view(pts[lastB], interval[1]: interval[2])
 
@@ -2775,16 +2675,7 @@ v = @view [1, 4, 8][1:2]
 #elementOf(index::Int64)
 first([1, 4, 8], 2)[2] #return the first n elements i.e. 2: [1:4] , [1:4][2] = 4
 
-#helpers of Util file:
 
-
-
-"""returns the element, at a specific index"""
-function elementOf(arr, n::Int64)
-
-    return first(arr, n)[n] #return the first n elements i.e. 2nd: [1:4] , [1:4][2] = 4
-
-end
 
 """ searches the Content in the vector, returning its index(cies)"""
 function indexOf(arr, aContent::Int64)
@@ -2793,7 +2684,7 @@ function indexOf(arr, aContent::Int64)
     return res
 end
 
-makeView([1, 4, 8], 1:2)
+#collect([1, 4, 8], 1:2)
 
 
 firstindex([1, 4, 8], 9) # erroneous function (reson: always returning 1)
@@ -2808,11 +2699,11 @@ a = findall((x -> x == aContent), [1, 4, 8])  #indexOf(aContent, arr)
 
 #first([1,4,8],1)
 
-v
+#v
 #v1 = view([1, 4, 8],1:firstindex([1,4,8],4)) #)
 #v2 = view([1, 4, 8], 4 :lastindex([1, 4, 8])) #,8)
 #view([1, 4, 8], firstindex([1, 4, 8], 1)) #correct 
-#v = makeVector((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3] # [1,1]
+#v = union(min(firstindex([1, 4, 8], lowerbound),max(firstindex([1, 4, 8], lowerbound)) #, firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3] # [1,1]
 #view([1, 4, 8], firstindex([1, 4, 8], 8)) #1
 #newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
 #newRow = view(arr, 2-1:2) # this works  #[4 8]
@@ -2820,26 +2711,124 @@ v
 #----
 #mappedIndex not defined 
 
-#makeView(arr, mappedIndex:newBound)
-
+#collect(arr, mappedIndex:newBound)
 #view(arr, mappedIndex:newBound)
-v = makeVector((lastB:interval[2]))
+_newView = collect(lastB:interval[2]) |> _newView -> view(_newView, firstindex(_newView):lastindex(_newView))  #(v, firstindex(v):length(v)) # interval[2]) #works # [1,2,3]
+#view-property: Sub-Viewing : (view of a view )
+_newView = collect(lastB:interval[2]) |> _newView -> view(_newView, firstindex(_newView):lastindex(_newView)) #subviewing the view 
+_newView2 = collect(lastB:interval[1]) |> _newView2 -> view(_newView2, firstindex(_newView2):lastindex(_newView2))
+#---------
+# Infer Location 
 
-_newView = makeView(v, firstindex(v):length(v)) # interval[2]) #works # [1,2,3]
+## Infer location of three point 
 
-#newView = view(makeVector((lastB: interval[2])), lastB,interval[2]) #old # view(pts[lastB], interval[1]: interval[2])
+## of a Three Points 
 
-#suviewing : (view of a view )
-view(_newView, lastB:interval[1]) #subviewing the view 
+""" quantitatively, compare values , returns a qualitative value """
+function inferLocation(a, b, x)
+
+    try # the classical approach (compare all 3 at same time )
+        #  newLocation 
+
+        if x > a && x > b # x is max 
+            if a < b #a is min
+                return a, b, x
+            elseif a > b  # or a is max  
+                return b, a, x
+            end
+        elseif x > a && x < b #x is the middle 
+            if a < b # a is min 
+                return a, x, b
+            elseif a > b # a is max
+                return b, x, a
+            end
+        elseif x < a && x < b # x is the min (how low is a )
+            if a < b # a is the min 
+                return x, a, b
+            elseif a > b # a is the max  
+                return x, b, a
+            end
+
+        elseif x == a || x == b
+            throw(error("Different Bounds are equal "))
+        end
+    catch EqualBoundsError
+        @error "EqualBoundsError : Different Bounds,which should be different, are equal " (EqualBoundsError, catch_backtrace())
+    end
+
+end
+
+#Depreciate
+#=
+function inferLocation(a, b, x)
+
+    try
+        # newLocation
+        if x > a && x > b #x is max
+            return a, b, x
+        elseif x > a && x < b #x is in between 
+            return a, x, b
+        elseif x < a && x < b # x is the min 
+            return x, a, b
+        elseif x == a || x == b
+            throw(error("Different Bounds are equal "))
+        end
+    catch BoundsEqualError
+        @error "BoundsEqualError :Different Bounds are equal " exception = (BoundsEqualError, catch_backtrace())
+    end
+
+end
+=#
+
+#using arr content from location arr
+
+##of 3 points, on a Vector array 
+#UncommentMe
+# using arr content from location arr
+
+## of 3 points, on a Vector array 
+function inferLocation(a, b, x, arr) #compiles  #warning arr is unused 
+    # try
+    # newLocation
+    first = 0
+    middle = 0
+    last = 0
+    locations = copy(inferLocation(a, b, x))
+    if locations !== nothing
+        #if a === nothing && b === nothing && x === nothing && arr === nothing
+        first, middle, last = locations
+    else
+        first, middle, last = a, b, x #nothing, nothing, nothing
+        #TODO: 
+        #if locations !== nothing 
+        # return [first, middle, last], [arr[first], arr[middle], arr[last]]
+
+    end
+    #return locations
+    return first, middle, last #], [arr[first], arr[middle], arr[last]]
+    #  catch
+    # end
 
 
-makeView(_newView, lastB:interval[1]) #works #[1,2] #subview works as well 
 
-view([lastB, interval[1], interval[2]], lastB:interval[2]) # [1,2,3]
 
-v = [lastB, interval[1], interval[2]]
-_view = view(v, firstindex(v):length(v)) #the most Accurate view description 5
+end
 
+#---------
+lastB
+interval[1]
+interval[2]
+lastB = 1
+interval = collect(2:3)
+
+lastB, interval[1], interval[2] = inferLocation(interval[1], interval[2], lastB)# inferlocation application 
+
+v = union(lastB, (interval[1], interval[2]))
+#collect(v)
+#view(v, firstindex(v):lastindex(v)) # [1,2,3]
+_view = collect(v) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+#the most Accurate view description 5
+#======
 # lastA
 #why does it start enumerating from 0 ???? - lastA [issue was : calculating from lastB-1 & lastB=1]
 
@@ -2848,14 +2837,13 @@ inds = [lastB, interval[1], interval[2], interval[2] + 1] #[lastA, lastB, interv
 inds2 = [lastB, interval[1], interval[2]] # [1,2,3]
 
 #best view # checked 
-v = makeVector((lastB:interval[2]))
-_view = makeView(v, firstindex(v):length(v))
 
-#v = makeVector((lastB:interval[2]))
-#newView = makeView(v, firstindex(v):length(v))
-v = [lastB, interval[1], interval[2]] # [1,2,3] 3 element vector 
+_view = collect(lastB:interval[2]) |> _view = view(v, firstindex(v):length(v))
+
+v = collect(lastB, interval[1], interval[2]) # [1,2,3] 3 element vector 
 inds # [1,2,3,4]
-_view = view(v, inds[1:3]) #the most Accurate view description 5
+_view = collect(lastB, interval[1], interval[2]) |> v-> view(v, inds[1:3]) #the most Accurate view description 5
+
 v = [lastB, interval[1], interval[2]]
 inds2
 inds2
@@ -2989,13 +2977,18 @@ interval = pop!(_stack) #stack of ranges (between 2 points)
 #memory-less operation 
 lastA = interval[1]
 lastB = interval[2]
+
 #store points 
 push!(pts, lastA)
 push!(pts, lastB)
+
 println("pts[1] = lastA= ", pts[1]) #a 
 println("pts[2] = lastB= ", pts[2]) #b
-#generalization 
+
+#Generalization:
+
 #while true #Todo: add a condition
+
 if length(_stack) > 1 # count the stack 
     if group == 2
         compareBounds(pts[1], pts[2], pts[3], pts[4], arr)
@@ -3024,7 +3017,7 @@ elseif length(_stack) == 1 # last one get lst (ndv )
 
         #GET Last b = currentA #pop!
         interval = pop!(_stack)
-        #form a view from lastB, & interal (midpoint newInterval[1] becomes implicit)
+        #form a view from lastB, & interval (midpoint newInterval[1] becomes implicit)
         #view(lastB,interval[2])
         _view = view(lastB:interval[2], [lastB, interval[1], interval[2]])
 
@@ -3055,21 +3048,31 @@ elseif length(_stack) == 1 # last one get lst (ndv )
     =#
     if group == 1
         lastB = getlastB(_stack)
-        v = makeVector((lastB:interval[2]))
-        _view = makeView(arr, lastB:intereval[2])
+        v = collect(lastB:interval[2])
+        _view = view(arr, lastB:intereval[2])
 
-        compareTriad(lastB, interval[1], interval[2], _view)
-        println("sth: to be taken care of ")
-        pts.popat(1)
-        pts.popat(1)
+        compareTriad(lastB, interval[1], interval[2], _view) #TODO " 
+        # println("sth: to be taken care of ")
+        #  pts.popat(1)
+        # pts.popat(1)
+
+        popfirst(pts)
+        popfirst(pts)
+
     end
     #=
     elseif group ==2
         compareQuartet(pts[1],pts[2],pts[3], pts[4],_view) #l
-        pts.popat(1)
-        pts.popat(1)
-        pts.popat(1)
-        pts.popat(1)
+       #TODO: infer  pts.popat(1) or popfirst(pts) (are the same? )
+        #pts.popat(1)
+        #pts.popat(1)
+       # pts.popat(1)
+       # pts.popat(1)
+
+        popfirst(pts)
+        popfirst(pts)
+        popfirst(pts)
+        popfirst(pts)
 
     end
     =#
@@ -3081,14 +3084,6 @@ arr
 #goal: to evaluate (some) kernel function with inputs a,b, arr 
 #i.e. kernel:trivialPartitionFunction(a,b ) 
 #   middle(a,b) #TODO call middle from in : a,b to all ranges 1st, last
-#so: no More #iterative function 
-
-#cause meeded to be called, on the next interval (iteratively )
-#cause!() that does all: calls itself to proceed, further , into the next interval,
-# where you record it's return (next a,b
-#in general : there ain't no right or left, only 1 function (2 subsequent effects
-# 1.1 1 for tje rigth -> calls cause right [m1, b, OR m2,b ]) 
-#1.2.  another left ->calls cause left pts (a,m1 always )
 
 
 #TODO:
@@ -3098,7 +3093,7 @@ arr
 
         #GET Last b = currentA #pop!
         interval = pop!(_stack)
-        #form a view from lastB, & interal (midpoint newInterval[1] becomes implicit)
+        #form a view from lastB, & interval (midpoint newInterval[1] becomes implicit)
         #view(lastB,interval[2])
         _view = view(lastB:interval[2], [lastB, interval[1], interval[2]])
 
@@ -3120,7 +3115,7 @@ arr
     =#
 println("sth: to be taken care of ")
 #end
-v = makeVector((1:3))
+v = collect(1:3)
 compareTriad(1, 2, 3, arr)
 #compare 
 #=
@@ -3143,12 +3138,12 @@ lasta = pts[length(pts)-1-1] #optional
 lastB
 interval[2]
 if lastB != interval[2]
-    v = makeVector(lastB:interval[2]) # (arr, lastB:interval[2])
-    _view = makeView(v, lastB:interval[2])
+    v = collect(lastB:interval[2]) # (arr, lastB:interval[2])
+    _view = view(v, lastB:interval[2])
 
 else # lastB !== interval[2]
-    # v = makeVector(lastB) # (arr, lastB:interval[2])
-    #  _view = makeView(v, firstindex(v))
+    # v = collect(lastB) # (arr, lastB:interval[2])
+    #  _view = view(v, firstindex(v):lastindex(v))
     return lastB #,_view[lastB]
 end
 #finally subtitute lastB plugging it into original arr :
@@ -3156,23 +3151,31 @@ end
 arr[lastB]
 
 #v
-v = makeVector(lastB) # (arr, lastB:interval[2])
-_view = makeView(v, firstindex(v):length(v))
+v = collect(lastB) # (arr, lastB:interval[2])
+_view = view(v, firstindex(v):length(v))
 
-#_view = view([lastB, interval[1], interval[2]], [lastB, interval[1], interval[2]])# acceptable? 
-#v = makeVector((lastB:interval[2]))
-#newView = makeView(v, firstindex(v):length(v))
+#rule: for 3 pts: 3 comparisons is Required ,
+# rule: for 3 pts: there is 9 permutations (with repetition)
+
+#how about : min(lastB interval[2] max() []
+
+#here: we only care about Bounds: the min & the max, only 
+
+unionPts = union(min(lastB, interval[1]),max(lastB,interval[2]) )
+# 
+v = collect(first(unionPts):last(unionPts))
+_view = view(v, firstindex(v):lastindex(v))
+
+# correct 
 
 #-------
 
-# newView = makeView(makeVector((lastB:interval[2])), lastB:interval[2]) #works # [1,2,3]
-v = collect(lastB:interval[2])
-_newView = view(v, firstindex(v)) # $:length(v))
 length(_newView)
 interval[2]#
 lastB
-#compareBounds(lastB, interval[2],newView)
-#CompareSort(lastB, interval[2], newView)
+print(first(unionPts))
+print(last(unionPts))
+compareBounds(first(unionPts), last(unionPts), _view)
 
 if group == 1 # only 1 per item 
     #complete Triad : [lastB, interval[1], interval[2]
@@ -3184,14 +3187,18 @@ if group == 1 # only 1 per item
     #lastb = pts[length(pts)-1 #erroneous part
     # _view = view(pts[length(pts)-1]:interval[2], [lastb, interval[1] , interval[2]] )
     #  _view = view([lastB, interval[1], interval[2]], [lastB, interval[1], interval[2]])# acceptable? 
-    # _view = makeView(makeVector((lastB:interval[2])), lastB:interval[2]) #works # [1,2,3]
     v = collect(lastB:interval[2])
-    _view = makeView(v, firstindex(v):length(v)) # view correctly created 
+    # _view = view(v, lastB:interval[2]) #works # [1,2,3]
+    v = collect(lastB:interval[2])
+    _view = view(v, firstindex(v):length(v)) # view correctly created 
     ####TODO: DO RemappinG: lastB: interval[2]
+
 
     #create view with points of lastb, lastrange 
     # Compare(a, b, _view) #
-    #sort
+    _view = collect(lastB: interval[2]) |> v -> view(v, firstindex(v):lastindex(v))
+
+    #sort #TODO: refine #recheck 
     CompareSort(lastB, interval[2], _view) #compareTriad
 # group = 0
 elseif group == 2
@@ -3249,7 +3256,6 @@ end
 ### Note: no need for appendLast, append!(interval,lastB) takes care of it 
 
 #-----
-#TODO: remove makeVector 
 #pushvif
 v = collect(interval[1], interval[2])
 (v[1]:last(v)) #unitRange 
@@ -3259,22 +3265,24 @@ first(v)
 last(v)
 
 #uncommentMe if needed 
-#makeView(v, first(v):last(v))
-#_view = makeView(interval, (interval[1]:last(interval)))
+#view(v, first(v):last(v))
+#_view = view(interval, (interval[1]:last(interval)))
 
 #view(v, (v[1]:last(v)))  # missing view 
 
-v = makeVector(first(v):last(v)) #lastB:interval[2])
+v = collect(first(v):last(v)) #lastB:interval[2])
 a = first(v)
 b = last(v)
 #v[1],v[2] =  #remap(v[1],v[2]) # 4" 7 -> 1:4 #no remap 
-v = makeVector(a:b) #first(v):last(v)) #(v[1]: v[2]))
+# v = collect(a:b) #first(v):last(v)) #(v[1]: v[2]))
+_view = collect(a:b) |> v -> view(v, firstindex(v):lastindex(v))
+
 #remap  1: 4
 lo = 0;
 hi = 0;
 # lo, hi = remap(lo, hi)
 
-_view = makeView(v, firstindex(v):lastindex(v)) #lo:hi) # done ! #4:7
+_view = view(v, firstindex(v):lastindex(v)) #lo:hi) # done ! #4:7
 
 #view(lastB:interval[2], [lastB, interval[1], interval[2]])
 #experimental #comment it please 
@@ -3291,8 +3299,8 @@ typeof(v)
 #_view = view([lastB, interval[1], interval[2]], [lastB, interval[1], interval[2]])
 lastB
 
-v
-_view = makeView(v, lo:hi) #lastB:last(v))
+v ; lo = firstindex(v); # , 
+_view = view(v, lo:hi) #lastB:last(v))
 #done 
 
 #failed attempted to capture what is already dome 
@@ -3301,12 +3309,15 @@ function checkX(groupnum, lastB,_view::view)
     Compare(a,b,_view)
 end
 =#
-#now partition is over 
 
-# abstraction: hungry, nonhungry
+#Thus, partition is over 
 
-# goals Determines what you see
-#since you see what you want 
+#------------
+# example Abstraction: hungry, nonhungry
+
+# Goals Determines what you see
+
+
 pts
 # 
 if length(pts) == 4
@@ -3318,8 +3329,8 @@ elseif length(pts) == 3
 
 elseif length(pts) == 2
     #compareBounds()
-    v = collect(pts1[1],pts[2])
-    _view = collect(v,firstindex(v):lastindex(v))
+    v = collect(pts1[1], pts[2])
+    _view = collect(v, firstindex(v):lastindex(v))
     compareBounds(pts[1], pts[2], _view)
 end
 
@@ -3354,40 +3365,29 @@ end
 
 #Automatically compare pts , based on its length 
 
-lastb = pts[length(pts)-1] #moved out of if scope
 
 #----------------------
-#advanced: define a _stack of inputs
-group = 1 # given group
-#= # TODO pass (or define) a `_stack` [for recursion operator ]
-if group == 1 # only 1 per item 
-    #complete Triad : [lastB, interval[1], interval[2]
 
-    #GET Last b = currentA #pop!
-    interval = pop!(_stack)
-    #form a view from lastB, & interal (midpoint newInterval[1] becomes implicit)
-        #view(lastB,interval[2]))
-    #lastb = pts[length(pts)-1 #erroneous part
-    # _view = view(pts[length(pts)-1]:interval[2], [lastb, interval[1] , interval[2]] )
-    _view = view([lastb, interval[1], interval[2]], [lastb, interval[1], interval[2]])# acceptable? 
-
-        #create view with points of lastb, lastrange 
-        # Compare(a, b, _view) #
-        #sort
-    CompareSort(lastb, interval[2], _view) #compareTriad
-    # group = 0
-elseif group == 2
-     #Calls compare Quartet
-     #sth useful
-     #TODO: make arguments in relation to pts i.e. pts[length(pts)-1]
-
-     #  _view = view(lastA:interval[2], [lastA,lastB, interval[1], interval[2]])
-    _view =  makeView([pts[length(pts)-1-1], pts[length(pts)-1], interval[1], interval[2]],
-    pts[length(pts)-1-1]:interval[2] )
-     # _view = view(pts[length(pts)-1-1]:interval[2], [pts[length(pts)-1-1],  pts[length(pts)-1], interval[1], interval[2]])
-
-end    
 =#
+lastB = 1
+interval = [2, 3]
+println(interval)
+a = interval[1]
+b = interval[2]
+m = lastB
+println("a, m, b", a, m, b)
+a, m, b = inferLocation(lastB, interval[1], interval[2])
+println("a, m, b", a, m, b)
+
+interval = union(a, m, b)
+
+# lastb = pts[length(pts)-1] #moved out of if scope
+
+_stack = [[1, 3], [4, 7]]
+
+compareTriad(1, 2, 3, [1, 2, 3])
+
+
 [1 2 3 4] # was typical input 
 [1 2], [3, 4] # stack input 
 #-------------
@@ -3404,19 +3404,20 @@ end
 
 =#
 __int = [[4, 7]]
+midId = length(__int) // 2
 midId = 1
 #__int[1][1]
 __int[midId][1]# 4
 __int[midId][2] # 7 
 
-v = collect( __int[midId][1]:__int[midId][2]) #4:7 
-#makeView(__int, interval[id][a]:interval[id][b])
+v = collect(__int[midId][1]:__int[midId][2]) #4:7 
+#view(__int, interval[id][a]:interval[id][b])
 
-  
+
 _view = view(v, firstindex(v):lastindex(v))  #__int[1][1]:__int[1][2])  # 4:7
 
 v = collect(__int[1][1]:__int[1][2]) #works  #, __int[1][1]:__int[1][2]) # [4,5,6,7] vector  # 4:7 (wait don;t siklvealready)
-makeView(v, firstindex(v):length(v))   #__int[1][1]:__int[1][2])  # [4,5,6,7] view 
+view(v, firstindex(v):lastindex(v))   #__int[1][1]:__int[1][2])  # [4,5,6,7] view 
 
 #indexOf(v,v[1])
 firstindex(v)
@@ -3425,31 +3426,16 @@ length(v)
 #v = 4,5,6,7 
 #make a view , with a valid datastructure: vector, with valid mapping (index-1)
 
-function callCause(id, a, b, interval) #, arr) #correct mapping 
-
-    v = collect(interval[id][1]:interval[id][2]) #works  #, __int[1][1]:__int[1][2]) # [4,5,6,7] vector 
-    _view = makeView(v, first(v):length(v))   #__int[1][1]:__int[1][2])  # [4,5,6,7] view 
-
-    return cause(a, b, _view)
-end
-
-function callCause(a, b) #, arr) #correct mapping 
-
-    v = collect(a:b)#works  #, __int[1][1]:__int[1][2]) # [4,5,6,7] vector 
-    _view = makeView(v, first(v):last(v))   #__int[1][1]:__int[1][2])  # [4,5,6,7] view 
-    #newView(a, b)
-    return cause(a, b, _view)
-end
-
-
-
-_stack[interval[1][a],interval[1][b]]
-collect(interval[1][a],interval[1][n])
- _view= view(_stack, firstindex(v):length(v))  #interval[1][a]:interval[i][b])
-makeView(v, first(v):length(v))   #__int[1][1]:__int[1][2])  # 
+n = 1
+#_stack[interval[1][a], interval[1][b]]
+collect(interval[1][a]:interval[1][n])
+_stack
+#_view = view(_stack, firstindex(v):length(v))  #interval[1][a]:interval[i][b])
+#_view(v, firstindex(v):lastindex(v))   #__int[1][1]:__int[1][2])  # 
+_view = collect(_stack) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
 #-------
-#Vital 
+#Vital #contains effect: Depreciate 
 function traverse(a, b, _view) #, i)
 
     #length(_stack) > 1
@@ -3462,7 +3448,7 @@ function traverse(a, b, _view) #, i)
 end
 
 #uses isStoppingCondition
-function traverse!(a, b, _view, currentValue=nothing)  # , i)
+function traverse!(a, b, _view, currentValue=nothing)  # , i) #TODO: Depreciate #reason: has oldfunction: effect
 
     currentValue = copy(isStoppingCondition(a, b, currentValue))
     currentValue = calcVerteciesLeft!(_view, currentValue)
@@ -3484,7 +3470,7 @@ function traverse!(a, b, _view, currentValue=nothing)  # , i)
 
 end
 
-function traverse(_stack, a, b) # traverse , a,b  #warning a,b not used #TODO
+function traverse(_stack, a, b) # traverse , a,b  #warning a,b not used #TODO:
 
     l = length(_stack)
     if l == 1 #evaluate interval 
@@ -3493,12 +3479,29 @@ function traverse(_stack, a, b) # traverse , a,b  #warning a,b not used #TODO
     #        callCause(a, b, interval) #, _stack)
 
     elseif l == 2 #works best with 2 
-        interval = pop!(_stack) # [a,b]
 
-        #       callCause(a, b, interval)#, _stack)
+        interval = pop!(_stack) # [a,b]
+        #TODO: makeView 
+        _view = collect(interval) |> _view -> view(_view, firstindex(_view):lastindex(_view)) |> x -> checkNextView(_view) # TODO check: checkNextView
+    #       callCause(a, b, interval)#, _stack)
+    else
+
+        #TOOO: compare : a[a1,b1], b,# [a2,b2]
+        compareQuartet(a[1], [2], b[1], b[2])
+        ##Create a view for each interval Point 
+        a = popat!(a, _stack) # [a1,b1]
+        _view = collect(a) |> x -> view(_view, firstindex(_view):lastindex(_view))
+        b = popat!(b - a, stack) # [a2,b2]
+        _view = collect(b) |> x -> view(_view, firstindex(_view):lastindex(_view))
+
+        #Hint: better to function call traverse! accepting a _view for each of a & b 
 
     end
 end
+
+
+
+#-------
 
 _stack = [[1, 3], [8, 9]]
 
@@ -3515,11 +3518,11 @@ function traverse2!(_stack, kernel)
         interval = pop!(_stack) # first Interval [a,b]
         a = indexOf(interval, interval[1])
         b = indexOf(interval, interval[2])
-        #do cause 
+        #do cause , instead call a kernet function 
         #kernelfunction call 
         kernel(a, b, interval) #, _stack) #TODO: complete: q. what is its  return( should be inner _stack) - with new points 
 
-    #cause(interval[id][1], interval[id][b], makeView(_stack, interval[id][1]:interval[id][b]))
+    #cause(interval[id][1], interval[id][b], view(_stack, interval[id][1]:interval[id][b]))
     #end endAlgorithmSafely
 
     else # >= 2 (i.e. 3, 4, or more )
@@ -3566,7 +3569,7 @@ function traverse2!(_stack, kernel)
 
         # 5, 7 are Prime : can't be divided
         # 5 has a symmetry [left] [left] [middle] [right][right]
-        #idea: ask, isEven(3) can we divide 3 into 2 (intervals), & 1 interval  
+        #idea: ask, isEven(3) can we divide 3 into 2 (intervals) , & 1 interval  
         # idea2 [odd]: 3 using three ranges : figure out mid (middle) left , & right ! [Better!]
 
         #Even: 4,6,8 10 (4/2=2 6/2=3 8/2 =4 10/2=5)
@@ -3588,11 +3591,14 @@ function traverse2!(_stack)
         interval = pop!(_stack) # first Interval [a,b]
         a = indexOf(interval, interval[1])
         b = indexOf(interval, interval[2])
+
+        #TODO: use a, b 
+
         #do cause 
         #kernelfunction call 
         #  callCause(a, b, interval) #, _stack) #TODO:
 
-        #cause(interval[id][1], interval[id][b], makeView(_stack, interval[id][1]:interval[id][b]))
+        #cause(interval[id][1], interval[id][b], view(_stack, interval[id][1]:interval[id][b]))
         #end endAlgorithmSafely
 
     else # >= 2 (i.e. 3, 4, or more )
@@ -3647,263 +3653,7 @@ function traverse2!(_stack)
 
 end
 
-cause(a, b, arr, middle!, currentValue)
-
-function traverse!(_stack)
-
-    l = length(_stack)
-    if l == 1 #evaluate interval 
-        interval = pop!(_stack) # first Interval [a,b]
-        a = indexOf(interval, interval[1])
-        b = indexOf(interval, interval[2])
-        #do cause 
-        #callCause(a, b, interval) #, _stack)
-        currentValue = nothing
-        cause(a, b, arr, middle!, currentValue)
-        #cause(interval[id][1], interval[id][b], makeView(_stack, interval[id][1]:interval[id][b]))
-        #end endAlgorithmSafely
-
-    elseif l == 2 ##exactly 2 #works best with 2  # popat ,offf;e
-        interval = pop!(_stack) # [a,b]
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-
-        #   goleft!(a, b, interval)  # check first in on left 
-
-        interval = pop!(_stack)
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-
-        #   goright!(interval) #check last is on right 
-        #
-        # goleft!(a, b, interval)  # check first in on left 
-
-        #endAlgorithmSafely
-        #------
-
-    else # > 2 (i.e. 3, 4, or more )
-        #oddity 
-        isItEven = nothing
-        isEven(l) ? isItEven = true : isItEven = false
-
-        # traverse()
-        if isItEven == true  # divide by 2 (always )
-            n = l // 2 # returns an integer #- turnsout to be the middle 
-            #---- n + n = 2n #-------------
-            # _stack[0] # first 
-            #_stack[n] #middle  # ---- pop this
-            res = popat!(_stack, n) # after pop = 2*n -1 = odd 
-            res[1] # a 
-            res[2] # b
-            # a,b, at their index location 
-            kernel(1, res, middle)
-            #if index = idx then res[offset], 
-
-            #todo: what to do with value (call special kernel function )
-            #_stack[2n] # last 
-            # _stack[length(_stack)]
-            # traverse(0, length(_stack), _stack)
-            #done on a higher level:
-
-            #for i in 1:length(_stack)
-            #    traverse!(i, _stack)
-            # end
-
-        elseif isItEven == false  #odd : 3, 5, 7, 9
-            #there is a middle
-            #TODO: traverse middle 
-        end
-        #odd : 3, 5, 7, 9 (  9/3) #least common divison  #lcm 
-
-        #via middle implementation : 3=2+1, 5=4+1, 7 = 6+1, 9 = 8+1
-
-        # 5, 7 are Prime : can't be divided
-        # 5 has a symmetry [left] [left] [middle] [right][right]
-        #idea: ask, isEven(3) can we divide 3 into 2 (intervals), & 1 interval  
-        # idea2 [odd]: 3 using three ranges : figure out mid (middle) left , & right ! [Better!]
-
-        #Even: 4,6,8 10 (4/2=2 6/2=3 8/2 =4 10/2=5)
-        # idea: for 4 items /2 (2*2 or is it 2^2 ) Evenly divde Into 2 [seperate intervals]
-        # so next time, 2 intervals would be Evaluated  (compared) directly
-        #(checked if atomic, or not ) [& 2 / 2 = 1 ]
-        #maybe left calls left(), right calls right() 
-        #or can we call directly cause (a la toute suite)
-
-    end
-end
-
-function traverse(id, _stack)
-
-    l = length(_stack)
-    if l == 1 #evaluate interval 
-        interval = pop!(_stack) # first Interval [a,b]
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-        #do cause 
-        callCause(id, a, b, interval) #, _stack)
-
-    #cause(interval[id][1], interval[id][b], makeView(_stack, interval[id][1]:interval[id][b]))
-    #end endAlgorithmSafely
-
-    elseif l == 2 ##exactly 2 #works best with 2  # popat ,offf;e
-        interval = pop!(_stack) # [a,b]
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-
-        #goleft!(a, b, interval)  # check first in on left 
-
-        interval = pop!(_stack)
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-
-        #    goright!(interval) #check last is on right 
-        #
-        #   goleft!(a, b, interval)  # check first in on left 
-
-        #endAlgorithmSafely
-        #------
-
-    else # > 2 (i.e. 3, 4, or more )
-        #oddity 
-        isItEven = nothing
-        isEven(l) ? isItEven = true : isItEven = false
-
-        # traverse()
-        if isItEven == true  # divide by 2 (always )
-            n = l // 2 # returns an integer #- turnsout to be the middle 
-            #---- n + n = 2n #-------------
-            # _stack[0] # first 
-            #_stack[n] #middle  # ---- pop this
-            res = popat!(_stack, n) # after pop = 2*n -1 = odd 
-            res[n][1] # a 
-            res[n][2] # b
-            # a,b, at their index location 
-            kernel(1, n, res, middle)
-            #if index = idx then res[offset], 
-
-            #todo: what to do with value (call special kernel function )
-            #_stack[2n] # last 
-            # _stack[length(_stack)]
-            # traverse(0, length(_stack), _stack)
-            for i in 1:length(_stack)
-                traverse(i, _stack)
-            end
-
-        elseif isItEven == false  #odd : 3, 5, 7, 9
-            #there is a middle
-
-        end
-        #odd : 3, 5, 7, 9 (  9/3) #least common divison  #lcm 
-
-        #via middle implementation : 3=2+1, 5=4+1, 7 = 6+1, 9 = 8+1
-
-        # 5, 7 are Prime : can't be divided
-        # 5 has a symmetry [left] [left] [middle] [right][right]
-        #idea: ask, isEven(3) can we divide 3 into 2 (intervals), & 1 interval  
-        # idea2 [odd]: 3 using three ranges : figure out mid (middle) left , & right ! [Better!]
-
-        #Even: 4,6,8 10 (4/2=2 6/2=3 8/2 =4 10/2=5)
-        # idea: for 4 items /2 (2*2 or is it 2^2 ) Evenly divde Into 2 [seperate intervals]
-        # so next time, 2 intervals would be Evaluated  (compared) directly
-        #(checked if atomic, or not ) [& 2 / 2 = 1 ]
-        #maybe left calls left(), right calls right() 
-        #or can we call directly cause (a la toute suite)
-
-    end
-
-end
-
-#vital 
-"""Event-Driven traversal function """
-function traverse(id, _stack, kernel=middle!)
-
-    l = length(_stack)
-    if l == 1 #evaluate interval 
-        interval = pop!(_stack) # first Interval [a,b]
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-        #do cause 
-        callCause(id, a, b, interval) #, _stack)
-
-    #cause(interval[id][1], interval[id][b], makeView(_stack, interval[id][1]:interval[id][b]))
-    #end endAlgorithmSafely
-
-    elseif l == 2 ##exactly 2 #works best with 2  # popat ,offf;e
-        interval = pop!(_stack) # [a,b]
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-        effect!(a, b, _stack)
-        # goleft!(a, b, interval)  # check first in on left 
-
-        interval = pop!(_stack)
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-        effect!(a, b, _stack)
-        # goright!(interval) #check last is on right 
-
-        #
-        #=
-        interval = pop!(_stack)
-        a = indexOf(interval, interval[id][1])
-        b = indexOf(interval, interval[id][2])
-        effect!(a, b, _stack)
-        =#
-
-        #  goleft!(a, b, interval)  # check first in on left 
-
-        #endAlgorithmSafely
-        #------
-
-    else # > 2 (i.e. 3, 4, or more )
-        #oddity 
-        isItEven = nothing
-        isEven(l) ? isItEven = true : isItEven = false
-
-        # traverse()
-        if isItEven == true  # divide by 2 (always )
-            n = l // 2 # returns an integer #- turnsout to be the middle 
-            #---- n + n = 2n #-------------
-            # _stack[0] # first 
-            #_stack[n] #middle  # ---- pop this
-            res = popat!(_stack, n) # after pop = 2*n -1 = odd 
-            res[n][1] # a 
-            res[n][2] # b
-            # a,b, at their index location 
-            kernel(1, n, res, middle)
-            #if index = idx then res[offset], 
-
-            #todo: what to do with value (call special kernel function )
-            #_stack[2n] # last 
-            # _stack[length(_stack)]
-            # traverse(0, length(_stack), _stack)
-            for i in 1:length(_stack)
-                traverse(i, _stack)
-            end
-
-        elseif isItEven == false  #odd : 3, 5, 7, 9
-            #there is a middle
-
-        end
-        #odd : 3, 5, 7, 9 (  9/3) #least common divison  #lcm 
-
-        #via middle implementation : 3=2+1, 5=4+1, 7 = 6+1, 9 = 8+1
-
-        # 5, 7 are Prime : can't be divided
-        # 5 has a symmetry [left] [left] [middle] [right][right]
-        #idea: ask, isEven(3) can we divide 3 into 2 (intervals), & 1 interval  
-        # idea2 [odd]: 3 using three ranges : figure out mid (middle) left , & right ! [Better!]
-
-        #Even: 4,6,8 10 (4/2=2 6/2=3 8/2 =4 10/2=5)
-        # idea: for 4 items /2 (2*2 or is it 2^2 ) Evenly divde Into 2 [seperate intervals]
-        # so next time, 2 intervals would be Evaluated  (compared) directly
-        #(checked if atomic, or not ) [& 2 / 2 = 1 ]
-        #maybe left calls left(), right calls right() 
-        #or can we call directly cause (a la toute suite)
-
-    end
-
-end
-
+#--- 
 #another whole idea : discard left, right lingo , keep it cause-effect 
 #starting range is a cause of potential 2 more effects ( unless length = 1 , )
 #Idea(9):
@@ -3914,81 +3664,93 @@ end
 _int = [[1, 3], [4, 7], [8, 9]] # IF ODD : we only care to get the middle (at the median)
 #if length(_int) %2 == 0 # length isEven 
 idMid = Integer(ceil(length(_int) / 2)) # 2 [casted correctly to 2]
+
 a = _int[idMid][1]#4
-b = _int[idMid][2]#7
+b = _int[idMid][length(_int)-1]#7
 
 #kernelFunction(a,b, arr)
 # id a,b, interval 
 
-currentVal = nothing
 
-isStoppingCondition(arr, currentVal)  #<--- bottleneck 
+#---------
 #callCause(idMid, 4, 7, _int) # 4:7
-arr = makeVector((a:b))
-callCause(idMid, a, b, _int) # view error # correct # loop infinity 
+#v = collect(a:b)
+#_view = view(v, firstindex(v):lastindex(v))
+_view = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+#callCause(idMid, a, b, _int) # view error # correct # loop infinity  TODO:
 
 #-------
 _int = [[1, 3], [8, 9]]
 pts = []
-idMid = Integer(ceil(length(_int) / 2)) # 1 # dof = {1,2}
+idMid = Integer(ceil(length(_int) / 2)) # 1 # dof = {1,2} #1 
 
 a = _int[idMid][1] #1 
-b = _int[idMid][2] #3
+b = _int[idMid][length(_int)] #3
 #kernelFunction #1 
 
 a = _int[idMid+idMid][1] # 8 
-b = _int[idMid+idMid][2] # 9 
+b = _int[idMid+idMid][length(_int)] # 9 
 
-
+#----
 #Ranges
 ##[1, 2, 3]
 ##[3, 4, 5, 6, 7, 8]
 #----------
-
+## fill up the stack function  
 
 #kernelFunction #2
 _stack = []
 #from points to interval indices , getting the `buns` 
-for i in 1:length(_int)
-    idMid = Integer(ceil(length(_int) / 2)) # 1 # dof = {1,2}
+_length = copy(length(_int))
 
+#=
+for i in 1:_length
+    idMid = Integer(ceil(_length / 2)) # 1 # dof = {1,2}
+    # local a & b 
     a = _int[i][1] #1 
     b = _int[i][2] #2
     println("a = ", a, " b = ", b)
-    push!(_stack, makeVector((a:b)))
+    push!(_stack, collect((a:b)))
 
 end
+=#
+
 #---------
 _stack
 
 A = []
 #from stack  to point vectors 
+#=
 for i in 1:length(_stack)
 
     #idMid = Integer(ceil(length(_int) / 2)) # 1 # dof = {1,2}
 
     println("i = ", i)
-    a = _stack[i][1] # first(i)
-    b = last(_stack[i]) #last(_stack[i])[2]
+    a = firstindex(_stack[i])# [1] # first(i)
+    b = lastindex(_stack[i]) #last(_stack[i])[2] #
     #the goal: get a,b
     #a =  _int[i][1] #1 
     #b = _int[i][2] #2
 
     println("a = ", a, " b = ", b)
-    push!(A, makeVector((a, b)))
+    push!(A, collect((a, b)))
 
 
 end
+=#
+
 _stack
 A
-
+#=
 for i in 1:length(_int)
     # push 
-    a = _int[i][1]
+    a = _int[i][1] #<------
     b = _int[i][2]
     push!(pts, a) # every odd has an a value 
     push!(pts, b) # every even has a b value 
 end
+=#
 #------
 pts = [] # excellent 
 
@@ -3997,38 +3759,48 @@ ranges = copy(_stack) # stack has to have at least 2 items for proceeding functi
 typeof(_stack)
 #-----
 #lastB #clue 
+#=
 a = ranges[1][1]
 b = ranges[1][length(ranges[1])] #[2]
+=#
 _int[1+1][2]
-#-------
-function rangesToPts(ranges) #checked
 
-    pts = []
-    for i in 1:length(_int)
-        # push
-        a = ranges[i][1]
-        b = ranges[i][length(ranges[i])] #[2]
-        _int[idMid+idMid][2] #<----------
-        println("a = ", a)
-        println("b = ", b)
-        push!(pts, a) # every odd has an a value 
-        push!(pts, b) # every even has a b value 
-    end
-    return pts
-end
-arr = makeVector((1:9))
+
+ranges
+length(ranges)
+# ranges[1]
+length(ranges)
+arr = collect((1:9))
 pts = rangesToPts(ranges)
+w = 0
+pts = []
+#=
+for i in 1:length(ranges) #1:3 
+        w = rangesToPts(ranges[i])
+        for j in 1:length(w)
+            push(pts, j)
+    end
+end
+=#
+#ranges[0]
 
+# ranges[1]# 3-element Vector{Int64}: 1,2,3
+# ranges[2] # 4-element Vector{Int64}: #4,5,6,7
+#ranges[3] #2-element Vector{Int64}:
+8
+9
 #----- pts manipulation 
 _view = nothing # val
 
 # mapPts()
 _length = length(pts)
 if _length == 2
-    _view = makeView(makeVector((pts[1]:pts[2])), pts[1]:pts[2])
+
+    _view = collect(pts[1]:pts[2]) |> _view -> view(_view, firstindex(x):lastindex(_view))
     doCompare(pts[1], pts[2], _view)
 end
 
+#=
 ranges = copy(_stack)
 ranges[1]
 ranges[2]
@@ -4038,14 +3810,14 @@ b = ranges[1][length(ranges[1])]
 
 a2 = ranges[2][1]
 b2 = ranges[2][length(ranges[2])]
-
+=#
 #=
 #pts to range 
 for i in 1:Int(length(pts) // 2)
     # push 
     a = pts[i]#[1]
     b = pts[i+1]#[2]
-    v = makeVector((a:b))
+    v = collect(a:b)
     push!(ranges, v)
 end=#
 
@@ -4058,17 +3830,20 @@ function ptsToRanges(pts)
         #was 
         #a = pts[i]#[1]
         #b = pts[i+1]#[2]  
-        a = pts[i] + 1
-        b = pts[i+1] - 1
+        a = pts[i] # + 1
+        b = pts[i+1] #- 1
 
-        v = makeVector((a:b))
+        v = collect(a:b)
         push!(ranges, v)
 
     end
-    return ranges
-end
+    return ranges #<----
+end # <--------
+
 #------
-a1 = pts[1]#[1]
+#pts not defined 
+pts = [1, 2, 3, 4, 5]
+a1 = pts[1]#[1] #<----
 b1 = pts[1+1]#[2] #correct was a coincidence #3 
 
 a2 = pts[2]#[1]
@@ -4097,157 +3872,10 @@ pts[2+1]  # 8
 pts[2+1] -1 #7
 
 =#
-""" maps indicies to a Array values """
-function mapPts(pts, arr::Array{Int64,1})
 
-    vals = []
-    _length = length(pts)
-    for i in 1:2:_length
-        idx = pts[i]
-        append!(vals, arr[idx])
-        idx = pts[i+1]
-        append!(vals, arr[idx])
-    end
-    return vals
-end
-
-"""Event-Driven"""
-function mapPts(pts, arr::Array{Int64,1}, i::Int64)
-
-    vals = []
-    _length = length(pts)
-    # for i in 1:2:_length
-    if i <= _length
-        idx = pts[i]
-        append!(vals, arr[idx])
-        idx = pts[i+1]
-        append!(vals, arr[idx])
-        i = i + 2
-    end
-    return vals
-end
-
-
-""" maps indicies to a SubArray values """
-function mapPts(pts, _view::SubArray)
-
-    vals = []
-
-    for i in 1:length(pts) # _length
-        idx = pts[i]
-
-        append!(vals, _view[idx])
-    end
-    return vals
-end
-
-#=
-"""Event-Driven"""
-function mapPts(pts, _view::SubArray,i)
-    vals = []
-    _length = copy(length(_view))
-   #for i in 1:_length  #length(pts) # _length
-    if i<=_length #  i in 1:_length  # if i in 1:_length  if works, instead of for 
-        idx = pts[i]
-
-        append!(vals, _view[idx])
-        i = i + 1
-    end
-    return vals , i
-end
-i=1
-vals ,i = mapPts([1,3], [1,2,3,4,5],2)
-i=#
-
-#note: _view is related to  _stack (item off it )
-
-# i = length(_stack) # last item 
-#=
-function f1(_stack)
-    _length = length(_stack)
-   for i in _stack 
-
-    if length(_stack) > 1
-        interval = popat!(stack, i) #interval, each has 2 bounds 
-        a = interval[1]
-        b = interval[2]
-        #make view 
-        v = collect(a:b)
-
-        _view = view(v, firstindex(v), lastindex(v)) #new:pass new info 
-        #TODO: return false, _view [new information ]
-
-        return false, _view
-    elseif length(_stack) == 1
-        return true, nothing
-    end
-end =#
-"""Event-Driven """ 
-function f1(_stack,i )
-_length = length(_stack)
-
-#for i in _stack 
-if length(_stack) > 1
-    interval = popat!(stack, i) #interval, each has 2 bounds 
-    a = interval[1]
-    b = interval[2]
-    #make view 
-    v = collect(a:b)
-
-    _view = view(v, firstindex(v),lastindex(v)) #new:pass new info 
-    #TODO: return false, _view [new information ]
-
-    return false , _view
-elseif length(_stack) == 1
-    return true, nothing
-end
-
-"""Event-driven to sort the next element """
-function nextSort(a, b, _view::SubArray, i) #a,b, inputs not used #TODO 
-
-    vals = []
-    i = euclidDistDifference(a, b)
-    #for i in 1:length(pts) # _length
-    if i > 1
-        # traverve #TODO: 
-        #idx = popat!(pts, i) #pts[i]
-        append!(vals, _view[idx]) # accumulates 
-        i -= 1
-    end
-    return vals
-end
-
-#new #TODO: check 
-function mapPts!(pts, arr::Array{Int64,1}, i) # todo sanity check : use of i 
-
-    vals = []
-
-    #for i in 1:length(pts) # _length
-    if i > 1
-        idx = popat!(pts, i) #pts[i]
-        append!(vals, arr[idx]) # accumulates 
-        i -= 1
-    end
-    return vals
-end
-
-function mapPts!(pts, _view::SubArray, i) # todo sanity check : use of i 
-
-    vals = []
-
-    #for i in 1:length(pts) # _length
-    if i > 1
-        idx = popat!(pts, i) #pts[i]
-        append!(vals, _view[idx]) # accumulates 
-        i -= 1
-    end
-    return vals
-end
-
-(1:2)[1]
-view(collect(1:2), 1:2)
-
-function ptToView(singlePt)
+# Point to View (ptToView)
+""" from a point to a View """
+function ptToView(singlePt) # ok 
     try
         a = -1
         b = -1
@@ -4255,10 +3883,8 @@ function ptToView(singlePt)
         if length(singlePt) == 2
             a = singlePt[1]
             b = singlePt[2]
-            # v = makeVector(v,(a:b))
-            v = collect(a:b)
-            _newView = makeView(a, b)
 
+            _newView = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
         else
             throw(error(msg))
         end
@@ -4269,19 +3895,8 @@ function ptToView(singlePt)
     end
 
     # fabricate view from points only 
-    v = makeVector((1:9))
-    v = collect(1:9)
-    makeView(v, 1:9)
 
-end
 
-ptToView(1:2)
-euclidDistDifference(1, 2)
-if euclidDistDifference(1, 2) == 1
-    return true
-else
-    #TODO: View correct Form 
-    doCompare(1, 2, makeView(1, 2)) #return false 
 end
 
 function ptsToViews(pts) # fixed 
@@ -4301,56 +3916,152 @@ function ptsToViews(pts) # fixed
 
             interval = a:b
 
-            # v = makeVector((interval))
-            print("v = ", v)
-            # _view = makeView(v, v[1]:length(v))
-
-            _view = ptToView(interval)
+            #  # [1]:lastindex(v))
+            print("v = ", interval)
+            #  
+            # _view = ptToView(interval)
+            _view = collect(interval) |> _view -> view(_view, firstindex(_view):lastindex(_view))
             println("_view", _view)
             push!(_views, _view)
 
         elseif euclidDistDifference(pts[i], pts[i+1]) == 1
-            _view = makeView(pts[i], pts[i+1])
+            _view = collect(pts[i]:pts[i+1]) |> _view -> view(_view, firstindex(_view):lastindex(_view))
             doCompare(pts[i], pts[i+1], _view)
         end
     end
     return _views
 end
 
+function ptsToView(a, b)
+
+    _length = euclidDistDifference(a, b)
+
+    if _length == 0 # a == b (return either element)
+        return a #getLastElement(a, b) 
+    elseif _length == 1 #|| _length == 0
+        v = collect(a:b)
+
+        _view = view(v, firstindex(v):lastindex(v))
+        #v1, v2 = remap(v[1], v[length(v)])
+        doCompare(a, b, _view) #view(v[1], v[length(v)]))
+    else
+        v = collect(a:b)
+        return view(v, firstindex(v):lastindex(v)) # remap(a,b) #TODO: check usefulness 
+    end
+
+end
+
 """ transforms points to views,  on a particular view """
-#WARNING: does not uses input Arg: _view  #TODO:Fix  
-function ptsToViews(pts, _view) # for a particular view #Warning : not uses _view #TODO 
+function ptsToViews(pts, _view) # for a particular view
 
     _views = []
     #iterating on pts 
     _length = copy(Int(length(pts) // 2))
     #_length = length(pts)
     for i in 1:_length
-    
+
         a = pts[i]#[1]
         b = pts[i+1]#[2] #<--------
         println("a = ", a)
         println("b = ", b)
-    
+
         interval = a:b
-    
+
         v = collect(Interval)
         print("v = ", v)
-        # _view = makeView(v, _view)
-        _view = view(v, _view) #firstindex(v),lastindex(v))  #interval)
-    
+        # _view = view(v, _view)
+        _view = view(v, _view) #firstindex(v):lastindex(v))  #interval)
+
         _view = ptToView(interval)
-    
+
         println("_view", _view)
-    
+
         push!(_views, _view)
     end
     return _views
 end
+i = 1
+vals, i = mapPts([1, 3], [1, 2, 3, 4, 5], 1)
 
-_view = view(collect(interval), interval)
+i
+#
+
+#note: _view is related to  _stack (item off it )
+
+# i = length(_stack) # last item 
+#
+
+# unnamed Function: f1
+"""Unnamed function"""
+
+function f1(_stack)
+
+    _length = copy(length(_stack))
+    for i in _stack
+
+        if _length > 1
+            interval = popat!(stack, i) #interval, each has 2 bounds 
+            a = interval[1]
+            b = interval[2]
+
+            #TODO: How to check in between the function
+            #make view 
+            # v = collect(a:b)
+            # _view = view(v, firstindex(v: lastindex(v)) 
+            _view = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #new:pass new info 
+
+            return false, _view
+        elseif _length == 1
+            return true, nothing
+        end
+    end
+end
+
+## Event-Driven: f1
+"""Event-Driven function """
+function f1(_stack, i) # unknown Unamed funtion (yet ) #TODO: rename into a meaningfulname 
+    _length = copy(length(_stack))
+
+    #for i in _stack 
+    if _length > 1 && i <= _length
+        interval = popat!(stack, i) #interval, each has 2 bounds 
+        a = interval[1]
+        b = interval[2]
+        #make view 
+        #v = collect(a:b)
+        #_view = view(v, firstindex(v: lastindex(v)) #new:pass new info 
+        _view = collect(a:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        #TODO: return false, _view [new information ]
+
+        return false, _view
+    elseif _length == 1
+        return true, nothing
+    end
+end
+
+
+# Next Sort 
+"""Event-driven to sort the next element """
+function nextSort(a, b, _view::SubArray, i) #a,b, inputs not used #TODO 
+
+    vals = []
+    i = euclidDistDifference(a, b)
+    #for i in 1:length(pts) # _length
+    if i > 1
+        # traverve #TODO: 
+        #idx = popat!(pts, i) #pts[i]
+        append!(vals, _view[idx]) # accumulates 
+        i -= 1
+    end
+    return vals
+end
+
+
+
+v = collect(interval)
+view(v, firstindex(v):lastindex(v))
 #depreciate 
-function ptsToViews(pts, arr)
+function ptsToViews(pts, arr) #Warning: function doesn't use arr # Depreciate 
 
     _views = []
     #iterating on pts 
@@ -4364,15 +4075,12 @@ function ptsToViews(pts, arr)
             println("b = ", b)
 
             interval = a:b
-            v = makeVector((interval))
-            print("v = ", v)
-
-            _view = makeView(v, arr)
+            _view = collect((interval)) |> _view -> view(_view, firstindex(_view):lastindex(_view))
             println("_view", _view)
             push!(_views, _view)
         elseif euclidDistDifference(pts[i], pts[i+1]) == 1
             # TODO: View true form  @
-            doCompare(pts[i], pts[i+1], view(collect(pts[i]:pts[i+1]), firstindex(pts[i], lastindex[pts[i+1]])))
+            doCompare(pts[i], pts[i+1], view(collect(pts[i]:pts[i+1]), firstindex(pts[i]):lastindex([pts[i+1]])))# fixed 
         end
 
     end
@@ -4429,14 +4137,15 @@ function viewsToPts(arr)#::Vector{Vector{Int64}})
 
     return pts
 end
+
 #-----------
 _int = [[1, 3], [8, 9]]
 #typeof(_int)
 pts = rangesToPts(_int)# correct order 1389
-#Hint: this opens the door for fine point manipulation 
+#Hint: this opens the door for a fine point manipulation 
 #---pts testing
 a1 = pts[1]#[1]
-b1 = pts[1+1]#[2] #correct was a coincidence #3 
+b1 = pts[1+1]#[2] #correct (it was a coincidence) #3 
 
 a2 = pts[2]#[1]
 b2 = pts[2+1]#[2]
@@ -4467,6 +4176,7 @@ _views[2]
 _views[2][1]
 _views[2][length(_views[2])]
 arr
+vals = mapPts(pts, arr)
 vals = mapPts(pts, arr, 1)
 
 ranges = ptsToRanges(pts)
@@ -4479,13 +4189,17 @@ if [1, 2, 3, 4][1] > [1, 2, 3, 4][2]
     m1, b, _isSwapped = doCompare(1, 2, [1, 2, 3, 4])
     println("twinMiddles [m1, m2]= ", m1, " ", b, " swapped ")
 end
-m1
+#m1
 
 doCompare(1, 4, [1, 2, 3, 4]) # 1 4
+a = 1;
+b = 1;
 
-if [1, 2, 3, 4][a] > [1, 2, 3, 4][b]
+if [1, 2, 3, 4][a] > [1, 2, 3, 4][b] #<--------
     #a, b, _isSwapped = 
     doCompare(a, b, [1, 2, 3, 4])
+    a += 1
+    b += 1
     println(" [a, b]= ", a, " ", b, " swapped ")
 else
     println("processing failed ")
@@ -4493,6 +4207,7 @@ end
 
 doCompare(1, 2, [1, 2, 3, 4])# 1 2 
 
+m1 = 2
 if [1, 2, 3, 4][a] > [1, 2, 3, 4][m1]
     a, m1, _isSwapped = doCompare(a, m1, [1, 2, 3, 4])
     println(" [a, m1]= ", a, " ", m1, " swapped ")
@@ -4503,15 +4218,17 @@ end
 
 doCompare(3, 4, [1, 2, 3, 4])
 
+m2 = 2 + oneunit(2)
 if arr[m2] > arr[b]
     m2, b = doCompare(m2, b, [1, 2, 3, 4])
 end
 
 arr = [1, 2, 3, 4]
-a, b, _isSwapped = doCompare(1, 4, arr)
-a, m1, _isSwapped = doCompare(1, 2, arr)
-m1, b, _isSwapped = doCompare(2, 4, arr)
-m2, b, _isSwapped = doCompare(3, 4, arr)
+a, b, _isSwapped = doCompare(firstindex(1), lastindex(4), arr)
+a, m1, _isSwapped = doCompare(firstindex(1), lastindex(2), arr)
+m1, b, _isSwapped = doCompare(firstindex(2), lastindex(4), arr)
+m2, b, _isSwapped = doCompare(firstindex(3), lastindex(4), arr) #<------
+
 arr
 #----------
 lastB = nothing
@@ -4547,15 +4264,25 @@ group
 interval
 
 #== nothing by default 
-#interval === nothing
+=#
+interval = nothing  # == nothing
 #ismissing(interval)
+# set interval 
 
-_unionSet = collect((interval[1]:interval[2]))
+oldInterval = collect(1:4)
+interval = collect(5:7)
+# interval[1] = 1; interval[2]=5
+
+#TODO: fix issue with the union set #UncommentMe
+## MethodError: no method matching getindex(::Nothing, ::Int64)
+
+_unionSet = collect(interval[1]:interval[2])
 #UnionAll(oldInterval[2],_unionSet)
+
 totalSet = union(oldInterval[2], _unionSet)
-v = makeVector((totalSet[1], totalSet[length(totalSet)]))
-#makeView(v,(1,length(v)))
-view(v, (1:length(v)))
+interval = firstindex(1):lastindex(totalSet)
+_view = collect(interval) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+# (v, (1:length(v)))
 #union!((oldInterval[2]: _unionSet))
 
 if (interval === nothing) == false #ismissing(interval) ==false #i.e. has a value  #interval !== nothing # on the 2nd, 4th , every even Run # if it has a value (from previous run) # interva==nothing
@@ -4564,20 +4291,44 @@ end
 interval
 oldInterval
 
+
 #(oldInterval[1], interval[2])
 #oldInterval === nothing
 #interval === nothing
 #interval == oldInterval
 #pop first value (load onto interval)
 #pop()
+#--
+_first = 1
+_second = 2
+_third = 3
+
+#create a view 
+_view = collect(1:3)
+_view = view(_view, firstindex(_view):lastindex(_view))
+
+#pass to function in question 
+compareTriad(_first, _second, _third, _view) #<-----
+
+#-----
+## An example Experiment: 
 
 interval = popfirst!(_stack) # sequential pop of a stack  # popped value is lost #  decreases _stack by 1 
-interval == oldInterval
+println("popped stack item: interval ", interval)
+println("Typeof = ", typeof(interval))
+interval = collect(interval)
+println("interval, after collect ", interval)
+interval == oldInterval # check intervals equality 
+println("popped stack item: interval ", oldInterval)
+println("Typeof(oldIndex) = ", typeof(oldInterval))
+
 oldInterval # 1, 3 # 4 7 
 interval# 4,7 # 8 9 
 oldInterval[2], interval[1], interval[2]
+
 _unionSet = collect(oldInterval[2]:interval[1])
 totalSet = union(_unionSet, interval[2])
+
 v = 1:length(totalSet)
 view(collect(v), v)
 view(collect(v), 1:length(v))
@@ -4586,28 +4337,273 @@ group # should be 1
 #group += 1 
 
 #_view = NewView(oldInterval[1], interval[2])
+#TODO: Merge oldInteral with interval:
+##ERROR: LoadError: BoundsError: attempt to access 1-element UnitRange{Int64} at index [1:3]
+#remapping issue 
+_unifiedInterval = union(oldInterval, interval) #[1, 2, 3]
+println("unified Interval = ", _unifiedInterval)
+println("oldInterval = ", oldInterval) #[1])
 
-v = makeVector((oldInterval[1]:interval[2]))# 1 7
-_view = makeView(v, (oldInterval[1]:interval[2]))
-a, b, m1, m2 = compareBounds(oldInterval, interval, _view) #correct # 1 7 3 4
-=#
+println("typeof(oldInterval) = ", typeof(oldInterval)) #[1])
+println("typeof(oldInterval) = ", typeof(oldInterval)) #[1]) # typeof(oldInterval) = UnitRange{Int64}
 
-if group == 2
+# oldInterval = oldInterval
+
+oldInterval1 = collect(oldInterval[1]:oldInterval[2])
+println("typeof(oldInterval1) = ", typeof(oldInterval1)) # typeof(oldInterval1) = Vector{Int64}
+oldInterval2 = collect(oldInterval)
+println("typeof(oldInterval2) = ", typeof(oldInterval2)) # typeof(oldInterval2) = Vector{Int64}
+
+println("oldInterval1 == oldInterval2 ", oldInterval1 == oldInterval2)
+
+println("Interval  = ", interval)  #[1]) # typeof(interval) = Vector{Int64}
+println("typeof(interval) = ", typeof(interval))
+
+
+println("oldInterval[last] = ", oldInterval[lastindex(oldInterval)])
+println("interval[last] = ", interval[lastindex(interval)])
+
+#---
+v = [3, 4]
+_view = (v, firstindex(v):lastindex(v))
+
+isUnitDistanceReached(v[1], v[2])
+#original Issue: 
+#oldInterval = collect(1:3)
+#interval = collect(1:4)
+_view = collect(oldInterval[1]:interval[lastindex(interval)])
+
+# compareTriad(oldInterval[2], interval[1], interval[2], _view)
+
+_isSwapped = nothing
+
+#_view = collect(a:m1) |> 
+#suggest: use a,b as bounds of the current _view 
+_view = view(_view, firstindex(_view):lastindex(_view))
+
+a, m1, _isSwapped = doCompare(a, m1, _view) # <----
+
+println(" [a, m1]= ", a, " ", m1, " checked ")
+mid = m1 + 1
+v = collect(mid:b)
+_view = view(_view, firstindex(v):lastindex(v))  # (_view, _view)
+# mid, b, _isSwapped = mid < b && length(_view)>1 ?
+if mid < b && length(_view) > 1
+    println("mid = ", mid)
+    println("b = ", b)
+    println("_view = ", _view) # [3, 4] #note : difference  = 4 -3 = 1 # infer: missing functionality for d=1 
+    mid, b, _isSwapped = doCompare(mid, b, _view) #: return  #doCompare(m1, b, _view) #<-------
+end
+
+#----
+#
+oldInterval = collect(1:3)
+_view1 = view(v, firstindex(v):lastindex(v)) # 1 7 # <---------
+#a, b, m1, m2 = compareBounds(oldInterval, interval, _view) #correct # 1 7 3 4  TODO: # UncommentMe
+# compareTriad Error 
+
+#try
+if a !== Nothing && m1 !== Nothing && b !== Nothing && arr !== Nothing
+
+    _isSwapped = nothing
+    #_view = collect(a:m1) |> 
+    #suggest: use a,b as bounds of the current _view 
+    a != b ? _view = view(_view, firstindex(a):lastindex(b)) : return "a == b scalar: a = ", a, " b = ", b
+
+    # 1,2,3  d(1,3)+1 =4 /2 = 2 IS EVEM a, m1, m2 
+
+    if isEven(a, b) == true #TODO: isEven a, m1, m2 : (a,m1] mid=m1+1
+
+        if a != m1 # fail-safe mechanism 
+            a, m1, _isSwapped = doCompare(a, m1, _view) # [a, m1]= 1 2 checked
+            println(" [a, m1]= ", a, " ", m1, " checked ")
+        elseif a == m1 # fallback 
+            a, m1, _isSwapped = a, m1, nothing
+        end
+        # a, m1, _isSwapped = doCompare(a, m1, _view) # [a, m1]= 1 2 checked  # <-----
+        #println(" [a, m1]= ", a, " ", m1, " checked ")
+
+        mid = m1 + 1
+        if mid != b  #TODO: needs an end 
+            _view = collect(mid:b) # |> 
+            _view = view(_view, firstindex(_view):lastindex(_view))  # (_view, _view)
+            # mid, b, _isSwapped = mid < b && length(_view)>1 ?
+
+            if mid < b && length(_view) > 1 # this condition should be global
+                mid, b, _isSwapped = doCompare(mid, b, _view) #: return  #doCompare(m1, b, _view) #<-------
+                if mid != b # where it fails 
+                    mid, b, _isSwapped = doCompare(mid, b, _view) # [a, m1]= 1 2 checked
+                else # fallback 
+                    mid, b, _isSwapped = 1, 1, nothing
+                end
+            end
+        elseif mid == b #a , m1, b 
+
+
+
+            #=
+                #if isEven() 
+                #else
+                if a != m1  #m1 == b  # was m ==b : m undefined
+                    println(" [a, m1]= ", a, " ", m1, " checked ")
+                    v = collect(a:b)
+                    _view = view(v, firstindex(v):lastindex(v))
+
+                elseif a == m1
+                    println("twinMiddles [m1, b]= ", m1, " ", b, " checked ")
+                end
+                if m1 != b
+                    v = collect(a:b)
+                    _view = view(v, firstindex(v):lastindex(v))
+                elseif m1 != b
+                    println("twinMiddles [m1, b]= ", m1, " ", b, " checked ")
+                end
+                =#
+            #   end
+        end
+        #  else # should be throw(error...)
+        #       return
+    end
+
+
+    #fail_safe mechanism applied : 
+    if a != b
+        v = collect(a:b)
+        _view = view(v, firstindex(v):lastindex(v))  #_view -> view(_view, firstindex(a): lastindex(b))          
+        #   if a != b
+        a, b, _isSwapped = doCompare(a, b, _view) # < -----
+    else # a == b fallback 
+        a, b, _isSwapped = a, a, nothing
+    end
+
+end
+
+println(" [a, b]= ", a, " ", b, " checked ")
+println("a, m1, b = ", a, m1, b)
+if a === nothing || b === nothing || m1 === nothing
+    return nothing, nothing, nothing
+else
+    return a, b, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
+
+end
+#TODO: replace with compareTriace for a _view 
+#----
+
+group = 2
+if group == 2 #,-----
 
     # if so compare contents then, reset group 
     #TODO: define _newView (from)
 
-    #    v = makeVector((oldInterval[2], interval[1], interval[2])) #(oldInterval[1]:interval[2]))# 1 7
-    #    _view = makeView(collect((oldInterval[2]:interval[1]:interval[2])), (oldInterval[2], interval[1], interval[2]))
+    #    v = collect((oldInterval[2], interval[1], interval[2])) #(oldInterval[1]:interval[2]))# 1 7
+    #    _view = view(v, firstindex(v):lastindex(v) )
 
     # view(collect(v), v)
 
-    v = 1:length(totalSet)
-    _view = view(collect(v), 1:length(v))
-    a, b, m1, m2 = compareBounds(oldInterval[2], interval[1], interval[2], _view) # compare interval bounds 
+    #v =
+    #Check if values are sorted 
+    #experiment: 
+    println("first = ", oldInterval[2]) # 2
+    println("second = ", interval[1]) # 1
+    println("third = ", interval[2]) # 3
+
+
+    # Sort the 3 points: oldInterval[2], interval[1], interval[2] , using inferLocation
+    _first, _second, _third = inferLocation(oldInterval[2], interval[1], interval[2]) # sorts a 3 points 
+    unifiedPts = union(_first, _second, _third)
+    #v = collect(1:length(totalSet))
+    v = collect(first(unifiedPts):last(unifiedPts))
+
+    _view = collect(_first:_third)
+
+    _view = view(v, firstindex(v):lastindex(v))
+    _view = view(_view, firstindex(_view):lastindex(_view)) #collect(v), 1:length(v))
+    # a, b, m1, m2 = compareBounds(_first, collect(_second:_third), _view) # compare interval bounds  # <---
+    # a, b, m1, m2 = compareBounds(_first, _second, _third, _view)
+
+    #_first, _second, _third = inferLocation(_first, _second, _third) # valid output 
+    #check values: 
+    println("first = ", _first)
+    println("second = ", _second)
+    println("third = ", _third)
+    unifiedPts = union(_first, _second, _third)
+
+    v = collect(first(unifiedPts):last(unifiedPts))
+    _view = view(v, firstindex(v):lastindex(v))
+
+    a, b, m1, m2 = compareTriad(_first, _second, _third, _view) #<---- handling scalar i.e. 1,1 # still unhadeled 
     println("a = ", a, " b = ", b, " m1 = ", m1, " m2 = ", m2)
     group = 0 # reset group 
 end
+
+#---
+# if m1 not defined! 
+m1 = 1 # when m1 = 1 ( a = 1 = m1 )
+#experimental : compareTriad 
+_isSwapped = nothing
+
+# fail_safe mechanism 
+if a != m1
+    v = collect(a:m1)
+    _view = view(v, firstindex(v):lastindex(v)) # 0
+else #a == m1 scalar situation
+    _msg = "a == b scalar situation: a = ", a, " b = ", b
+    print(msg)
+
+end
+
+#_view = collect(a:m1) |> 
+
+#suggest: use a,b as bounds of the current _view 
+# fail_safe mechanism 
+_msg = "a == b scalar situation: a = ", a, " b = ", b
+#a != b ? _view = view(_view, firstindex(a):lastindex(b)) : return _msg  # a = 1 , b = 1  #scalar  3
+if a != b
+    v = collect(a:b)
+    _view = view(_view, firstindex(v):lastindex(v)) #firstindex(a):lastindex(b)) # a = 1 , b = 1  #scalar  3 # access 0ement at index 1:1] or no method matching iterate (:Nothing )
+else # a == b # fsll
+    println(_msg)
+    return a, b, nothing
+end
+
+#m1 is given by input parameter 
+print(a)
+#if m1 !== Nothing 
+if a != m1 # where it fails 
+    a, m1, _isSwapped = doCompare(a, m1, _view) # [a, m1]= 1 2 checked
+else # fallback 
+    a, m1, _isSwapped = 1, 1, nothing
+end
+#<----- #scalar has to skip doCompare : 1,1,nothing 
+println(" [a, m1]= ", a, " ", m1, " checked ")
+
+mid = m1 + 1
+print(b)# 2 # issue: m1: b => 2:3 
+_view = collect(mid:b) # |> 
+_view -> view(_view, firstindex(mid):lastindex(b))  # (_view, _view)
+# mid, b, _isSwapped = mid < b && length(_view)>1 ?
+if mid < b && length(_view) > 1
+    mid, b, _isSwapped = doCompare(mid, b, _view) #: return  #doCompare(m1, b, _view) #<-------
+else
+    return
+
+    println("twinMiddles [m1, b]= ", m1, " ", b, " checked ")
+
+    _view = collect(a:b) # |>  
+    _view = _view -> view(_view, firstindex(a):lastindex(b))
+    a, b, _isSwapped = doCompare(a, b, _view)
+    println(" [a, b]= ", a, " ", b, " checked ")
+
+    println("a, m1, b = ", a, m1, b)
+    if a === nothing || b === nothing || m1 === nothing
+        return nothing
+    else
+        return a, b, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
+    end
+end
+# end
+
+#----
 
 #arr = collect(1:9) #1:9
 group
@@ -4627,21 +4623,24 @@ oldInterval
 lastB = interval[2]
 
 #v
-#_view = makeView(v, (lastB:interval[2]))
-#_view = makeView(v, lastB:interval[2])
-#_view = makeView( lastB:interval[2],v) # wong 
-#makeView(lastB, interval[2])
+#_view = collect(v, (lastB:interval[2]))
+#_view = collect(v, lastB:interval[2])
+#_view = collect( lastB:interval[2],v) # wong 
+#collect(lastB, interval[2])
 
 v = collect((lastB:interval[2]))
 #if length(v ) == 1 #TODO: if scalar Then return 
 
-_view = view(v, firstindex(v), lastindex(v)) 
+# _view = view(v, firstindex(v): lastindex(v))
 
+unifiedPts = union(lastB, interval[1], interval[2])
+v = collect(first(unifiedPts):last(unifiedPts))
+#_view = collect(lastB:interval[2])  # |> 
+# _view=  view(_view, firstindex(_view):lastindex(_view))
 
+_view = view(v, firstindex(v):lastindex(v))  #view(v,firstindex(v):lastindex(v))
 
-_view = view(v,firstindex(v):lastindex(v))  #view(v,firstindex(v),lastindex(v))
-
-_view # 7 8 9 #TODOD: it should be 7 8 9 (Got only 5 !)
+print(_view) # 7 8 9 #TODOD: it should be 7 8 9 (Got only 5 !)
 
 #v[1], v[2], [v3] # indices : 1 2 3 
 #a, b, m1 = compareTriad(v[1], v[2], v[3], _view)
@@ -4662,30 +4661,44 @@ if group == 1 && _length == 0 #i == _length - 1 # && reached the end i.e.  #<---
 
     # lastB iwth interval[2]
     #compareTriad(lastB,interval[1], interval[2]) #TODO: store return 
-#points : lastB, interval[2]
+    #points : lastB, interval[2]
     #compare() # compareTriad  : lastB , interval[1], interval[2]
     #generate _view : from lastB to interval[2]
-    #makeView()
-    #makeView()
+
     #make a view 
-#correctly compile 
-     v = collect(lastB:interval[2]) # 1 7 # 7 8 9
-    #   _view = makeView(v, (lastB:interval[2]))
+    #correctly compiles
+    #v = collect(lastB:interval[2]) # 1 7 # 7 8 9
+    #   _view = viewe(v, (lastB:interval[2]))
 
     #    _newView = newView(lastB, interval[2])
-    v1, v2 = remap(lastB, interval[2]) #TODO: check its usefulness 
-    v = collect(v1:v2)
+    #v1, v2 = remap(lastB, interval[2]) #TODO: check its usefulness 
+
+    #v = collect(v1:v2)
+    #Sort Indicies
+    _first, _middle, _last = inferLocation(lastB, interval[1], interval[2])
+    unifiedPts = union(_first, _middle, _last)
+
+    v = collect(first(unifiedPts):last(unifiedPts))
     _view = view(v, firstindex(v):lastindex(v))
 
-    a, b, m1 = compareTriad(lastB, interval[1], interval[2], _view) #_newView[lastB] > _newView[interval[2]] ? compareTriad(lastB, interval[1], interval[2], _newView) : return
+    # _view = collect(min(_first, _last):max(_first, _last)) |> v -> view(v, firstindex(v):lastindex(v))# new info found: _view #TODO: search 
+
+    res = compareTriad(_first, _middle, _last, _view) #_newView[lastB] > _newView[interval[2]] ? compareTriad(lastB, interval[1], interval[2], _newView) : return
     group = 0
-    return a, b, m1
+    if res === nothing
+        return res
+    elseif res !== nothing
+        a, b, m1 = res #unzip res 
+        return a, b, m1, _view
+    end
+
+    #  return a, b, m1
 end
 
 #----------
 ## Comparing two intervals of a stack 
 
-function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, group=0) # _view)#misspecification error  # TODO: 
+function compareIntervals(_stack, _newView::SubArray, interval, group=0) # _view)#misspecification error  # TODO: 
 
     # group = 0
     #interval = nothing
@@ -4696,10 +4709,10 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
         _length = copy(length(_stack))
     end
     if i === nothing
-        i = 1
+        i = 1 # Set 
     end
 
-    for _ in 1:length(_stack)  #_view) 
+    for _ in 1:length(_stack) # i in 1:length(_stack)  #_view) 
         group += 1
         #do 
         if (interval === nothing) == false #ismissing(interval) ==false #i.e. has a value  #interval !== nothing # on the 2nd, 4th , every even Run # if it has a value (from previous run) # interva==nothing
@@ -4710,9 +4723,15 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
         #-----
         group += 1
         # _view = NewView(oldInterval[1], interval[2])
-        v = makeVector((oldInterval[1]:interval[2]))# 1 7
-        _view = makeView(v, (oldInterval[1]:interval[2]))
-        a, b, m1, m2 = compareBounds(oldInterval, interval, _view)
+
+        unifiedPts = union(min(first(oldInterval), first(interval)),
+            max(last(oldInterval), last(interval)))
+
+        v = collect(first(unifiedPts):last(unifiedPts)) #oldInterval[1]:interval[2])# 1 7
+        _view = view(v, firstindex(v):lastindex(v)) # (oldInterval[1]:interval[2]))
+
+        a, b, m1, m2 = compareBounds(first(unifiedPts), last(unifiedPts), _view)
+        return a, b, m1, m2
         #------
         if group == 2
             # if so compare contents then, reset group 
@@ -4722,6 +4741,7 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
             a, b, m1, m2 = compareBounds(oldInterval, interval, _newView)
 
             group = 0
+            return a, b, m1, m2
         end
 
     end
@@ -4733,9 +4753,14 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
 
         #compare() # compareTriad  : lastB , interval[1], interval[2]
         #generate _view : from lastB to interval[2]
-        #makeView()
-        #makeView()
-        _newView = newView(lastB, interval[2])
+
+        # unifiedPts = union(min(first(union_old), first(union_new)), max(last(union_old), last(union_new)))
+        unifiedPts = union(lastB, interval[1], interval[2])
+
+        v = collect(first(unifiedPts):last(unifiedPts))
+        _newView = view(v, firstindex(v):lastindex(v))
+
+        #_newView = newView(lastB, interval[2])
 
         #Compare() # compareTriad 
 
@@ -4745,6 +4770,7 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
         a = indexOf(v, v[1])
         m1 = indexOf(v, v[2])
         b = indexOf(v, v[3])
+        a[1], b[1], m1[1] = inferLocation(a[1], m1[1], b[1])
         a, b, m1 = compareTriad(a[1], m1[1], b[1], _view)
 
         #-----
@@ -4753,7 +4779,7 @@ function compareIntervals(_stack, _newView::SubArray, interval, oldInterval, gro
     end
 end
 
-function compareIntervals(_stack, _newView::SubArray, interval=nothing, oldInterval=nothing, group=0, i=0) # _view)#Misspecification error  # TODO: 
+function compareIntervals(_stack, _newView::SubArray, interval=nothing, group=0, i=0) # _view)#Misspecification error  # TODO: 
 
     #= group = 0
     # interval = nothing
@@ -4783,6 +4809,7 @@ function compareIntervals(_stack, _newView::SubArray, interval=nothing, oldInter
             a, b, m1, m2 = compareBounds(oldInterval, interval, _newView)
 
             group = 0
+            return a, b, m1, m2
         end
 
     end
@@ -4796,9 +4823,15 @@ function compareIntervals(_stack, _newView::SubArray, interval=nothing, oldInter
 
         #compare() # compareTriad  : lastB , interval[1], interval[2]
         #generate _view : from lastB to interval[2]
-        #makeView()
-        #makeView()
-        _newView = view(lastB:interval[2], (lastB, interval[2]))
+        union_old = union(min(oldInterval[first(oldInterval)]), oldInterval[lastindex(oldInterval)]) #a1,b1 
+        union_new = union(min(interval[firstindex(interval)]), interval[lastindex(interval)]) # a2, b2
+        unifiedPts = union(min(first(union_old), first(union_new)), max(last(union_old), last(union_new)))
+
+        #golden line:
+        v = collect(first(unifiedPts):last(unifiedPts))
+        _newView = view(v, firstindex(v), lastindex(v))
+        # _newView = view(lastB:interval[2], (lastB, interval[2]))
+
 
         #Compare() # compareTriad 
         a, b, m1 = compareTriad(lastB, interval[1], interval[2], _newView) #_newView[lastB] > _newView[interval[2]] ? compareTriad(lastB, interval[1], interval[2], _newView) : return
@@ -4806,28 +4839,169 @@ function compareIntervals(_stack, _newView::SubArray, interval=nothing, oldInter
         return a, b, m1
     end
 end
-#### _newView = view(collect(lastB[:]:interval[2]), (lastB[:], interval[2]))
-v = makeVector((1:9))
-#collect(lastB[1:length(lastB)],interval[2])
-collect((lastB[1], lastB[2], interval[2])) #fixes it 
-lastB
-#ISSUE: lastB is a vector , not a scalar 
+
+#vectorize interval (or extern interval to includ rationals (indicies) between first & last bound)
+#interval = collect(first(interval):last(interval))
 
 
-view(v, (1:9))
-#view(v, (1,9))
-#view(v, (1, 9))
-compareIntervals(_stack, _newView::SubArray, interval=nothing, oldInterval=nothing, group=0, i=0) #TDOD: check correctness 
+function compareIntervals(_stack, _newView::SubArray, interval, group=0) # _view)#misspecification error  # TODO: utilize _newView 
 
-compareIntervals(_stack, arr, nothing, nothing, 0)
-arr
+    # group = 0
+    #interval = nothing
+    #oldInterval = nothing
 
-#--------------
-#check inputs 
-_stack
-interval = nothing
-compareIntervals(_stack, _View, interval, oldInterval, group, _length)
-compareIntervals(_stack, arr, 1) # compile error 
+    if _length === nothing
+
+        _length = copy(length(_stack))
+    end
+    if i === nothing
+        i = 1
+    end
+
+    for _ in 1:length(_stack)  #_view) 
+        group += 1
+        #do 
+        if (interval === nothing) == false #ismissing(interval) ==false #i.e. has a value  #interval !== nothing # on the 2nd, 4th , every even Run # if it has a value (from previous run) # interva==nothing
+            oldInterval = interval # store value 
+        end
+
+        interval = pop!(_stack) #1. sequential pop of a stack 
+        #2. vectorize interval (or extern interval to includ rationals (indicies) between first & last bound)
+        interval = collect(first(interval):last(interval))
+
+        v = collect(first(interval):last(interval))
+        _newView = view(v, firstindex(v), lastindex(v))
+
+        #-----
+        group += 1
+        # _view = NewView(oldInterval[1], interval[2])
+        v = collect(oldInterval[1]:interval[2])# 1 7
+        _view = view(v, firstindex(v):lastindex(v))
+
+        a, b, m1, m2 = compareBounds(oldInterval, interval, _view)
+        #------
+        if group == 2
+            # if so compare contents then, reset group 
+
+            #TODO: define _newView (from combb) # done 
+            union_old = union(min(oldInterval[firstindex(oldInterval)]), oldInterval[lastindex(oldInterval)]) #a1,b1 
+            union_new = union(min(interval[firstindex(interval)]), interval[lastindex(interval)]) # a2, b2
+            unifiedPts = union(min(first(union_old), first(union_new)),
+                max(last(union_old), last(union_new)))
+            v = collect(first(unifiedPts):last(unifiedPts))
+            _newView = view(v, firstindex(v), lastindex(v))
+            a, b, m1, m2 = compareBounds(oldInterval, interval, _newView)
+
+            group = 0
+        end
+
+    end
+    _length -= 1 #decrement by 1 
+    #finally last check if group = 1
+    if group == 1 && _length == 0 #i==_length-1 # && reached the end i.e. 
+
+
+        lastB = getlastB(_stack)
+
+        #compare() # compareTriad  : lastB , interval[1], interval[2]
+        #generate _view : from lastB to interval[2]
+
+        unifiedPts = union(min(lastB:interval[1]), max(lastB:interval[2]))
+        v = collect(firstIndex(unifiedPts):lastIndex(unifiedPts))
+        _newView = view(v, firstindex(v):lastindex(v))#lastB:interval[2], (lastB, interval[2]))
+
+        #    _newView = newView(lastB, interval[2])
+
+        #Compare() # compareTriad #Erroneous  #TODO:  fix 
+
+        #-----
+        #make a view (with a proper remapping )
+
+        a = indexOf(v, v[1])
+        m1 = indexOf(v, v[2])
+        b = indexOf(v, v[3])
+        a, b, m1 = compareTriad(a[1], m1[1], b[1], _view)
+
+        #-----
+        group = 0
+        return a, b, m1
+    end
+end
+
+
+## compareIntervals, of a `_stack`, a  view `_newView`, an `interval`` , a  `group` & an index `i`
+
+function compareIntervals(_stack, _newView::SubArray, interval=nothing, group=0, i=0) # _view)#Misspecification error  # TODO: 
+
+    #= group = 0
+    # interval = nothing
+    # oldInterval = nothing
+    #if _length === nothing =#
+
+    _length = copy(length(_stack))
+    #end
+    if i === nothing
+        i = 1
+    end
+    #for _ in 1: _length #length(_stack)  #_view) 
+    if i <= _length - 1
+        group += 1
+        #do 
+        if interval !== nothing # on the 2nd, 4th , every even Run # if it has a value (from previous run)
+            oldInterval = interval # store value 
+
+        end
+        interval = pop!(_stack) #1. sequential pop of a stack  
+
+        #vectorize interval (or extern interval to includ rationals (indicies) between first & last bound)
+
+        interval = collect(first(interval):last(interval))
+
+        if group == 2
+            # if got 2 groups, compare contents then, reset group 
+
+            #TODO: define _newView (from)
+            a, b, m1, m2 = compareBounds(oldInterval, interval, _newView)
+
+            group = 0
+            return a, b, m1, m2
+        end
+
+    end
+
+    #finally last check if group = 1
+    _newView = NewView(1, _length - 1) #<--------------
+    compareIntervals(_stack, _newView)
+    if group == 1
+
+        lastB = getlastB(_stack)
+
+        #compare() # compareTriad  : lastB , interval[1], interval[2]
+        #generate _view : from lastB to interval[2]
+        unifiedPts = union(min(lastB:interval[1]), max(lastB:interval[2]))
+
+        v = collect(first(unifiedPts):last(unifiedPts))
+
+        _newView = view(v, firstindex(v):lastindex(v))#lastB:interval[2], (lastB, interval[2]))
+
+        #Compare() # compareTriad 
+        a, b, m1 = compareTriad(lastB, interval[1], interval[2], _newView) #_newView[lastB] > _newView[interval[2]] ? compareTriad(lastB, interval[1], interval[2], _newView) : return
+        group = 0
+        return a, b, m1
+    end
+end
+#=  
+  #--------------
+  #check inputs 
+  _stack
+  interval = nothing
+  compareIntervals(_stack, _View, interval, oldInterval, group, _length)
+  compareIntervals(_stack, arr, 1) # compile error 
+=#
+
+# compareIntervals 
+
+## compareIntervals, of a `_stack` & vector array `arr`
 
 function compareIntervals(_stack, arr::Array{Int64,1}) #vital 
     group = 0
@@ -4847,7 +5021,9 @@ function compareIntervals(_stack, arr::Array{Int64,1}) #vital
             oldInterval = interval
         end
         interval = pop!(_stack)
+        #vectorize interval (or extern interval to includ rationals (indicies) between first & last bound)
 
+        interval = collect(first(interval):last(interval))
         if group == 2
             # if so  then, reset group 
             a, b, m1, m2 = compareBounds(oldInterval, interval, arr) #<-----
@@ -4871,6 +5047,8 @@ end
 _stack
 length(_stack)
 
+## compareIntervals, of a `_stack`, a  vector array `arr`, & an index `i`
+
 function compareIntervals(_stack, arr::Array{Int64,1}, i::Int64) #vital #compiles 
     group = 0
     interval = nothing
@@ -4893,8 +5071,11 @@ function compareIntervals(_stack, arr::Array{Int64,1}, i::Int64) #vital #compile
             oldInterval = interval
         end
         interval = pop!(_stack)
+        #vectorize interval (or extern interval to includ rationals (indicies) between first & last bound)
+        interval = collect(first(interval):last(interval))
 
         if group == 2
+
             # if so  then, reset group 
             a, b, m1, m2 = compareBounds(oldInterval, interval, arr)
             group = 0
@@ -4905,22 +5086,42 @@ function compareIntervals(_stack, arr::Array{Int64,1}, i::Int64) #vital #compile
     #  _newView = view(1, _length)
     newView
     print(_length)
-    v = collect((1:_length))  #makeVector((1:_length))
-    _newView = makeView(v, i)
+    _newView = collect(1:_length) |> _view -> view(_view, firstindex(_view):lastindex(_view))
     #return compareIntervals(_stack,_newView)
     #finally last check if group = 1
     if group == 1 # done 
 
         lastB = getlastB(_stack)
+        # input handling 
+        #                _min = min(lastB, interval[1], interval[2])
+        _first, _middle, _last = inferLocation(lastB, interval[1], interval[2])
+        res = nothing
         #interval 
-        a, b, m1 = compareBounds(lastB, interval[1], interval[2], arr) #compareTriad(lastB, interval[1], interval[2], arr) # updates are Reflected on the arr 
         group = 0 # reset group 
-        return a, b, m1
+        _view = collect(_first:_last) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        #_view = union(min(_first, _middle, _last), max(l_first, _middle, _last)) |> x -> view(x, firstindex(x):lastindex(x))
+
+        res = compareBounds(_first, collect(_middle:_last), _view)
+        if res !== nothing #Nothing
+            res = compareBounds(_first, _middle, _last, arr) #compareTriad(lastB, interval[1], interval[2], arr) # updates are Reflected on the arr 
+            a, b, m1 = res
+            #return nothing
+            return a, b, m1
+        elseif res === nothing
+            return
+
+        end
+        #a, b, m1 = res
+        #group = 0 # reset group 
+        # return a, b, m1
     end
     i = i + 1
-    return compareIntervals(_stack, _newView)
+    return compareIntervals(_stack, _newView, i) #ok 
 end
-function compareIntervals(_stack, arr::Array{Int64,1}, oldInterval=nothing, interval=nothing, group=0, i=0::Int64) #vital #compiles 
+
+## compareIntervals, of a `_stack`, a  vector array `arr`, a group number `group` , & an index `i`
+
+function compareIntervals(_stack, arr::Array{Int64,1}, interval=nothing, group=0, i=0::Int64) #vital #compiles  ## oldInterval=nothing [removed]
     # group = 0
     # interval = nothing
     # oldInterval = nothing
@@ -4938,9 +5139,12 @@ function compareIntervals(_stack, arr::Array{Int64,1}, oldInterval=nothing, inte
         group += 1
         #do 
         if interval !== nothing
-            oldInterval = interval
+            oldInterval = interval # the issue: inside the if  oldInterval cannot be 
         end
-        interval = pop!(_stack)
+        interval = pop!(_stack) # 1. pop the next _stack iterm , get interval bounds 
+        #2. vectorize interval (or extern interval to include rationals (indicies) between first & last bound)
+
+        interval = collect(first(interval):last(interval))
 
         if group == 2
             # if so  then, reset group 
@@ -4948,16 +5152,16 @@ function compareIntervals(_stack, arr::Array{Int64,1}, oldInterval=nothing, inte
             group = 0
             return a, b, m1, m2
         end
-        #finally call next  , subarrayy
-
+        #finally call next  , subarray #TODO: 
 
     end
+
     #  _newView = view(1, _length)
     length(arr)
     newView
     print(_length)
     # v = collect((1:_length))  #makeVector((1:_length))
-    # _newView = makeView(v, i)
+    # _newView = view(v, i)
     #return compareIntervals(_stack,_newView)
     #finally last check if group = 1
     if group == 1 # done 
@@ -4970,10 +5174,11 @@ function compareIntervals(_stack, arr::Array{Int64,1}, oldInterval=nothing, inte
     end
     i = i + 1
     v = collect((1:_length-1))  #makeVector((1:_length))
-    #_newView = makeView(v, i)
+    #_newView = view(v, i)
     _newView = view(v, (1:_length-1)) #length(arr - 1))
     return compareIntervals(_stack, _newView)
 end
+
 _stack
 
 compareIntervals([[1, 3], [4, 7], [8, 9]], arr, 1)
@@ -4981,35 +5186,48 @@ arr
 #view(v,(1, 3))
 
 
-A = compareIntervals(_stack, arr)
+A = compareIntervals(_stack, arr, i)
+#---------
+# Experiment 
+# say on the stack have the following indicies (output of a custom partition function )
 _stack = [[1, 3], [4, 7], [8, 9]]
 #---------
-group = 0
+#checked(#1)
+group = 0 # we got to have some form of group (structure)
 interval = nothing
 oldInterval = nothing
-a = -1;
-b = -1;
-m1 = -1;
-m2 = -1;
+a = -1
+b = -1
+m1 = -1
+m2 = -1
 #for _ in 1:length(_stack)
 _length = copy(length(arr))
-i = 1
+
+i = 1 # inialize i to 1 
 if i <= _length - 1
-    group += 1
+    group += 1 # increment group 
+
     #do 
-    if interval !== nothing
+    if interval !== nothing # if interval has a value 
+        # store it to oldInterval 
         oldInterval = interval
     end
-    interval = popfirst!(_stack)
+
+    interval = popfirst!(_stack) #next, pop the first  interval item, on _stack
+    # build a vectorized version of an interval  
+
+    interval = collect(first(interval):last(interval))
 
     if group == 2
         # if so  then, reset group 
+        # or using compareQuartet 
         a, b, m1, m2 = compareBounds(oldInterval, interval, arr) #<-----
         group = 0
         return a, b, m1, m2
     end
 
 end
+
 #finally last check if group = 1
 if group == 1 # done 
 
@@ -5020,19 +5238,19 @@ if group == 1 # done
     group = 0 # reset group 
     return a, b, m1
 end
-v = makeVector((lastB, interval[1], interval[2]))
-_view = makeView(1, v[length(v)])
+_view = union(min(lastB, interval[1], interval[2]), max(lastB, interval[1], interval[2])) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #TODO: please Check
+
 interval# 4 7 
 oldInterval#1 3
 #---------
 A
 _stack = [[1, 3], [4, 7], [8, 9]]
 res
-res = compareIntervals(_stack, arr)
+res = compareIntervals(_stack, arr, i)
 res
 _stack = [[1, 3], [4, 7], [8, 9]]
 arr
-res = compareIntervals(_stack, arr)# 7, 9, 8, 4  a,b ,m1, m2 ; should've been 1, 9,  
+res = compareIntervals(_stack, arr, i + 1)# 7, 9, 8, 4  a,b ,m1, m2 ; should've been 1, 9,  
 res
 arr
 _stack #stack should be nothing
@@ -5060,7 +5278,7 @@ _stack[2][2]
 
 _stack[length(_stack)-1][2] # before last 
 
-#TODO: how to get b of previous interval
+#TODO: how to get b of previous interval? make getB 
 
 
 #---------------
@@ -5093,12 +5311,15 @@ b = min(ranges[i][1])
 
 _last = copy(length(ranges) - 1)
 
+# ranges on a list 
+
+## ranges on a vector array 
 """Recursive function : compares a bounds in ranges of a Vector arr """
 function boundComparisonCondition(ranges, arr) # promising 
     try
         # for i in 1:length(ranges)
         _length = legnth(arr)
-        i = _length
+        i = _length #  # i is inferred by the length of arr  
         if i == 1
             return
         end
@@ -5122,14 +5343,15 @@ function boundComparisonCondition(ranges, arr) # promising
 
 end
 
-"""Recursive function : compares a bounds in ranges of a Vector _view """
+## ranges on a _view 
 
+"""Recursive function : compares a bounds in ranges of a Vector _view """
 function boundComparisonCondition(ranges, _view) # promising 
 
     try
         # for i in 1:length(ranges)
         _length = legnth(_view)
-        i = _length
+        i = _length  # i is inferred by the length of a _view 
         if _length == 1
             return
         end
@@ -5137,6 +5359,7 @@ function boundComparisonCondition(ranges, _view) # promising
 
         a = nothing
         b = nothing
+
         contentSwapped = nothing
         if i >= 2 && a < b # max(lastRange) # if i>=1
             a = max(ranges[i-1][_last])
@@ -5147,6 +5370,7 @@ function boundComparisonCondition(ranges, _view) # promising
         else
             throw(error(msg))
         end
+
         _view = view(collect(1:_length-1), 1:_length-1)
         return boundComparisonCondition(ranges, _view) #a, b, contentSwapped
     catch UnexpectedError
@@ -5154,9 +5378,11 @@ function boundComparisonCondition(ranges, _view) # promising
     end
 
 end
+
 ranges
 boundComparisonCondition(ranges, view(collect(1:9-1), 1:9-1))
 popfirst!(ranges)
+
 #ranges[i] #3 # [8 9]
 #ranges[i-1] #2 [ 4 7]
 #ranges[1]  # [ 1 3]
@@ -5169,14 +5395,14 @@ ranges[1][1]
 ranges[1][2]
 boundComparisonCondition([[1, 3], [4, 7], [8, 9]], [1:9], 2)# start from 2 at least 
 
-#highly experimental 
+#highly Experimental 
+
+"""f: Unknown function """
 function f(_sets, arr) # O = length(_sets)
 
     for i in 1:length(_sets)   # O = length(_sets)
 
-
         # ptsToRanges() # requires pts # TODO: 
-
         # compare every set's bounds 
         #finally , compare contents  at ranges 
         boundComparisonCondition(ranges, arr, i)
@@ -5185,7 +5411,8 @@ function f(_sets, arr) # O = length(_sets)
 
 end
 
-
+# Minimax 
+"""Minimax function"""
 function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
 
     a = _unsortedInterval[1]
@@ -5199,16 +5426,16 @@ function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
     b, _sortedInterval1[1], _sortedInterval2[1] = compareTriad(b, _sortedInterval1[1], _sortedInterval2[1], arr)
 
 
+end
 
-end 
-
-"""combines 2 different locally sorted, intervals, with an unsorted Interal """ 
-function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
+"""combines 2 different locally sorted, intervals, with an unsorted Interal """
+function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr) #Warning : arr is unused # depreciate 
 
     # unsorted component underquested
     #1. locally sort the unsorted Interval  
     a = _unsortedInterval[1] #aContent  (min of first interval )
     b = _unsortedInterval[2]# bContent  (max of 2nd interval )
+
     #1. sort a,b , locally , so that a : local min, b: local max 
     a, b, contentSwapped = doCompare(a, b, _unsortedInterval)
 
@@ -5229,71 +5456,25 @@ function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
 
     # P.s: compareTriad: returns an index
 
-    # or, as an online learning of location, we can , logiclly infer location,correctly
-    #how: by inferring 
+    # or, as an online learner About Location, we can , logically infer location,correctly
+    #how: by inferring (invoke: infer location , for any three indices : output returs the sorted )
     lower = _sortedInterval1[1] # lowerContent 
     upper = _sortedInterval2[2]# upperContent 
     a = _arr[a]
-    inferLocation(lower, upper, a) # compare contents 
+
+    lower, upper, a = inferLocation(lower, upper, a) # compare contents 
     b = _arr[b]
-    inferLocation(lower, upper, b)
+    lower, upper, b = inferLocation(lower, upper, b)
 
-
-end 
+end
 
 #=
 either we compare the 3 contents on their on, once & for all [classic]
 or, we can online learn x's location from already mde predicates [dynamic]
 =#
 
-## Infer location of three point 
-
-""" quantitatively, compare values , returns a qualitative value """
-function inferLocation(a, b, x) #TODO: 
-    
-    try # the classical approach (compare all 3 at same time )
-      #  newLocation 
-        if x > a && x > b #x is max
-        return a,b,x 
-        elseif x > a && x < b #x is in between 
-            return a,x,b
-        elseif x < a && x < b # x is the min 
-            return x,a,b
-        elseif x == a || x == b
-            throw(error("Different Bounds are equal "))
-        end
-        #or, 2nd possibility  #TODO: Complete 
-    #=
-        if x<a # if x is less than the Min -> min = x 
-        elseif x >b # if x is larger than Max -> max = x 
-        else #it should be in between
-        if 
-    =#
-    catch BoundsEqualError
-        @error "BoundsEqualError :Different Bounds are equal " (BoundsEqualError, catch_backtrace())
-    end
-
-end 
 
 
-function inferLocation(a, b, x, arr ) #TODO: use arr content 
-    
-    try
-       # newLocation
-        if x > a && x > b #x is max
-            return a, b, x
-        elseif x > a && x < b #x is in between 
-            return a, x, b
-        elseif x < a && x < b # x is the min 
-            return x, a, b
-        elseif x == a || x == b
-            throw(error("Different Bounds are equal "))
-        end
-    catch BoundsEqualError
-        @error "BoundsEqualError :Different Bounds are equal " (BoundsEqualError, catch_backtrace())
-    end
-
-end 
 # we don't knowif a , b are the actual bounds 
 # what we know for sure: a,b are sorted and in the right order 
 #=
@@ -5312,36 +5493,163 @@ a x b
 x a b 
 =#
 
-#requires: indexOf 
-function updateLocation(a, b, x, newlocation, arr) #sophisticated 
-    aIndex = indexOf(arr, a)[1] # arr[indexOf(arr, a)[1]] # == a
-    bIndex = indexOf(arr, b)[1] #arr[indexOf(arr, b)[1]]
-    #logically: 
-    aIndex < bIndex && arr[aIndex] < arr[bIndex] == true #always
+#Note: requires: indexOf 
 
-    newXIndex = IndexOf(newlocation, x)[1] # give the only clue for location 
-    _XContent = newlocation[newXIndex]
-    oldXindex = indexOf(arr, _XContent) #Warning if you pop; locations wll be misused  #TODO: check
 
+# handleMultipleIndicies
+
+## handleMultipleIndicies of a vector array 
+""" handles multiple Indicies"""
+function handleMultipleIndicies(X, arr)
+
+    try
+        #matchedIndicies >= 2 
+        #if matchedIndicies == 2 
+        firstXIndex = firstindex(findall((x -> x == arr[X]), arr)) # [1]
+        # newXIndex == findall(( x -> x == arr[X]), arr)[1] #[1] #IndexOf(newlocation[1], x) # given new index the only clue for location 
+        #_XContent = arr[X] #newlocation[newXIndex]
+
+        # oldXIndex
+        lastXIndex = lastindex(findall((x -> x == arr[X]), arr))
+        #  newXIndex = lastIndex(newXIndex)
+        ret_Val = nothing
+
+        if firstXIndex == lastXIndex # there is only 1 unique match of arr[d]
+            # pick one 
+            ret_Val = lastXIndex, nothing, nothing
+            # if oldXIndex > newXIndex #
+            # else if oldIndex > newIndex 
+
+            #else if firstXIndex > lastXIndex ret_Val # Irrational option (index of array is in Ascending Ordered  )
+
+        elseif firstXIndex < lastXIndex #Rationally Logical 
+            #content check
+
+            if arr[firstXIndex] > arr[lastXIndex] # dichotomy (index,content)
+
+                firstXIndex, lastXIndex, IsSwapped = doCompare(oldXIndex, newXIndex, arr)
+
+                ret_Val = firstXIndex, lastXIndex, IsSwapped
+
+            elseif arr[firstXIndex] == arr[lastXIndex] #Equal Content 
+                ret_Val = arr[firstXIndex], arr[lastXIndex], nothing
+
+            elseif arr[firstXIndex] < arr[lastXIndex]
+                ret_Val = nothing, nothing, nothing
+            end
+
+        else
+            throw(error("either firstXIndex > lastXIndex or UnexpectedError Occured "))
+        end
+        return ret_Val
+        #end
+    catch UnexpectedError
+        #return ret_Val 
+        @error "either firstXIndex > lastXIndex or UnexpectedError Occured " exception = (UnexpectedError, catch_backtrace())
+    end
+end
+
+# Update Location 
+
+## Update Location  of a vector array
+
+
+"""update location, given an Index X """
+function updateLocation(a, b, X, arr) #sophisticated #TODO: test 
+
+    #aIndex = indexOf(arr, a)[1] # arr[indexOf(arr, a)[1]] # == a
+    aIndex = firstindex(findall((x -> x == arr[a]), arr)) #[1]
+
+    #bIndex = indexOf(arr, b)[1] #arr[indexOf(arr, b)[1]]
+    bIndex = lastindex(findall((x -> x == arr[b]), arr)) # [1]
+    XIndex = nothing
+    X < length(arr) ? XIndex = arr[X] : nothing
+
+    #logically:  a <b & arr is sorted (i.e contentA < contentB )
+    aIndex < bIndex && arr[aIndex] < arr[bIndex] && XIndex <= bIndex == true #always
+
+    # x index 
+    # xcontent 
+
+    #newXIndex
+    oldXIndex = findall((x -> x == arr[X]), arr)[1]
+    # newXIndex = = findall(( x -> x == arr[X]), arr)[1] #[1] #IndexOf(newlocation[1], x) # given new index the only clue for location 
+    _XContent = arr[X] #newlocation[newXIndex]
+
+    # oldXIndex
+
+    newXIndex = findall((x -> x == arr[X]), arr)
+    newXIndex = lastIndex(newXIndex)
+
+    # sometimes 
+    # oldXIndex = indexOf(arr, _XContent) #Warning if you pop; locations wll be misused  #TODO: check: old Index == newIndex 
+
+    #compare oldIndex with newIndex #assume cadlag 
+    if arr[oldXIndex] > arr[newIndex] # && oldXIndex != newXIndex
+        oldXIndex, newXIndex, contentSwapped = doCompare(oldXIndex, newXIndex, arr)
+    end
+    # 
+
+    if newXIndex == firstindex(arr) #1 # it's min, should be are the start 
+        insert!(arr, aIndex, arr[X])
+    elseif newXIndex == 2 # in the middle 
+        insert!(arr, aIndex + 1, _XContent)
+
+    elseif newXIndex == lastindex(arr) #3 # the max # add at the end 
+        insert!(arr, bIndex, _XContent)
+    end
+    #newXContent = newlocation[IndexOf(arr, x)[1]] # can be 1 , 2, or 3 
+    # oldxIndex = arr[indexOf(arr, x)[1]]
+    #indexOf(arr, a)
+end
+
+"""update location, given an Index X """
+function updateLocation(a, b, _XContent, arr) #sophisticated #TODO: test 
+
+    #aIndex = indexOf(arr, a)[1] # arr[indexOf(arr, a)[1]] # == a
+    aIndex = findall((x -> x == arr[a]), arr)[1]
+
+    #bIndex = indexOf(arr, b)[1] #arr[indexOf(arr, b)[1]]
+    bIndex = findall((x -> x == arr[b]), arr)[1]
+    #logically:  a <b & arr is sorted (i.e contentA < contentB )
+    aIndex < bIndex && arr[aIndex] < arr[bIndex] && newlocation <= bIndex == true #always
+
+    # x index 
+    # xcontent 
+
+    #newXIndex
+
+    oldXIndex = findall((x -> x == _XContent), arr)[1]
+
+    newXIndex = findall((x -> x == _XContent), arr)
+    newXIndex = lastIndex(newXIndex)
+
+    # sometimes 
+    # oldXIndex = indexOf(arr, _XContent) #Warning if you pop; locations, it wll be misused  #TODO: check: old Index == newIndex 
+    #compare oldIndex with newIndex #assume cadlag 
+
+    if arr[oldXIndex] > arr[newIndex] # && oldXIndex != newXIndex
+        oldXIndex, newXIndex, contentSwapped = doCompare(oldXIndex, newXIndex, arr)
+    end
 
     if newXIndex == 1 # it's min, should be are the start 
         insert!(arr, aIndex, _XContent)
-    elseif  newXIndex == 2 # in the middle 
-         insert!(arr, aIndex+1, _XContent)
+    elseif newXIndex == 2 # in the middle 
+        insert!(arr, aIndex + 1, _XContent)
 
     elseif newXIndex == 3 # the max # add at the end 
         insert!(arr, bIndex, _XContent)
     end
-        #newXContent = newlocation[IndexOf(arr, x)[1]] # can be 1 , 2, or 3 
+    #newXContent = newlocation[IndexOf(arr, x)[1]] # can be 1 , 2, or 3 
     # oldxIndex = arr[indexOf(arr, x)[1]]
     #indexOf(arr, a)
-end 
-
-arr
+end
+#arr
 #[1 7 ] = [a b ]
-# 
-
-updateLocation(1,7, ) #TODO: complete
+#
+ar = collect(1:7)
+x = 10
+updateLocation(1, 7, x, ar)  #5, ar) #TODO: complete & check 
 
 collect(4:1)# []
 collect(1:4)
@@ -5349,10 +5657,10 @@ collect(1:4)
 #==#
 
 
-
 # Divide Conquer Strategy 
 
 _stack
+# Divide function with fRecurse
 function fRecurse(_stack, kernel)
 
     _length = copy(length(_stack)) #check if _stack is defined # rf n
@@ -5380,10 +5688,13 @@ function fRecurse(_stack, kernel)
     else
         throw(error(msg))
     end
+    #TODO: add Catch (for a try statement)
 
 end
+
 #------
 
+# Conquer function with Conquer function 
 function conquer(interval, kernel=middle)
 
     #  count = 0
@@ -5418,6 +5729,7 @@ function conquer(interval, kernel=middle)
         compareTriad(a, a + 1, a + 2, view(collect(a:a+2), a:a+2)) # compare its Nearest neighborhood 
 
     end
+
     #this part exactly 
     if euclidDist(m1, m2) == 1
         compareQuartet(m1 - 1, m1, m2, m2 + 1, view(collect(m1-1:m2+1), m1-1:m2+1))
@@ -5441,53 +5753,37 @@ end
 
 euclidDistDifference(2, 3)
 
+_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+#res = remap(v[1], v[length(v)])
 
-v = collect((2:3))
-res = remap(v[1], v[length(v)])
+#TODO: check where this implemenetation:
+_view = collect(res[1]:length[s]) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #compiles no bugs
 
-view(v, res[1]:res[length(res)])
-
-#TODO: check where it's implemeneted, & p[gdut then f]
-view(v, firstindex(res[1]):firstindex(res[length(res)])) #compiles no bugs
+_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+#----
 
 
-function ptsToView(a, b)
-
-    _length = euclidDistDifference(a, b)
-
-    if _length == 0 # a == b (return either element)
-        return a #getLastElement(a, b) 
-    elseif _length == 1 #|| _length == 0
-        v = collect(a:b)
-    
-        _view = view(v, firstindex(v): lastindex(v))
-        #v1, v2 = remap(v[1], v[length(v)])
-        doCompare(a, b, _view) #view(v[1], v[length(v)]))
-    else
-        v = collect(a:b)
-        return view(v, firstindex(v): lastindex(v)) # remap(a,b) #TODO: check usefulness 
-    end
-
-end
 #-----
 
 #------
-#_view = view(collect(2:3), 2:3)
-#_view = view([2, 3], 2:3)
+#
+#v = collect(2:3)
+#_view = view( v, firstindex(v):lastindex(v))
 
-_view = collect((2, 3))
+_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
 compareBounds(2, 3, _view)
+
 #=
-    if euclidDist(m2 + 1, b - 1) > 2 #? 
-        conquer(collect(m2+1:b-1), kernel) #: return 
-    elseif euclidDist(m2 + 1, b - 1) == 1
-        compareQuartet(m2, m2 + 1, b - 1, b, collect(m2:b))
-    else
-        throws(error(msg))
-        #og
-    end
-=#
+            if euclidDist(m2 + 1, b - 1) > 2 #? 
+                conquer(collect(m2+1:b-1), kernel) #: return 
+            elseif euclidDist(m2 + 1, b - 1) == 1
+                compareQuartet(m2, m2 + 1, b - 1, b, collect(m2:b))
+            else
+                throws(error(msg))
+                #og
+            end
+ =#
 
 fRecurse([[1, 3], [4, 7], [8, 9]], middle)
 #=
@@ -5517,12 +5813,12 @@ view(v, v[1])
 
 
 
-view(collect((2:3)), 2) # view is correct 
+view(collect((2:3)), 2:3) # view is correct 
 
 #
-#view(collect((2:3)), 3) # non existent 
 
-#view(collect((2:3)), remap(2,3)) # view is correct 
+##view(collect((2:3)), remap(2,3)) # view is correct 
+#_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
 doCompare(2, 3, [2, 3]) #<-----------
 #-----
@@ -5545,6 +5841,7 @@ doCompare(m1, m2, ptsToView(m1, m2))
 a
 m1
 euclidDist(1, 3)
+#--------
 
 #TODO: Reflect changes in a corresponding function 
 if euclidDistDifference(a, m1) > 1 #? 
@@ -5572,70 +5869,16 @@ euclidDistDifference
 #---------------
 #compiles 
 
-euclidDistDifference
+# euclidDistDifference
 #added compareBounds
-function isUnitDistanceReached(a, b)
-
-    if euclidDistDifference(a, b) == 1  #TODO: chage inside the function 
-        return true
-    else
-        v = collect(a:b)
-        #_view = view(v, firstindex(v):lastindex(v))
-        m1, m2, _contentSwapped = middle(a, b) #a - 1, a, b, b + 1, _view)
-        compareBounds(m1, m2, v)
-        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
-        return false
-    end
 
 
-end
-function isUnitDistanceReached(a, b, kernel)
-
-    if euclidDistDifference(a, b) == 1  #TODO: chage inside the function 
-        return true
-    else
-        v = collect(a:b)
-        _view = view(v, firstindex(v):lastindex(v))
-        #check the bounds' sanity check #TODO:
-        kernel(a - 1, a, b, b + 1, _view)
-        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
-        return false
-    end
 
 
-end
-
-function isEndReached(a, b, kernel)
-
-    if euclidDistDifference(a, b) == 0 #1  #TODO: chage inside the function 
-        return true
-    else
-        v = collect(a:b)
-        _view = view(v, firstindex(v):lastindex(v))
-        kernel(a - 1, a, b, b + 1, _view)
-        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
-        return false
-    end
+# End Reached function 
 
 
-end
-
-function isEndReached(a, b)
-
-    if euclidDistDifference(a, b) == 0 #1 #TODO: chage inside the function 
-        return true
-    else
-        v = collect(a:b)
-        _view = view(v, firstindex(v):lastindex(v))
-        compareQuartet(a - 1, a, b, b + 1, _view)
-        # kernel(m1, m2, view(collect(m1:m2), m1:m2))
-        return false
-    end
-
-
-end
-
-#---------------
+#-------
 
 if isEndReached(1, 3) == false
     return false
@@ -5652,8 +5895,8 @@ else
 end
 
 m2
+m2 = b - 2
 b
-
 firstindex(v)
 lastindex(v)
 v
@@ -5661,6 +5904,7 @@ v = collect(m2:b)
 _view = view(v, firstindex(v):lastindex(v))
 #------
 #TODO: Apply in a function 
+#check the Right Side
 rightDist = euclidDistDifference(m2, b)
 
 if rightDist > 1 #? 
@@ -5676,7 +5920,7 @@ end
 
 #3 #TODO: try out  #Error 
 
-n, m = nothing  #MethodError: no method matching iterate(::Nothing)#thrown when 2 (or more) vars has recieved null return -nothing 
+n, m = nothing, nothing  #MethodError: no method matching iterate(::Nothing)#thrown when 2 (or more) vars has recieved null return -nothing 
 n
 m
 
@@ -5684,43 +5928,83 @@ m2
 m2 + 1
 b - 1
 b
+
 #Note: m2 == b-1 ==4 ; m2+1 ==b ==5  then its only 2 points m2, m2+1
 
+# m1, m2 relation 
 v = collect(m2:m2+1)
-_view = view(v, firstindex(v): lastindex(v)) # BoundsError: attempt to access 2-element Vector{Int64} at index [1, 2] #lesson learned [x1 x2]
-m2 == b - 1 && m2 + 1 == b ? doCompare(m2, m2 + 1, _view) : compareQuartet(m2, m2 + 1, b - 1, b, _view)
+_view = view(v, firstindex(v):lastindex(v)) # BoundsError: attempt to access 2-element Vector{Int64} at index [1, 2] #lesson learned [x1 x2]
+
+# m2,b-1 || 
+if m2 == b - 1 && m2 + 1 == b
+    doCompare(m2, m2 + 1, _view)
+else
+    compareQuartet(m2, m2 + 1, b - 1, b, _view)
+end
 
 #---- 
-a = m2 + 1, b = b - 1
+a = m2 + 1;
+b = b - 1;
 #-----
-# orphaned Code Block compiles inputArguments()
-if euclidDistDifference(m2 + 1, b - 1) > 2 #? 
+res = nothing
 
+# orphaned Code Block compiles inputArguments() # TODO: create a function, for it 
+
+# m2, b relation (m2+1 , b-1 )
+if euclidDistDifference(m2 + 1, b - 1) > 2 #?  #TODO: fix orphaned code  
     conquer(collect(m2+1:b-1), kernel) #: return 
-elseif isUnitDistanceReached(m2 + 1, b - 1) == true #1  # euclidDistDifference(m2 + 1, b - 1) == 1
 
-    v = collect(m2:b)
-    _view = view(v, firstindex(v):lastindex(v))
-    # compareQuartet(m2, m2 + 1, b - 1, b, _view) # <------------------ indexed_iterate(I::Nothing, i::Int64)
-    v1 = collect(m2:m2+1)
-    _view1 = view(v1, firstindex(v1):lastindex(v1)) # BoundsError: attempt to access 2-element Vector{Int64} at index [1, 2] #lesson learned [x1 x2]
-    m2 == b - 1 && m2 + 1 == b ? doCompare(m2, m2 + 1, _view1) : compareQuartet(m2, m2 + 1, b - 1, b, _view)
-    #infer information : a = m2+1 , b = b-1
+elseif isUnitDistanceReached(m2 + 1, b - 1) == true # , kernel) == true #1  # euclidDistDifference(m2 + 1, b - 1) == 1
+
+    #v = collect(m2:b)
+    #_view = view(v, firstindex(v):lastindex(v))
+    if m2 == b - 1 || m2 + 1 == b # (instead of 4 points,) [we have unique 2 points]
+
+        # the difference between m2 & m2+ 1 is 1 -> docompare() is the best compare function 
+        _view = collect(m2:m2+1) # |> 
+        _view -> view(_view, firstindex(_view):lastindex(_view))
+        res = doCompare(m2, m2 + 1, _view)
+
+        #check return 
+        if res !== nothing
+            a, b, contentSwapped = res
+            return a, b, contentSwapped
+        end
+    else # if there are 4 points 
+
+        _view = collect(m2:b) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+        res = compareQuartet(m2, m2 + 1, b - 1, b, _view) # <------------------ indexed_iterate(I::Nothing, i::Int64)
+        if res !== nothing
+            m2, m2 + 1, b - 1, b = res
+            return m2, m2 + 1, b - 1, b
+        end
+    end
+    # the difference between m2 & m2+ 1 is 1 -> docompare() is the best compare function 
+    # _view = collect(m2:m2+1) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+    # m2 == b - 1 && m2 + 1 == b ? doCompare(m2, m2 + 1, _view1) : compareQuartet(m2, m2 + 1, b - 1, b, _view)
+    #infer information, locations are equal : a = m2+1 , b = b-1
 
 elseif isEndReached(1, 1) #euclidDistDifference(m2 + 1, b - 1) == 0 # scalar 
-    return true #isEndReached(m2, b)
+#  return true #isEndReached(m2, b)
 else
     throws(error(msg))
 end
+#end
 
-# using isEndReached
-
-if euclidDistDifference(a, b) == 1 #(m2, b) == true
-
-
+# using isEndReached, at the end 
+if euclidDistDifference(a, b) == 1 #(m2, b) == true # compilese 
 else
-
+    return false
 end
+
 isEndReached(1, 1)
 
 isUnitDistanceReached(1, 2)
+isUnitDistanceReached(1, 1)
+
+#----
+
+# CompareSort(1, 3, [1, 2, 3]) = # returns answer (with error ) # TODO: fix )last 
+
+#-----
