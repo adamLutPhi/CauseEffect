@@ -1,6 +1,7 @@
 # CauseEffect
 
-A work in Progress
+** A work in Progress **
 
-currently finishing [Utils](https://github.com/adamwillisMastery/CauseEffect/blob/main/src/Utils.jl)
+~Currently finishing [Utils](https://github.com/adamwillisMastery/CauseEffect/blob/main/src/Utils.jl)~
 
+Reached [unUsed2](https://github.com/adamwillisMastery/CauseEffect/blob/main/src/unUsed2.jl)
