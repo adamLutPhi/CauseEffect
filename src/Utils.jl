@@ -345,7 +345,7 @@ indexValue1, indexValue2 = objBounds(v1,v) #find v1's bounds, in terms of v (or 
     lastXValue  = newXIndex[length(newXIndex) -1 ]
 #end
     firstXIndex = firstindex(newXIndex)
-    newXIndex = lastIndex(newXIndex)
+    newXIndex = lastindex(newXIndex)
 
 #end
 
@@ -5714,7 +5714,7 @@ function updateLocation(lowerBound, upperBound, X, arr) #sophisticated #TODO: te
     # oldXIndex
 
     newXIndex = findall((x -> x == arr[X]), arr)
-    newXIndex = lastIndex(newXIndex)
+    newXIndex = lastindex(newXIndex)
 
     # sometimes
     # oldXIndex = indexOf(arr, _XContent) #Warning if you pop; locations wll be misused  #TODO: check: old Index == newIndex
