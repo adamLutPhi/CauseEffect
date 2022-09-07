@@ -322,7 +322,7 @@ _view = view(v,firstindex(v):lastindex(v))
 firstXIndex, firstXValue, lastXIndex, lastXValue = objBounds(_view) #_view)
 
 """ # uncommentMe #later
-println("objects: firstIndex ",firstXIndex, " firstValue = ", firstXValue," lastIndex = ", lastXIndex, " lastValue = ", lastXValue)
+println("objects: firstIndex ",firstXIndex, " firstValue = ", firstXValue," lastXIndex = ", lastXIndex, " lastValue = ", lastXValue)
 #-------------
 firstindexValue1, lastindexValue1, firstindexValue2, lastindexValue2 = objBounds(_subView, _view)
 
