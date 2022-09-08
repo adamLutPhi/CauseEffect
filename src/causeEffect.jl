@@ -9,14 +9,14 @@ in general
     view(arr,1:5) or  view(arr,a:b)
 
 
-2. when error throws a MethodError: no method matching iterate(::Nothing) iterate('nothing')
-    it's like saying, WARNING!: there is a Hidden issue that you have Overseen
-    like a function call, with a Missing Function (user forgot to get compiled)
+2. when error throws a `MethodError`: no method matching iterate(::Nothing) iterate('nothing')
+    it's like saying, WARNING: there is a `Hidden issue` that you have Overseen
+    like a `function call`, with a `Missing Function` (user forgot to get compiled)
 
 3. MethodError: no method matching !(::Int64)
 
     !(a >= b) no such operator composition (not less than (or greater than))
-    just revert the bounds manually
+    just revert the `bounds` manually
     (a <= b)
 
 4. StackOverflowError: severe Error with unclear reasoning: missing 1 (or more) conditions(s) without a returning argument
@@ -25,21 +25,21 @@ in general
 possible 2 composed views (subarray of another subarray) whereas answer expects only 1 view (subarray)
 
 # BoundsError: attempt to access 2-element view(::Vector{Int64}, 1:2) with eltype Int64 at index [1:5]
-the problem is with the provided bounds
+the problem is with the provided `bounds`
 1.Update:
 1.1. mabe they aren't updated: needs continual update
 1.2. maybe they are wrongly updated: needs to redo each bound of each view
 1.3. the currently passed a view, instead of intended subview
 
 
-6. #BoundsError: attempt to access 4-element Vector{Int64} at index [1:5]:
+6. #`BoundsError`: attempt to access 4-element Vector{Int64} at index [1:5]:
 Problem Definition : Given bounds exceed the  actual array size
 
 Note: 5 & 6 are have the same problem domain, but with different scenario implementation
 & with the same solution
 solution: check input arguments(bounds) are less than (or equal to) input vector array
 
- #BoundsError: attempt to access 4-element Vector{Int64} at index [1, 4]
+ #`BoundsError`: attempt to access 4-element Vector{Int64} at index [1, 4]
         #remapping problem  #subtle-issue why: because of an update on (1 of the ) bounds
 
  solution:
@@ -47,30 +47,30 @@ solution: check input arguments(bounds) are less than (or equal to) input vector
         a = 1
         #create a new view with a,b
 
-7. ERROR: BoundsError: attempt to access 9-element Vector{Int64} at index [1, 5]
+7. ERROR: Bound sError: attempt to access 9-element Vector{Int64} at index [1, 5]
 Go with the hunch on this one:
 Reason : observed b is set to 9 (outside the scope of this function)
 Problem's region is outside the function boundaries
 
 passed
-8. ERROR: BoundsError: attempt to access 3-element view(::Vector{Int64}, 1:3) with eltype Int64 at index [1, 2]
+8. ERROR: `BoundsError`: attempt to access 3-element view(::Vector{Int64}, 1:3) with eltype Int64 at index [1, 2]
 
 first: it has reached its terminus as euclidDist(1,2) = 1
 instead of terminating
 it throws a boundError
 
-9. BoundsError: attempt to access 1-element view(::Vector{Int64}, 1:1) with eltype Int64 at index [1:2]
+9. `BoundsError`: attempt to access 1-element view(::Vector{Int64}, 1:1) with eltype Int64 at index [1:2]
 
-answer: it's a scalar: scalar handling when a-b=0 <=> a=b
+Answer: it's a scalar: scalar handling when a-b=0 <=> a=b
 
 10. BoundsError: attempt to access 1-element view(::Vector{Int64}, 1:1) with eltype Int64 at index [1:2]
 first index [1:2] has a=1 , b=2 , dist = b-a = 1 # check euclidDist(a,b) =
 
-solution:
+Solution:
 #try#1: correct misspecified function arguments: adds type for arr::Array{Int64,1}
 REVEALED A GIGANTIC ISSUE If left Uncorrected
-for functions arr , _view
-(before: compiler has been thinking  they are the same 1 function(view & arr are same) , after correction, they are 2 expected functions [as Expected] (view, arr are different ))
+For functions arr , _view
+(bef    ore: compiler has been thinking  they are the same 1 function(view & arr are same) , after correction, they are 2 expected functions [as Expected] (view, arr are different ))
 
 BoundsError: attempt to access 1-element view(::Vector{Int64}, 1:1) with eltype Int64 at index [1:2]
 
@@ -89,6 +89,7 @@ m2 -= 1 ; b -= 1
 
 =#
 
+import Utils: lineLengthAcceptable
 import Base: @propagate_inbounds
 Middles = []
 offset = 1
@@ -178,10 +179,13 @@ end
 =#
 #index, value space  [vital]
 
+
+
 @inline function doCompare(a, b, _view) #TODO: check?
 
     _length = copy(length(_view)) #ok
-    if a <= _length && b <= _length && a >= 0 && b >= 0
+    #a <= _length && b <= _length && a >= 0 && b >= 0
+    if lineLengthAcceptable(a,b,_length) == true
         aContent = _view[a] #view(_view, a) #arr[a]
         bContent = _view[b] #view(_view, b) #arr[b]
 
@@ -189,8 +193,7 @@ end
 
         if aContent > bContent # arr[a] > arr[b]
 
-            _view[a], _view[b] = swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
-            contentSwapped = true   #arr[a], arr[b]
+            a,b,contentSwapped = swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
 
         elseif aContent > bContent
             #do nothing
@@ -208,7 +211,7 @@ arr[length(arr)]
 
     _length = copy(length(arr))
 
-    if a <= _length && b <= _length # && b >= m2
+    if lineLengthAcceptable(a,b,_length) == true #a <= _length && b <= _length # && b >= m2
         aContent = arr[a] #<-------
         bContent = arr[b]
 
@@ -217,10 +220,9 @@ arr[length(arr)]
         # Base.@propagate_inbounds
         if aContent > bContent # arr[a] > arr[b]
             #Base.@propagate_inbounds
-            arr[a], arr[b] = swapContent(arr[a], arr[b], arr)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
-            contentSwapped = true   #arr[a], arr[b]
+            a,b,contentSwapped = swapContent(arr[a], arr[b], arr)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
+            #contentSwapped = true   #arr[a], arr[b]
         #Base.@inbounds
-        # elseif
 
         elseif aContent < bContent  # arr[a] < arr[b] #review#1 #<-----
             #don't swap # return values
@@ -242,204 +244,6 @@ arr[length(arr)]
     end
 end
 
-#=UncommentMe
-function effect(a, b, view = view(arr, a, b))
-    cause(a, b, view)
-end
-=#
-#applied space: Materialized
-#=
-function goleftVector(a, b, arr) #tobeRemoved
-    #fix a , decrease b
-    #condition = areInbounds(a, b, arr)
-    # if areInbounds(a, b, arr) == true
-    return causeVector(a, b - 1, arr)   #or is it effect?  #<------
-end
-=#
-#=
-function gorightVector(a, b, arr)
-    #fix b, increase a
-
-    return causeVector(a + 1, b, arr) #or is it effect?
-
-end
-=#
-
-#depreciate
-"""stopping function for comparison """
-#=
-function isStop(a, b, arr::Array{Int64,1}; offset=1) #TODO :  euclidDist , doCompare  #review#2: in this instance, offset is valid  #review#2
-    try
-        safelyReturns = nothing
-        distance = euclidDist(a, b) #; offset) #checks distance  <--potential error corrected
-        if distance == 0
-            #Scalar: register index as a leaf (in leaf index ?)
-            #safelyReturns = true #TODO: place index in a leafIndex?  #uncommentMe
-            safelyReturns = true #false #true
-            return safelyReturns #0 # safelyReturns
-        #endAlgorithmSafely() #returns 0
-        elseif distance == offset # Pair(1 between): #+ 1 #2 default  #couple a,b, 1 interval #correct
-            # doCompare(a, b, arr) #local sort #light #uncommentMe
-            safelyReturns = true #false #true
-            return endAlgorithmSafely(arr) # safelyReturns uncommentMe
-            #endAlgorithmSafely(arr)#upon change show that part ! <-----review#2: errors out
-            return safelyReturns
-        elseif distance > offset #TODO: #a divsible Interval (2 or more )  # euclidDist(1,4) = 3 > 1 true
-            safelyReturns = false #true #false
-            return safelyReturns
-            # explore!(a, b, arr) # copy / paste in the higher coding block where function calls it
-        else
-            throw(error("Unexpected Error occured"))
-        end
-    catch UnexpectedError
-        @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-=#
-
-#=
-"""stopping function for comparison """
-function isStop(a, b, arr; offset=1) #TODO :  euclidDist , doCompare  #review#2: in this instance, offset is valid  #review#2
-    try
-        safelyReturns = nothing
-        distance = euclidDist(a, b) #; #; offset) #checks distance  <--potential error corrected  # offset) #checks distance  <--potential error corrected
-        if distance == 0
-            #Scalar: register index as a leaf (in leaf index ?)
-            #safelyReturns = true #TODO: place index in a leafIndex?  #uncommentMe
-            safelyReturns = true #false #true
-            return safelyReturns #0 # safelyReturns
-        #endAlgorithmSafely() #returns 0
-        elseif distance == offset # Pair(1 between): #+ 1 #2 default  #couple a,b, 1 interval #correct
-            # doCompare(a, b, arr) #local sort #light #uncommentMe
-            safelyReturns = true #false #true
-            return endAlgorithmSafely(arr) # safelyReturns uncommentMe
-            #endAlgorithmSafely(arr)#upon change show that part ! <-----review#2: errors out
-            return safelyReturns
-        elseif distance > offset #TODO: #a divsible Interval (2 or more )  # euclidDist(1,4) = 3 > 1 true
-            safelyReturns = false #true #false
-            return safelyReturns
-            # explore!(a, b, arr) # copy / paste in the higher coding block where function calls it
-        else
-            throw(error("Unexpected Error occured"))
-        end
-    catch UnexpectedError
-        @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-=#
-#depreciate
-#=
-function isStop(a, b, _view)
-    try
-        safelyReturns = nothing
-        distance = euclidDist(a, b) #; offset) #checks distance  <--potential error corrected
-        if distance == 0
-            #Scalar: register index as a leaf (in leaf index ?)
-            #safelyReturns = true #TODO: place index in a leafIndex?  #uncommentMe
-            safelyReturns = true #false #true
-            return safelyReturns #0 # safelyReturns
-        #endAlgorithmSafely() #returns 0
-        elseif distance == offset # Pair(1 between): #+ 1 #2 default  #couple a,b, 1 interval #correct
-            # doCompare(a, b, _view) #local sort #light #uncommentMe
-            safelyReturns = true #false #true
-            return endAlgorithmSafely(_view) # safelyReturns uncommentMe
-            #endAlgorithmSafely(_view)#upon change show that part ! <-----review#2: errors out
-            return safelyReturns
-        elseif distance > offset #TODO: #a divsible Interval (2 or more )  # euclidDist(1,4) = 3 > 1 true
-            safelyReturns = false #true #false
-            return safelyReturns
-            # explore!(a, b, _view) # copy / paste in the higher coding block where function calls it
-        else
-            throw(error("Unexpected Error occured"))
-        end
-    catch UnexpectedError
-        @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-=#
-
-
-#compareTriad functions : doCompare ,  push!(Middles, m1)
-""" returned structure would be m1 in the middle, a on the left (min), b on the right (max)"""
-#_type = typeof(arr)
-
-function compareTriad(a, m1, b, arr::Array{Int64,1})
-    try
-
-        a, b, _isSwapped = doCompare(a, b, arr)#view(arr, a:b)) #compare bounds
-        a, m1, _isSwapped = doCompare(a, m1, arr) #view(arr, a:m1))
-
-        #no need for remap, (context: arr is giiven, & not altered in this one - remap not needed at all )
-        m1, b, _isSwapped = doCompare(m1, b, arr) #view(arr, m1:b))
-
-        # push!(Middles, m1)
-        println("a, m1, b = ", a, " ", m1, " ", b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-
-function compareTriad(a, m1, b, _view) #applied remap
-    try
-
-        a, b, _isSwapped = doCompare(a, b, view(_view, a:b)) #compare bounds' content
-        a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
-
-        m1, b = remap(m1, b)
-        println("@view: m1, b = ", m1, b)
-        m1, b, _isSwapped = doCompare(m1, b, view(_view, m1:b)) #<------- remap is required
-
-        #push!(Middles, m1)
-        println("a, m1, b = ", a, m1, b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-
-#=
-function compareTriad(a, m1, b, arr) #applied remap
-    try
-
-        a, b, _isSwapped = doCompare(a, b, arr) #view(_view, a:b)) #compare bounds' content
-        a, m1, _isSwapped = doCompare(a, m1, arr) #view(_view, a:m1))
-
-  #      m1, b = remap(m1, b)
-  #      println("@view: m1, b = ", m1, b)
-  # classical doCompare [--no remap]
-        m1, b, _isSwapped = doCompare(m1, b, arr)  #view(_view, m1:b)) #<------- remap is required
-
-        #push!(Middles, m1)
-        println("a, m1, b = ", a, m1, b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-=#
-#=
-function compareTriad(a, m1, b, _view)
-    try
-        #instead of these
-        # compareTriad(a, m1, b, arr)
-
-        a, b, _isSwapped = doCompare(a, b, _view)#view(arr, a:b)) #compare bounds #<----
-        a, m1, _isSwapped = doCompare(a, m1, _view) #view(arr, a:m1))
-        m1, b, _isSwapped = doCompare(m1, b, _view) #view(arr, m1:b))
-
-        #push!(Middles, m1) # TODO: push _isSwapped
-        println("a, m1, b = ", a, " ", m1, " ", b)
-        return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
-    end
-    #return a, b, m1
-end
-=#
 
 """ input vector array , applys view  on each Interval, remap last one"""
 function compareQuartet(a, m1, m2, b, arr::Array{Int64,1})
@@ -711,116 +515,7 @@ contentSwapped: Bool vector for  whether (note: the first one is always isWhole)
 
 end
 
-#experimental : TODO: Complete Skip for now
-@propagate_inbounds function callMiddle!(a::Int64, b::Int64, arr::Array{Int64,1})
-    try
-        # Reviewr#2: removed distance() should be here ( distance is only in isStop )
-        #distance = euclidDist(a,b) # response = isStop(a, b, arr)
 
-        if a != b && a > 0 && b > 0 # only condition we require
-            #contentSwapped = []  #nothing
-            # _isSwapped = nothing
-            m1, m2, isWhole = middle(a, b) #gets middle of a length (in rational positive integer ) <---ERROR: no iterate(Nothing)
-
-            # if a !=b
-
-            #  doCompare()
-            #compareTriad / compareQuartet
-            #code
-            #optimization: Q.do we use euclidDist between verticies: a, m1, m2, b ? A. Possible; at this point: further processing is not necessaily needed, as of result
-            #review2: comment: euclidDist won't come alone, but with isNotDivide: better yet is, after finished handling Ms, contentSwapped, call explore (that has all desired functions)
-
-            # return [a, b],
-            #return m1, m2
-            #return [m1,m2]
-            # return [m1, m2]
-            return m1, m2, isWhole  # lastindex(contentSwapped): min= 0, max=4 #edited!
-
-        #return a, m1, m2, b #indices (practical) # Q. shouldn't we return their content (no, unless we're working with some `DataStructure` i.e. trees, where content is necessary to be read )
-
-        elseif a == b # 1, 1 , arr #singleton
-            #register as a leaf (binTree)
-            return 0, 0, nothing # 0, 0, 0 # depends on Expected return return
-
-        else
-            throw(error("UnexpectedError occured"))
-        end
-    catch UnexpectedError
-        @error "UnexpectedError occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-@propagate_inbounds function callMiddle!(a::Int64, b::Int64, _view::SubArray)
-    try
-        # Reviewr#2: removed distance() should be here ( distance is only in isStop )
-        #distance = euclidDist(a,b) # response = isStop(a, b, arr)
-
-        if a != b && a > 0 && b > 0 # only condition we require
-            #contentSwapped = []  #nothing
-            # _isSwapped = nothing
-            m1, m2, isWhole = middle(a, b) #gets middle of a length (in rational positive integer ) <---ERROR: no iterate(Nothing)
-
-            #check
-            view1 = view(_view, a, b)
-
-            #cause(a, b, view(_view, a, b)) dice the Interval
-            cause(a, b, view1)
-            # if a !=b
-
-            #  doCompare()
-            #compareTriad / compareQuartet
-            #code
-            #optimization: Q.do we use euclidDist between verticies: a, m1, m2, b ? A. Possible; at this point: further processing is not necessaily needed, as of result
-            #review2: comment: euclidDist won't come alone, but with stoppingCondition: better yet is, after finished handling Ms, contentSwapped, call explore (that has all desired functions)
-
-            # return [a, b],
-            #return m1, m2
-            #return [m1,m2]
-            # return [m1, m2]
-            return m1, m2, isWhole  # lastindex(contentSwapped): min= 0, max=4 #edited!
-
-        #return a, m1, m2, b #indices (practical) # Q. shouldn't we return their content (no, unless we're working with some `DataStructure` i.e. trees, where content is necessary to be read )
-
-        elseif a == b # 1, 1 , arr #singleton
-            #register as a leaf (binTree)
-            return 0, 0, nothing # 0, 0, 0 # depends on Expected return return
-
-        else
-            throw(error("UnexpectedError occured"))
-        end
-    catch UnexpectedError
-        @error "UnexpectedError occured" exception = (UnexpectedError, catch_backtrace())
-    end
-end
-
-
-m1, m2, isWhole = callMiddle(1, 1) #issue: this returns 2 , while main function expects 3 return arguments
-
-#demo:
-
-m1, m2, isWhole = callMiddle(firstindex(arr), lastindex(arr)) #was callMiddle(a, b, arr) #old thinking
-
-
-#----
-function remap(a::Int64, b::Int64) # 1 2  abs(max(a, b) - min(a, b)) + 1 ; 2 -1 = 1 + 1 = 2
-    b = euclidDist(a, b) + 1 # + 1 #warning you added 1 to the end: recheck new bounds (are all ranges fit) - some got to be out
-    a = 1 #always start at this #or offset
-    return a, b
-end
-
-remap(1, 10) #missing 1 at last  +1 #fixed
-remap(5, 10) # correct
-# 5 6 7 8 9 0
-# 1 2 3 4 5 6
-
-#-------
-
-arr #where b is 9
-#a=firstindex(arr)#1
-#b=lastindex(arr)# 9
-a = 1
-b = 8
-arr = [1, 2, 3, 4, 5, 6, 7, 8]
-m1, m2, isWhole = callMiddle(a, b) #, arr) #TODO: callmiddle with arr
 a, b, m1, m2 = compareQuartet(a, m1, m2, b, arr)
 #
 a = 1
@@ -897,6 +592,7 @@ function checkRightCondition(arr::Array{Int64,1})
     end
 end
 
+#------
 
 function checkRightCondition(_view::SubArray) #correct #<----- this is called  after algorithm finishes
 
@@ -2409,8 +2105,8 @@ contentSwapped = nothing
 # Base.@propagate_inbounds
 if aContent > bContent # arr[a] > arr[b]
     #Base.@propagate_inbounds
-    arr[a], arr[b] = swapContent(arr[a], arr[b], arr)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
-    contentSwapped = true   #arr[a], arr[b]
+    a,b ,contentSwapped = swapContent(arr[a], arr[b], arr)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
+    #contentSwapped = true   #arr[a], arr[b]
 else
 end
 #  end

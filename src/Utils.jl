@@ -71,17 +71,32 @@ update: euclidDist( bug
 
 =#
 #TODO: compareIntervals, recursively
+export lineLengthAcceptable
 
 import Base: @propagate_inbounds
 global msg = "Unexpected Error"
 
 #--------
 
+
+
 """
 
 gets the firstIndex & the lastIndex of
 """
+function lineLengthAcceptable(a,b,_length)
+try
 
+    if a <= _length && b <= _length && a >= 0 && b >= 0
+        return true
+    elseif a > _length  || b > _length or a<0 or b < 0
+        return false
+    else throw(error("Unexpected Error occured"))
+    end
+    catch UnexpectedError
+    @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
+    end
+end
 
 """ checks the array `arr` for a content , returns the first & the last """
 function elementAt(arr, xContent)
@@ -221,6 +236,7 @@ function objBounds( arr ) # compiles # rechecked
     return firstXIndex, firstXValue, lastXIndex, lastXValue # classic
 
 end
+
 """ returns the object's bounds
 ``input:``
 _view : a (sub)view of an array (or _view)
@@ -229,7 +245,7 @@ arr: an original array (or _view)
 return index1, value1, index2, value2
 
 """
-function objBounds(_view, arr)
+function objBounds(_view, arr) # requires elementAt
 # 1 .check if _view is bounder by arr
     if firstindex(_view ) >= firstindex(arr) && lastindex(_view) <= lastindex(arr)
 
@@ -284,6 +300,9 @@ function objBounds2(_view, arr)
             #firstxIndex = _view[firstXIndex]
             #lastxIndex = lastindex(_view)
 
+            #TODO: drop _firt & last prefix, off each index
+
+            #_firstIndex1,  _lastIndex1,  _firstValue1, _lastValue1 = elementAt(arr, _first)
             _firstIndex1,  _lastIndex1,  _firstValue1, _lastValue1 = elementAt(arr, _first)
 
             #n,_firstIndex,  _lastIndex,  _firstValue, _lastValue = processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
@@ -294,9 +313,12 @@ function objBounds2(_view, arr)
             _firstIndex2,  _lastIndex2,  _firstValue2, _lastValue2 = elementAt(arr, _last)
             #index2, value2  = handleReturnedvalue(m,_firstIndex,  _lastIndex,  _firstValue, _lastValue)
 
+            #drop first & last
             # return index1, value1, index2, value2
-            return [_firstIndex1, _firstValue1], [_lastIndex1, _lastValue1], # wawrning : last index always = 1
-            [_firstIndex2, _firstValue2], [_lastIndex2, _lastValue2]
+            return [_firstIndex1, _firstValue1]
+        , [_lastIndex1, _lastValue1], # wawrning : last index always = 1
+            [_firstIndex2, _firstValue2]
+            #, [_lastIndex2, _lastValue2]
             # now this tuple has 2 items (if scalar) or 4 (if 2 returns, or more )
 
             #firstXIndex = findall((x -> x == firstXValue), arr) #returns list of all occurences
@@ -322,7 +344,7 @@ _view = view(v,firstindex(v):lastindex(v))
 firstXIndex, firstXValue, lastXIndex, lastXValue = objBounds(_view) #_view)
 
 """ # uncommentMe #later
-println("objects: firstIndex ",firstXIndex, " firstValue = ", firstXValue," lastXIndex = ", lastXIndex, " lastValue = ", lastXValue)
+println("objects: firstIndex ",firstXIndex, " firstValue = ", firstXValue," lastIndex = ", lastXIndex, " lastValue = ", lastXValue)
 #-------------
 firstindexValue1, lastindexValue1, firstindexValue2, lastindexValue2 = objBounds(_subView, _view)
 
@@ -345,7 +367,7 @@ indexValue1, indexValue2 = objBounds(v1,v) #find v1's bounds, in terms of v (or 
     lastXValue  = newXIndex[length(newXIndex) -1 ]
 #end
     firstXIndex = firstindex(newXIndex)
-    newXIndex = lastindex(newXIndex)
+    newXIndex = lastIndex(newXIndex)
 
 #end
 
@@ -5714,7 +5736,7 @@ function updateLocation(lowerBound, upperBound, X, arr) #sophisticated #TODO: te
     # oldXIndex
 
     newXIndex = findall((x -> x == arr[X]), arr)
-    newXIndex = lastindex(newXIndex)
+    newXIndex = lastIndex(newXIndex)
 
     # sometimes
     # oldXIndex = indexOf(arr, _XContent) #Warning if you pop; locations wll be misused  #TODO: check: old Index == newIndex
