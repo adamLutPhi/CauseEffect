@@ -16,7 +16,7 @@ But what was more intriguing were some of their qustions, while some were quite 
 
 "Say, what happens when you meet a *new vocabulary, and have no dictionary on you . . . What do you do, then? "
 
--the question  was open-ended, no right or wrong it seems to me
+-   the question  was open-ended, no right or wrong it seems to me
 -**"I repeat it "**
 **"oh, "** the tutor *exclaimed* **"so only by repeating it in your mind** , would that **be enough for you to understand?"**
 *-"I guess "*
@@ -27,12 +27,12 @@ But what was more intriguing were some of their qustions, while some were quite 
 that statement alone kept teasing me
 - How would , a seemingly fresh **word** tell me **its contents?** - that was , truly, the question.
 
-The same is true for functions, as words are functions
+  The same is true for functions, as words are functions
 In the programming realm, functions should act, serve & help a higher purpose. Some reason behind it, I could not think of *(whereas I only could visualize the end product, the inputs, & outputs, that's much of it, so to speak)*
 
-Maybe, there is a higher cause, one I ...
+   Maybe, there is a `higher cause`, one I ...
 While I've Started this project, at a previous stage,
-it was  more or less **recreational, idea-dependent**, i.e., if an **Idea is good**, then Stick to it, keep  pursuing, until you reach the bottom pit; refresh, & retry, maybe watch your code again, then repeat. Repeat, until, a (another) New idea shows up, and follow it down to its pit. - (it has to, it always will), that's what the mind is good for, afterall... `drawing ideas`
+it was  more or less **recreational, idea-dependent**, i.e., if an **Idea is good**, then Stick to it, keep  pursuing, until you reach the bottom pit; refresh, & retry, maybe watch your code again, then repeat. Repeat, until, a (another) New idea shows up, and follow it down to its pit. - (it has to, it always will), that's what the mind is good for, after all... `drawing ideas`
 
 
 - As easy as that might sound, but by far, that was the craziest idea I have conducted.
@@ -42,12 +42,12 @@ it was  more or less **recreational, idea-dependent**, i.e., if an **Idea is goo
 - What would have been is, if I could have payed Attention to every corner I've encountered, since the debut of this repository
 
 - The intention now is to go back , where I left things, to solve
- the main prgram issues, as much as the program requires, because
+ the main program issues, as much as the program requires, because
 
     "good ideas, emerging from the realm of the dead,  die hard"
 
 - Behind each idea is a long trail of other things, untold. Like a line , missing in the middle of the `forest`, it seems to have no start, and yet, nor a proper end.
-- so the craftsaman must be prepared. Otherwise, confusion & loss would be awaiting, for him. But if everything goes as planned, when that happens, then `life would be truly bland, n'est pas?` )
+- so the craftsaman, must he be prepared. Otherwise, confusion & loss would be awaiting, for him. But if everything goes as planned, when that happens, then `life would be truly bland, n'est pas?` )
 
  - More often than not,  I've been trying to clutch on ideas, one after another , that seemed to render me as  `unsatiable`
 
@@ -56,7 +56,7 @@ one time been behind the screen all day, forgot the last time going to the loo. 
 
  *(no need to mention physical side-effects for the sum spoken is too  much for a regular to fully comprehend, (you don't have to, and Thank you for trying )*
 
-- In the end, was I follwing a `Unicorn`? well, it's more like a `Rhino`, defenitely, wouldn't obey. Just because it's beautiful  to watch! I followed it regardless all warnings even my body started to indicate that.
+- In the end, was I following a `Unicorn`? well, it's more like a `Rhino`, definitely, wouldn't obey. Just because it's beautiful  to watch! I followed it regardless all warnings even my body started to indicate that.
 
 
 ## Plan Action
@@ -74,13 +74,13 @@ one time been behind the screen all day, forgot the last time going to the loo. 
 - Falling into mediocrity is highly possible
 
 - Being able to track every line of code, remembering **why I did that**, at a Particular time
-- like sth I do , i.e. `cause` function, that takes `currentValue`,
+- like something I do , i.e. `cause` function, that takes `currentValue`,
 it was `wanted`, at some point, at a particular Time & Space , but now, not a bit. Quite the contrary, the Requirement of a Good Software has shifted
 
-- Now , I have to do extra, to  go back , remind self what **good things I have had** about each code block, then try to reconstract that. Others would soon follow (like dominos)
-    "small vitories count big", just you gotta not lose hope, nor patience, when time of war comes"
+- Now , I have to do extra, to  go back , remind self what **good things I have had** about each `code block`, then try to reconstruact that. Others would soon follow (like dominos)
+    "small Victories count big", just you gotta not lose hope, nor patience, when time of war comes"
 
-- Maybe life is `self-contradictory`, afterall, that's what the Best  functions, when look into them, from a differnt light,  turn to,  a `depreciable`, unnecessary code,
+- Maybe life is `self-contradictory`, after all, that's what the Best  functions, when look into them, from a different light,  turn to,  a `depreciable`, unnecessary code,
 
 - What way, frustrating is, the more beautiful code is nealy `1 Mile` away, from where I was (there's also the `risk of getting lost` - that I didn't give enough thought to it, ye)
 
@@ -106,7 +106,7 @@ Another day in, Another hardwork out  (yet to see the sun)
 
 Although first seems to be as `_view`, input parameters are of type `any`,
 So, they could be of any type , that's what that line on the website would say
- 
+
 # 9-5-2022
 
 ## Action Plan
@@ -114,12 +114,24 @@ So, they could be of any type , that's what that line on the website would say
 ### Updated
 
 `objBounds(arr)`
-    corrected function output 
+    corrected function output
 
 `objBounds(_view,arr)`
-    corrected its return 
+    corrected its return
 
-## Next Action Plan 
+# 9-7-2022
+## Action Plan
 
-Have to depreciate every `_view` , 
-and replace it the the debugged `objBounds`
+### added
+ `lineLengthAcceptable(a,b,_length)`
+To add consistency, keeping it simple, & not repeating thyself
+
+### corrected
+the `swapContent` return output parameters
+it was primarily mistakenly left as array content, but got changed into
+array indicies , with a contentSwapped bool, as a third parameter
+
+## Next Action Plan
+
+Have to depreciate every `_view` ,
+and replace it the debugged `objBounds`
