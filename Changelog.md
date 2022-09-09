@@ -131,6 +131,21 @@ the `swapContent` return output parameters
 it was primarily mistakenly left as array content, but got changed into
 array indicies , with a contentSwapped bool, as a third parameter
 
+# 9-7-2022
+
+## Action Plan
+
+### replaced 
+`oldschoolSwap` with `swapContent`, as the intent was to replace content, if proven to be bigger 
+### corrected 
+`elementAt` ouputs 
+
+
+### depreciated 
+`calcVerteciesLeft!`  , `isStoppingCondition` , `traverse` , `mappedIndex`, `makeVector`,  `checkCond` , `checkCondition` , `makeVector`
+all depreciated functions are moved into `unUsed.jl`
+
+
 ## Next Action Plan
 
 Have to depreciate every `_view` ,
