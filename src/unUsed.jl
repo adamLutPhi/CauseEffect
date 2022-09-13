@@ -1,65 +1,76 @@
+#unused functions
 
-#unused function
-
-#so: no More #iterative function 
+# no More #iterative function # TODO
 
 #cause meeded to be called, on the next interval (iteratively )
 #cause!() that does all: calls itself to proceed, further , into the next interval,
 # where you record it's return (next lowerBound,upperBound
-#in general : there aren't no right or left, only 1 function (2 subsequent effects
-# 1.1 1 for the rigth -> calls cause right [m1, upperBound, OR m2,upperBound ]) 
+#1. in general : there aren't no right or left, only 1 function (2 subsequent effects
+# 1.1. for the rigth -> calls cause right [m1, upperBound, OR m2,upperBound ])
 #1.2.  another left ->calls cause left pts (lowerBound,m1 always )
 
+#2. makeVector -> collect [built-in]
 
-# """ called after compare Quartet """
+#3. disccovered: append!(vector1, vector2)
 
-# makeVector 
-v = makeVector((lowerbound, upperbound)) # [8,9]
-    # v = collect((1:_length))  #makeVector((1:_length))
+# collect
+lowerbound = 8; upperbound= 9
+v = collect((lowerbound: upperbound)) # [8,9]
+    # v = collect((1:_length))  #collect((1:_length))
 
-    #makeVector((1:_length))
-#makeVector((a, _mop - 1))
-makeVector((lowerboundValue, upperboundValue - 1)) # [4,7]
-makeVector((upperboundValue, 9)) # [8,9]
-#newV = makeVector((lowerboundValue, upperboundValue-1)) # 4 #same as input interval
-newV = makeVector((lowerboundValue, upperboundValue)) # 4
-makeVector((a, _next - 1)) # vector [1,3] #now gives [2,3]
-#newV = makeVector((lowerboundValue, upperboundValue))
-#newV = makeVector((a, _next))  #- 1)) #[1,3] #experimential : warning
-newV = makeVector((lowerboundValue, upperboundValue))  # commit this one  #uncommentMe
-#=
+    #collect((1:_length))
+
+#collect((a, _mop - 1))
+collect((lowerbound: upperbound - 1)) # [4,7]
+collect((upperbound: 9)) # [8,9]
+#newV = collect((lowerboundValue, upperboundValue-1)) # 4 #same as input interval
+newV = collect((lowerbound: upperbound)) # 4
+newV = collect((lowerbound, upperbound))
+
+_next =5
+collect((a, _next - 1)) # vector [1,3] #now gives [2,3]
+
+newV = collect((a, _next))  #- 1)) #[1,3] #experimential : warning
+newV = collect((lowerbound, upperbound))  # commit this one  #uncommentMe
+
 lowerbound = [1,4,8][1]
-    upperbound = copy(findNext([1, 4, 8], 1)) #+ nextUpperbound
-    makeVector((lowerbound, upperbound)) #define: makeVector()
+#upperbound = copy(findNext([1, 4, 8], 1)) #+ nextUpperbound #
+collect((lowerbound, upperbound)) #define: collect()
+"""
+nextLowerbound= upperbound + 1
+nextUpperbound= findNext([1, 4, 8], firstindex(nextLowerbound))
+new = nextLowerbound + nextUpperbound
 
-    nextLowerbound= upperbound + 1
-   nextUpperbound= findNext([1, 4, 8], firstindex(nextLowerbound))
-   new = nextLowerbound + nextUpperbound
+collect((nextLowerbound, new))
+"""
+v2=[8,9]
+println(v1) #[3, 4, 5, 6, 7]
+v = append!(v1,v2) # compiles
+#v = tuple(v1).push( v2) # LoadError: DimensionMismatch: dimensions must match: a has dims (Base.OneTo(2),), b has dims (Base.OneTo(5),), mismatch at 1
+println(a) # a = 1
+#v = collect((firstindex([1, 4, 8], lowerbound), lastindex([1, 4, 8], upperbound)))
+#v = collect((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3]
+# collect(([1,4,8][lowerbound],([1,4,8][upperbound])))
+# a should be a =[1,2], then _first should be _first = 2
+_first = 2 # feed in vector
+_n1= append!(a:_first) # compiles
 
- makeVector((nextLowerbound, new))
-=#
-
-v = makeVector(v1, v2)
-#v = makeVector((firstindex([1, 4, 8], lowerbound), lastindex([1, 4, 8], upperbound)))
-#v = makeVector((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3]
-# makeVector(([1,4,8][lowerbound],([1,4,8][upperbound])))
-makeVector((a,_first))
 #handle last item
 #issue arr ends at 8
 # moved to upper scope of the function
-#  v = makeVector((firstindex([1,4,8],nextLowerbound), firstindex([1,4,8],nextLowerbound+1))) #[8,9]
+#  v = collect((firstindex([1,4,8],nextLowerbound), firstindex([1,4,8],nextLowerbound+1))) #[8,9]
 
 # ========================
-# Unknown Function f2 
-#to be named Meaningfully # uses makeVector #successs
+# Unknown Function f2
+#to be named Meaningfully # uses collect #successs
 function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
 
     if i > ar[1] && i <= length(ar)  #b # i = 2 [4]
         # ar[i]  # 4
         # ar[i]-1 #3 (to be collected with its pair 1)
         if a == 2 # _first === nothing #side correct
-            #  _first = ar[i]  # makeVector((a,_first))
-            newV = makeVector((a, ar[i] - 1)) #secured the first
+            #  _first = ar[i]  # collect((a,_first))
+            newV = collect((a, ar[i] - 1)) #secured the first
             # push!(lst, newV)
             #i += 1
             return newV # , i
@@ -72,7 +83,7 @@ function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
         #println("ar[i-1]=", ar[i-1]) #4
         #println("ar[i]-1=", ar[i]-1)
         #i += 1
-        newV = makeVector((ar[i-1], ar[i] - 1))
+        newV = collect((ar[i-1], ar[i] - 1))
         # push!(lst, newV)
         return newV #, i
     else
@@ -80,18 +91,53 @@ function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
     end
 end
 f2(2)
+"""
+#https://stackoverflow.com/questions/39586830/concatenating-arrays-in-julia
+use the
+Use the vcat and hcat functions:
 
+# Example
+julia> a, b = [1;2;3], [4;5;6]
+julia> vcat(a, b)
+6-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+"""
 #----------
-ar = [1, 4, 8]
+ar = [1, 4, 8] # collection of cut points
+b = 9 # b was set to 2
+_lst = vcat(last(ar),b) # [8,9] (Expected) [now last vector is glued]
+
+println("_lst",_lst) # #Vector{Int64}
+#=
 lst = []
+#TODO: Inspect this function
 for i = 2:3 #starts from 2 , length(ar)
     push!(lst, f2(i))
 end
-lst
-push!(lst, makeVector(last(ar), b))
-lst
+=#
+println("1st = ",lst) #  1st =Any[[1, 3], [4, 7]] # Expected
+# println("typeof(lst[1]) = ",typeof(lst[1]))  #Vector{Int64}
 
-#  remapCompare 
+#_1st = push!(ar, b) [8, 9]
+println("_lst = ", _lst)
+#E(x) = ar  = Any[[1, 3], [4, 7], [8,9]]
+result = vcat(_1st,_lst ) # collect(_1st:_lst) #
+
+println("result = ",result)
+println("ar = ",ar)
+
+#push!(lst, collect(last(ar), b))
+println("\nlast(ar) = ",last(ar)) # 8
+ar2 =  collect(last(ar): b) # [8,9]
+lst = append!(lst,ar2)
+print("\n1st =",lst) # compiles
+
+#  remapCompare
 function remapCompare(m2, upperBound, _view::SubArray)
 
     m2, upperBound = remap(m2, upperBound)
@@ -114,7 +160,7 @@ function cause!(_stack, kernel)
 end
 #helpers of Util file:
 
-    #unused 
+    #unused
     """returns the element, at lowerBound specific index"""
 function elementOf(arr, n::Int64)
 
@@ -135,7 +181,7 @@ function makeView(ab::UnitRange)#compiles
 end
 
 v = collect(1:2)
-view(v, 1:2)#done 
+view(v, 1:2)#done
 =#
 #=
 function makeView(_view::SubArray, range) # Bug # this is not the  the way
@@ -457,7 +503,7 @@ end
 remap(1, 10) #missing 1 at last  +1 #fixed
 remap(5, 10) # correct
 # ================
-# requires remap 
+# requires remap
 function compareTriad(a, m1, b, _view) #applied remap
     try
 
@@ -533,7 +579,7 @@ end
 mappedIndex = firstindex([1, 4, 8]) + 2 # -1
 # newBound = mappedIndex + 1 # arbitrary function #ERROR: index value is outside the array function
 view([1, 4, 8], firstindex([1, 4, 8], lowerbound)) #correct
-# v = makeVector((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3] # [1,1]
+# v = collect((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3] # [1,1]
 view([1, 4, 8], firstindex([1, 4, 8], upperbound)) #1
 # newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
 newRow = view(arr, mappedIndex-1:mappedIndex) # this works  #[4 8]
@@ -559,14 +605,14 @@ function findSubIntervals(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op 
 
     #suggest : another function to handle main bounds :
     #1. checkBound1 logic
-     
+
         if intervalBound1 >=a  && count ==1
             push!(lista, [a, intervalBound1]) #push first interval
 
        # elseif intervalBound1 <= b
        #     push!(lista, [intervalBound1,b]) =# #redumdant with intervalBound2
         end
-        
+
     #2 processing: ADD a new item
 
     # arr[a] #uncommentMe
@@ -717,7 +763,7 @@ function findSubIntervals2(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
         elseif intervalBound2 !== nothing && intervalBound2< b
         end =#
 
-    #Check (Bouh (back?) 
+    #Check (Bouh (back?)
     # index(lista,intervalBound1)
     #if count> 1
     if intervalBound1 < b  # cruical #intervalBound0
@@ -876,11 +922,11 @@ end
 # calcTotalMiddles
 """ calculate total Middles , between a `lowerBound` & an `upperBound` """
 
-function calcTotalMiddles(lowerBound, upperBound) #name displays what it supposed to do 
+function calcTotalMiddles(lowerBound, upperBound) #name displays what it supposed to do
 
     res = intervalLength(lowerBound, upperBound) - 2
     println("currentValue (from bound pts to middles left)  = intervalLength(lowerBound, upperBound) - 2 =", res)
-    # res >=0 ? return res;  : return nothing 
+    # res >=0 ? return res;  : return nothing
     if res > 0
         return res
     elseif res <= 0
@@ -899,17 +945,17 @@ arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 ### A:  calcTotalMiddles
 
-#Depreciate 
+#Depreciate
 
-function calcTotalMiddles(arr) #name displays what it supposed to do 
+function calcTotalMiddles(arr) #name displays what it supposed to do
 
     res = length(arr) - 2
     println("init calcTotalMiddles; currentValue (from bound pts to middles left) = length(arr) - 2= ", res)
-    # res >=0 ? return res;  : return nothing 
+    # res >=0 ? return res;  : return nothing
     if res > 0
         return res
     elseif res <= 0
-        return 0 # -1 
+        return 0 # -1
     end
 end
 =#
@@ -1130,17 +1176,17 @@ end
 remap(1, 10) #missing 1 at last  +1 #fixed
 remap(5, 10) # correct
 
-# makeVector
+# collect
 
-v = makeVector((lastB, interval[2]))
-#v = makeVector((lastB:interval[2]))
+v = collect((lastB, interval[2]))
+#v = collect((lastB:interval[2]))
 
-# checkCond 
+# checkCond
 #checkCond(1, m1, m2, 3, isWhole, [1, 2, 3]) #deprecate
 #requires compareQuartet, compareTriad
 #lowerBound ::Int64, m1::Int64, m2::Int64, upperBound::Int64, ::Bool, ::Vector{Int64})
 
-# checkCond 
+# checkCond
 
 function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1})
     isWhole = copy(getIsWhole(arr))
@@ -1189,7 +1235,7 @@ function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, a
 end
 
 # ===============
-# cause 
+# cause
 
 #preferred # d (reason: uses CurrentValue  )
 function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning* # Depreciate
@@ -1209,7 +1255,7 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
     end
 end
 
-## cause with a currentValue 
+## cause with a currentValue
 #preferred
 function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
 
@@ -1293,11 +1339,11 @@ end
 
 # =================
 #------
-#compareSort 
-#advanced: define lowerBound _stack of inputs #TODO: Check 
+#compareSort
+#advanced: define lowerBound _stack of inputs #TODO: Check
 group = 1 # given group
 # TODO pass (or define) lowerBound `_stack` [for recursion operator ]
-if group == 1 # only 1 per item 
+if group == 1 # only 1 per item
     #complete Triad : [lastB, interval[1], interval[2]
 
     #GET Last upperBound = currentA #pop!
@@ -1306,7 +1352,7 @@ if group == 1 # only 1 per item
     #view(lastB,interval[2]))
     #lastb = pts[length(pts)-1 #erroneous part
     # _view = view(pts[length(pts)-1]:interval[2], [lastb, interval[1] , interval[2]] )
-    #_view = view([lastb, interval[1], interval[2]], [lastb, interval[1], interval[2]])# acceptable? 
+    #_view = view([lastb, interval[1], interval[2]], [lastb, interval[1], interval[2]])# acceptable?
     # interval = union(last, interval) #<---------
     lowerBound = interval[1]
     upperBound = interval[2]
@@ -1316,7 +1362,7 @@ if group == 1 # only 1 per item
 
     _view = collect(interval) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
-    #create view with points of lastb, lastrange 
+    #create view with points of lastb, lastrange
     # Compare(lowerBound, upperBound, _view) #
     #sort
     res = compareTriad(lowerBound, m, upperBound, _view) #CompareSort(lastb, interval[2], _view) #compareTriad # <----
@@ -1353,7 +1399,7 @@ end
 # ArgumentError: array must be non-empty
 
 #---------
-# partition 
+# partition
 
 #uses calcVerteciesLeft
 """partition uses kernel, calcVerteciesLeft!, processRightSide, compareBounds, traverseLeft """
@@ -1570,7 +1616,7 @@ end
 
 # callMiddle!
 
-## callMiddle! for an Array 
+## callMiddle! for an Array
 
 #experimental : TODO: Complete Skip for now
 
@@ -1664,7 +1710,7 @@ compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) # 1 4 2 3 # corrected
 
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) #compareQuartet: doCompare
 
-# checkCondition 
+# checkCondition
 
 function checkCondition(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1}) #error #subtle
 
@@ -1733,4 +1779,4 @@ function makeView(_a, _b)
     # return view(v, (res1:res2)) #view(v, (1:length(res))) #view(v, res1, res2) #res[1]:res[length(res)])#perfect
 end
 
-#newView = view(makeVector((lastB, interval[2])), makeVector((lastB:interval[2]))) # view(pts[lastB], interval[1]: interval[2])
+#newView = view(collect((lastB, interval[2])), collect((lastB:interval[2]))) # view(pts[lastB], interval[1]: interval[2])

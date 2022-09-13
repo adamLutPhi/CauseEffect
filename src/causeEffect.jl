@@ -1,6 +1,6 @@
 #=
-lessons learned
-"all your actions go right between the Idealized & the Materialized"
+Lessons learned
+"All your actions go right between the Idealized & the Materialized"
 
 ---
 1.   view(collect(1:5),1:5)  #correct syntax
@@ -139,12 +139,12 @@ end
 
     a = findall(x -> x == aContent, _view)
     # a = a[offset] #ok, but it's offset dependent
-    a = firstindex(a) #a[firstindex(a)] #always yields the right choice
+    a = firstindex(a) #fetch the first index of a #  a[firstindex(a)] #always yields the right choice
 
 
-    b = findall(x -> x == bContent, _view)
+    b = findall(x -> x == bContent, _view) # find all content matching b
     # b = copy(b[length(b)])
-    b = lastindex(b) #b[lastindex(b)]
+    b = lastindex(b) #fetch last index of b #b[lastindex(b)]
 
     if aContent > bContent
         _view[a], _view[b] = _view[b], _view[a] #swap
