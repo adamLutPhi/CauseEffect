@@ -135,18 +135,37 @@ array indicies , with a contentSwapped bool, as a third parameter
 
 ## Action Plan
 
-### replaced 
-`oldschoolSwap` with `swapContent`, as the intent was to replace content, if proven to be bigger 
-### corrected 
-`elementAt` ouputs 
+### replaced
+`oldschoolSwap` with `swapContent`, as the intent was to replace content, if proven to be bigger
+### Corrected
+`elementAt` ouputs
 
-
-### depreciated 
-`calcVerteciesLeft!`  , `isStoppingCondition` , `traverse` , `mappedIndex`, `makeVector`,  `checkCond` , `checkCondition` , `makeVector`
+### depreciated
+`calcVerteciesLeft!`  , `isStoppingCondition` , `traverse` , `mappedIndex`, `collect`,  `checkCond` , `checkCondition` , `collect`
 all depreciated functions are moved into `unUsed.jl`
 
 
+# 9-12-2022
+
+## Action Plan
+
+### Corrected
+
+=`swapContent` inner function logic (so that function enters)
+
+### Removed
+
+- Unnecessary `half-Comment` operators `#=` and `=#` across the `Utils.jl` (From Uneven Commenting ) 
+
+Now, `Utils.jl` output displays the main issue:
+`boundError` -   to be dealt with
+
+### Updated
+- `Unused.jl`
+- `makeVector` into the built-in `collect`
 ## Next Action Plan
 
-Have to depreciate every `_view` ,
+- Recheck `elementAt` output
+
+- Depreciate every `_view` ,
 and replace it the debugged `objBounds`

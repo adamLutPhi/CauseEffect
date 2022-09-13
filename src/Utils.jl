@@ -86,7 +86,7 @@ try
 
     if a <= _length && b <= _length && a >= 0 && b >= 0
         return true
-    elseif a > _length  || b > _length or a<0 or b < 0
+    elseif a > _length  || b > _length || a<0 || b < 0
         return false
     else throw(error("Unexpected Error occured"))
     end
@@ -109,7 +109,7 @@ function processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
 
 end
 
-#TODO: check output : 
+#TODO: check output :
 """ checks the array `arr` for a content , returns the first & the last """
 function elementAt(arr, xContent)
 
@@ -318,9 +318,9 @@ function objBounds2(_view, arr)
 
             #drop first & last
             # return index1, value1, index2, value2
-            return [_firstIndex1, _firstValue1]
-        , [_lastIndex1, _lastValue1], # wawrning : last index always = 1
-            [_firstIndex2, _firstValue2]
+            return [_firstIndex1, _firstValue1], [_lastIndex1, _lastValue1],[_firstIndex2, _firstValue2], [_lastIndex2, _lastValue2]
+        #, [_lastIndex1, _lastValue1], # warning : last index always = 1
+            #[_firstIndex2, _firstValue2]
             #, [_lastIndex2, _lastValue2]
             # now this tuple has 2 items (if scalar) or 4 (if 2 returns, or more )
 
@@ -359,18 +359,32 @@ indexValue1, indexValue2 = objBounds(v1,v) #find v1's bounds, in terms of v (or 
 
 #-------------------------------------------
 
+# findall Demo
 #find (first) index of firstXindex on arr
 
 #find (last) index of lastXindex on arr
-
-    firstXValue = findall((x -> x == firstXValue), arr)[1]
-    firxtXValue = firstXvalue[1]
-
-    newXIndex = findall((x -> x == lastXValue), arr)
-    lastXValue  = newXIndex[length(newXIndex) -1 ]
-#end
-    firstXIndex = firstindex(newXIndex)
-    newXIndex = lastIndex(newXIndex)
+function isArray(x)
+    #theType = copy(typeof(x))
+    if typeof(x)== Array# here: unsure of ar1 content # {Int64,1} # debugged
+        return true # this line presumes firstXvalue is of type Array
+    elseif typeof(x) != Array
+        return false
+    #else deal later
+        #firxtXValue = firxtXValue
+    end
+end
+firstXValue = findall((x -> x == firstXValue), ar1)#[1] #debugged
+if typeof(firstXValue) == Array# here: unsure of ar1 content # {Int64,1} # debugged
+    firxtXValue = firstXvalue[1] # this line presumes firstXvalue is of type Array
+#else
+    #firxtXValue = firxtXValue
+end
+newXIndex = findall((x -> x == lastXValue), ar1) # ask self is return an array? (most likely, NO)
+if isArray(newXIndex) == true
+    lastXValue  = newXIndex[length(newXIndex) -1 ] # error here
+end
+firstXIndex = firstindex(newXIndex)
+newXIndex = lastindex(newXIndex)
 
 #end
 
@@ -546,7 +560,7 @@ euclidDistDifference(1, 3) # for remap2 #euclidDistDifference(1, 3) #TODO: 2 # u
         if aContent > bContent # arr[lowerBound] > arr[upperBound] n# <--- critial decision
         #Base.@propagate_inbounds
         lowerBound, upperBound, contentSwapped = swapContent(arr[lowerBound],arr[upperBound],arr) #oldSchoolSwap(lowerBound, upperBound, arr) #swapContent(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
-       
+
         #    contentSwapped = true   #arr[lowerBound], arr[upperBound]
         println("at index lowerBound = ", lowerBound, " upperBound = ", upperBound, ", aContent = ", arr[lowerBound], " , bContent = ", arr[upperBound])
 
@@ -569,7 +583,7 @@ euclidDistDifference(1, 3) # for remap2 #euclidDistDifference(1, 3) #TODO: 2 # u
         #end
         #catch UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function
         #    @error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
-        #end
+        end
         return lowerBound, upperBound, contentSwapped #arr[lowerBound], arr[upperBound]
 
     elseif lowerBound == _length || upperBound == _length
@@ -604,7 +618,7 @@ end
 
 
         lowerBound, upperBound, contentSwapped = swapContent(_view[lowerBound], _view[upperBound], _view)  #oldSchoolSwap(firstindex(findall((x -> x == _view[lowerBound]), _view))(lowerBound), firstindex(findall((x -> x == _view[upperBound]), _view))(upperBound), _view) #<--
-        
+
         # swapContent(_view[lowerBound], _view[upperBound], _view)  #oldSchoolSwap(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
 
         #lowerBound, upperBound = oldSchoolSwap(lowerBound, upperBound, _view)
@@ -710,33 +724,40 @@ isEven(length([1, 2, 3]))
 # Sort & Swap
 
 ## swapContent on lowerBound vector array
-function swapContent(aContent, bContent, arr)#; offset=1) #new! # lowerBound,upperBound,indicies in arr
+function swapContent(aContent, bContent, arr)# Debugged #; offset=1) #new! # lowerBound,upperBound,indicies in arr
 
     contentSwapped = nothing
-    #lowerBound = findall(_view -> _view == aContent, arr)
-    #lowerBound = lowerBound[offset]
+    lowerBoundIndex = findall(_view -> _view == aContent, arr) # find an array of all matched indices  of aContent in arr array
+    lowerBoundIndex = first(lowerBoundIndex)  #lowerBound[offset]
 
-    #upperBound = findall(_view -> _view == bContent, arr)
-    #upperBound = copy(upperBound[length(upperBound)])   # -offset])
-    lowerBound = firstindex(arr)
-    upperBound = lastindex(arr)
+    upperBoundIndex = findall(_view -> _view == bContent, arr) # gets back array indicies of all matches of bContent in arr array
+    upperBoundIndex = last(upperBoundIndex)   #fetch the last value
+     #copy(upperBound[length(upperBound)])   # -offset])
+    #Intent: Set lower upper bound to the Min, & Max possible
 
-    if aContent > bContent && lowerBound < upperBound ##
-        arr[lowerBound], arr[upperBound] = arr[upperBound], arr[lowerBound] #swap
+
+    if aContent > bContent
+
+        arr[lowerBoundIndex], arr[upperBoundIndex] = arr[upperBoundIndex], arr[lowerBoundIndex] #swap
         contentSwapped = true
-        #   _first = arr[lowerBound]
-        #  _last = arr[upperBound]
-        println(arr[lowerBound], arr[upperBound], contentSwapped)
+
+        println(arr[lowerBoundIndex], arr[upperBoundIndex], contentSwapped)
 
     elseif aContent <= bContent
-        # arr[lowerBound], arr[upperBound] = arr[lowerBound], arr[upperBound] # nothing
+
         contentSwapped = false
-        println(arr[lowerBound], arr[upperBound], contentSwapped)
+        println(arr[lowerBoundIndex], arr[upperBoundIndex], contentSwapped)
     end
 
-    return lowerBound, upperBound, contentSwapped #returns index (more practical)
+    return lowerBoundIndex, upperBoundIndex, contentSwapped #returns index (more practical)
 end
 
+ar1 =  [3,2,1]
+
+a,b,isSwapped = swapContent(3,2,ar1)
+
+print("a = ",a, " b = ", b)
+print("ar1 = ",ar1)
 ## swapContent on lowerBound view
 function swapContent(aContent, bContent, _view::SubArray)#; offset=1) #new! # lowerBound,upperBound,indicies in arr
 
@@ -828,7 +849,7 @@ if the first input argument (for the lower bound lowerBound) is larger than uppe
 then swapping indicies has to happen, to ensure the process consistency of this function
 
 """
-#depreciate 
+#depreciate
 # oldSchoolSwap on lowerBound view #non-practical (in arrays, or sub arrays )
 function oldSchoolSwap(lowerBound, upperBound, _view::SubArray) #lowerBound,upperBound,indicies in arr
 
@@ -972,7 +993,7 @@ function isUnitDistanceReached(lowerBound, upperBound)
         m1, m2, isWhole = middle(lowerBound, upperBound) #lowerBound - 1, lowerBound, upperBound, upperBound + 1, _view) #<-----sumInterval not defined
         v = collect(m1:m2) # collect(first(m1): last(m2) )
         # compareBounds
-        lowerBound, upperBound, contentSwapped = doCompare(m1, m2, view(v,firstindex(v):lastindex(v)))  #v) # <-----
+        lowerBound, upperBound, contentSwapped = doCompare(m1, m2, view(v,first(v):last(v)))  #v) # <-----
         # kernel(m1, m2, view(collect(m1:m2), m1:m2))
         return false
     end
@@ -1010,7 +1031,7 @@ m1, m2, _isSWapped = middle(1,9)
 
 #lowerBound newM1 #m1, m2  # m2, upperBound
 _m1,_m2, _isSwapped = middle(1,m1-1)
-isUnitDistanceReached(1, m1 - 1)
+isUnitDistanceReached(1, m1-1 ) # < ------------
 #isEndReached(1,m1-1)
 
 _m1,_m2, _isSwapped = middle(m1,m2)
@@ -1957,7 +1978,7 @@ numMiddles = currentValue # 1 #FYI
 # CompareBounds
 #
 
-=#
+
 
 arr = collect(1:7)
 pts = [1, 3, 4, 7]
@@ -1967,7 +1988,7 @@ pts = [1, 3, 4, 7]
 compareQuartet(1, 2, 3, 4, [1, 2, 3, 4])  # 1 4 2 3  # <-----
 
 view(v, 1: 9)#done
-=#
+
 v = collect(1:9)
 res = view(v, firstindex(v):lastindex(v))
 
@@ -4912,7 +4933,7 @@ function compareIntervals(_stack, arr::Array{Int64,1}, interval=nothing, group=0
         return lowerBound, upperBound, m1
     end
     i = i + 1
-    v = collect((1:_length-1))  
+    v = collect((1:_length-1))
     #_newView = view(v, i)
     _newView = view(v, (1:_length-1)) #length(arr - 1))
     return compareIntervals(_stack, _newView)
