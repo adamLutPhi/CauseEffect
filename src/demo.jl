@@ -15,12 +15,12 @@ function swapContent(aContent, bContent, arr)# compiles #; offset=1) #new! # low
         arr[lowerBoundIndex], arr[upperBoundIndex] = arr[upperBoundIndex], arr[lowerBoundIndex] #swap
         contentSwapped = true
 
-        println(arr[lowerBoundIndex], arr[upperBoundIndex], contentSwapped)
+        println(arr[lowerBoundIndex]," ", arr[upperBoundIndex]," ",contentSwapped)
 
     elseif aContent <= bContent
 
         contentSwapped = false
-        println(arr[lowerBoundIndex], arr[upperBoundIndex], contentSwapped)
+        println(arr[lowerBoundIndex]," ", arr[upperBoundIndex]," ", contentSwapped)
     end
 
     return lowerBoundIndex, upperBoundIndex, contentSwapped #returns index (more practical)

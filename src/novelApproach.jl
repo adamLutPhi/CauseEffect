@@ -21,7 +21,7 @@ _stack = []
 function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit should be const
 
     # _stack2=[]
-    #eqnf f(a,b,n) =  b - (n *a)
+    #eqn f: f(a,b,n) =  b - (n * a)
     lower = copy(a)
     upper = copy(b)
     res = b
@@ -39,7 +39,7 @@ function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit shou
         nonLinearPart = count * lower # a * i
         res = upper - nonLinearPart #1 # update res [process new value ] # possibility for a negative res ( count * lower)
         elseif res <= 0 # negative: last iteration
-
+            #Then do nothing
         end
 
     end
@@ -93,7 +93,8 @@ function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit shou
     #return _stack2
 
     end
-end 
+end
+end
 
 
 #----
@@ -504,4 +505,3 @@ push!(_stack, [8, 9])
 #--- one liner fix
 b = 9 # for a given bound
 upperbound = b # lowerbound +1 # upper is the bound    # 9
-
