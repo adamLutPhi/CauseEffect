@@ -163,6 +163,23 @@ Now, `Utils.jl` output displays the main issue:
 ### Updated
 - `Unused.jl`
 - `makeVector` into the built-in `collect`
+
+# 9-17-2022
+
+## Action Plan
+
+## Updated 
+
+- `UnUsed2`: files from `Utils` has been Transferred for it
+-  `Utils` : removed non-functional code
+- `demo`: spaces been addded 
+
+# 9-18-2022
+
+## Action Plan 
+
+## Updated 
+- `novelApproach`:  requires more work on debugging 
 ## Next Action Plan
 
 - Recheck `elementAt` output

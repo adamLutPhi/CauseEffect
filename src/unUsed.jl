@@ -13,6 +13,7 @@
 
 #3. disccovered: append!(vector1, vector2)
 
+#4. use
 # collect
 lowerbound = 8; upperbound= 9
 v = collect((lowerbound: upperbound)) # [8,9]
@@ -22,20 +23,21 @@ v = collect((lowerbound: upperbound)) # [8,9]
 
 #collect((a, _mop - 1))
 collect((lowerbound: upperbound - 1)) # [4,7]
-collect((upperbound: 9)) # [8,9]
+collect((first(v): last(v))) # [8,9]
 #newV = collect((lowerboundValue, upperboundValue-1)) # 4 #same as input interval
+#newV = collect((lowerbound, upperbound))
 newV = collect((lowerbound: upperbound)) # 4
-newV = collect((lowerbound, upperbound))
 
-_next =5
-collect((a, _next - 1)) # vector [1,3] #now gives [2,3]
+#say we calculated the next kernel value = 5
+_next = 5
+collect((a: _next - 1)) # vector [1,3] #now gives [2,3]
 
 newV = collect((a, _next))  #- 1)) #[1,3] #experimential : warning
-newV = collect((lowerbound, upperbound))  # commit this one  #uncommentMe
+newV = collect((lowerbound: upperbound))  # commit this one  #uncommentMe
 
 lowerbound = [1,4,8][1]
 #upperbound = copy(findNext([1, 4, 8], 1)) #+ nextUpperbound #
-collect((lowerbound, upperbound)) #define: collect()
+collect((lowerbound: upperbound)) #define: collect()
 """
 nextLowerbound= upperbound + 1
 nextUpperbound= findNext([1, 4, 8], firstindex(nextLowerbound))
@@ -45,7 +47,9 @@ collect((nextLowerbound, new))
 """
 v2=[8,9]
 println(v1) #[3, 4, 5, 6, 7]
-v = append!(v1,v2) # compiles
+v = append!(v1,v2) #[first(v2),last(v2)]) # compiles
+
+println("v = ", v)
 #v = tuple(v1).push( v2) # LoadError: DimensionMismatch: dimensions must match: a has dims (Base.OneTo(2),), b has dims (Base.OneTo(5),), mismatch at 1
 println(a) # a = 1
 #v = collect((firstindex([1, 4, 8], lowerbound), lastindex([1, 4, 8], upperbound)))
@@ -110,9 +114,14 @@ julia> vcat(a, b)
 #----------
 ar = [1, 4, 8] # collection of cut points
 b = 9 # b was set to 2
-_lst = vcat(last(ar),b) # [8,9] (Expected) [now last vector is glued]
 
-println("_lst",_lst) # #Vector{Int64}
+ar
+
+_lst = vcat(last(ar),b) # [8,9] (Expected) [now last vector is glued]
+#_lst = tuple(_lst)
+lst = vcat(_1st,lst)
+println("_lst",_lst) # #Vector{Int64} # [8,9]
+
 #=
 lst = []
 #TODO: Inspect this function
@@ -120,21 +129,27 @@ for i = 2:3 #starts from 2 , length(ar)
     push!(lst, f2(i))
 end
 =#
-println("1st = ",lst) #  1st =Any[[1, 3], [4, 7]] # Expected
+println("lst = ",lst) #  1st =Any[[1, 3], [4, 7]] # Expected
 # println("typeof(lst[1]) = ",typeof(lst[1]))  #Vector{Int64}
+#concatenate(_1st,_lst)
+lst = vcat(lst,_lst)
+println("lst = ",lst)
 
 #_1st = push!(ar, b) [8, 9]
 println("_lst = ", _lst)
 #E(x) = ar  = Any[[1, 3], [4, 7], [8,9]]
-result = vcat(_1st,_lst ) # collect(_1st:_lst) #
+#result = vcat(last(_1st),_lst ) # collect(_1st:_lst) #
+#result = pushlast(_1st,_lst)
+
+result = vcat(last(_1st),_lst )   #collect(_1st:_lst)
 
 println("result = ",result)
 println("ar = ",ar)
 
 #push!(lst, collect(last(ar), b))
 println("\nlast(ar) = ",last(ar)) # 8
-ar2 =  collect(last(ar): b) # [8,9]
-lst = append!(lst,ar2)
+#ar2 =  collect(last(ar): b) # [8,9]
+#lst = append!(lst,ar2)
 print("\n1st =",lst) # compiles
 
 #  remapCompare
@@ -148,7 +163,6 @@ function remapCompare(m2, upperBound, _view::SubArray)
 end
 
 #1 function implementation
-
 function cause!(_stack, kernel)
     if _stack > 0
         interval = pop!(_stack)
@@ -163,9 +177,7 @@ end
     #unused
     """returns the element, at lowerBound specific index"""
 function elementOf(arr, n::Int64)
-
     return first(arr, n)[n] #return the first n elements i.e. 2nd: [1:4] , [1:4][2] = 4
-
 end
 
 #--------
@@ -197,7 +209,7 @@ end
 """main:  checks from only lowerBound view """
 function checkNextView(_view)
     if length(_view) === Nothing
-        return -1
+        return #-1
         #but lowerBound view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
     elseif length(_view) >= 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed))
         lowerBound = firstindex(_view)
@@ -212,7 +224,7 @@ end
 """ specific: for lowerBound given bounds lowerBound, upperBound, calculates the next view """
 function checkNextView(_view, lowerBound, upperBound)
     if length(_view) === Nothing
-        return -1
+        return # -1 # -1 is part of the old thinking patter
         #but lowerBound view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
     elseif length(_view) >= 2 * 2 - 1 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed))
         println("firstindex(x)+1:lastindex(x)-1", firstindex(x)+1:lastindex(x)-1)
@@ -282,9 +294,9 @@ function checkNextView!(_view, lowerBound, upperBound) # warning: lowerBound,upp
     end
 
 end
-
+#=
 function checkNextView!(_view)
-    if length(_view) === Nothing
+    if length(_view) # === Nothing isa nothing  #isa nothing
         return #-1
     elseif length(_view) == 1
         #TODO: Contemplate the usefulness of including lowerBound different dataType ( i.e. scalar typeof _view[1] )
@@ -313,9 +325,9 @@ function checkNextView!(_view)
         end
     end
 end
-
+=#
 #TODO: CheckNextView: check this Implementation: #note: needcheckNextView to to recursive i.e.
-checkNextView!(_view) #<----------
+#checkNextView!(_view) #<----------
 _view = nothing # TODO: replace with checkNextView!
 _view = _view -> checkNextView(_view) #TODO: Complete CheckNextView()  # checks CheckNextView (returns the nextView )
 
@@ -548,7 +560,8 @@ end
 # mappedIndex
 
 #newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
-mappedIndex = firstindex(arr) + 3 - 1 # firstindex(arr) + intervalBound1 -1
+#=UncommentMe
+mappedIndex = firstindex(arr) +2  #+ 3 - 1 # firstindex(arr) + intervalBound1 -1
 (first(arr, mappedIndex), mappedIndex)
 
 # mappedIndex not defined
@@ -560,8 +573,10 @@ mappedIndex = firstindex(arr) + intervalBound1 - 1 #3
 #  if mappedIndex > a && mappedIndex < b
 newBound = +(mappedIndex, +1) # add either 0 if count not even, 1 if count is even
 mappedIndex = +(mappedIndex, addition) # both equal half the time:
+=#
 # ---------
 
+#=UncommentMe
 if @assert newBound === mappedIndex
     return true
 end
@@ -569,20 +584,25 @@ if newBound === mappedIndex
     return true
 end
 println("newMapped index = ", mappedIndex)
-
+=#
 # ----
 """arr[mappedIndex]+1 """
 function evaluateValue(arr::Array{Int64,1}, mappedIndex::Int64; op=+)
     return op(firstindex(arr, mappedIndex), 1) #,addition) ) #warning: Unassigned operation
 end
 
-mappedIndex = firstindex([1, 4, 8]) + 2 # -1
+#Intent: reach last index
+mappedIndex = firstindex([1, 4, 8]) # + 2 # -1 # line: for view (only)
+mappedIndex = lastindex([1, 4, 8]) # + 2 # -1 # line: for view (only)
+
 # newBound = mappedIndex + 1 # arbitrary function #ERROR: index value is outside the array function
-view([1, 4, 8], firstindex([1, 4, 8], lowerbound)) #correct
+view([1, 4, 8], firstindex([1, 4, 8]): lowerbound) #correct
 # v = collect((firstindex([1, 4, 8], lowerbound), firstindex([1, 4, 8], upperbound))) #upperbound))  [1, 3] # [1,1]
-view([1, 4, 8], firstindex([1, 4, 8], upperbound)) #1
+view([1, 4, 8], (firstindex([1, 4, 8]): lastindex([1,4,8])) ) #1
 # newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
-newRow = view(arr, mappedIndex-1:mappedIndex) # this works  #[4 8]
+arr = collect(1:9)
+newRow = view(arr, mappedIndex-1:mappedIndex) # this works  #[4 8] # Does not Work # Use ObjBounds
+
 
 #return newRow
 
@@ -687,15 +707,17 @@ findSubIntervals([1, 2, 3], 1)# [1,2]
 findSubIntervals([1, 2, 3], 2)# [2,3]
 findSubIntervals([1, 2, 3], 3)# last subinterval (uncalculated) , Done # n#1 thing
 
+_stack = [[1,3],[4,7],[8,9]]
 l = copy(length(_stack))
 l.*2 #if vector i.e. d=1 : 2 *2
 
 #----------------
 
 
-typeof(r)
+#=
 r == [] #when return an empty array  this is true
-
+typeof(r)
+=#
 ar = [4, 5, 3, 6]
 tmp = findSubIntervals(ar, 2)
 ar = [3, 6, 8] #
@@ -711,19 +733,6 @@ end
 
 mainstack
 
-
-findSubIntervals([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
-findSubIntervals([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
-
-findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
-findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
-
-r = findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 8) # [8, 9]
-
-findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
-findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
-
-r = findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 8) # [8, 9]
 # ==========================================================
 
 ## findSubIntervals2
@@ -759,7 +768,7 @@ function findSubIntervals2(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
 
     #OK
     #=
-        if intervalBound2 === nothing
+        if intervalBound2 === nothing # correct condition
         elseif intervalBound2 !== nothing && intervalBound2< b
         end =#
 
@@ -818,7 +827,7 @@ function findSubIntervals2(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
 end
 
 """ find the subinterval, of an array """
-# findSubIntervals3
+## findSubIntervals3
 
 function findSubIntervals3(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op can be - too
 
@@ -864,8 +873,8 @@ function findSubIntervals3(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
         if count % 2 == 0
             addition = 1
         elseif count % 2 != 0
-            addition = 0
         end
+            addition = 0
         #  push!(lista, [intervalBound2, intervalBound1])
         #tmp = [intervalBound1, intervalBound2]
         # if tmp != [] #!== nothing
@@ -919,6 +928,22 @@ function findSubIntervals3(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
 end
 # ==========================================================
 
+findSubIntervals([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
+findSubIntervals([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
+
+#notdefined
+
+findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
+findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
+
+r = findSubIntervals2([1, 2, 3, 4, 5, 6, 7, 8, 9], 8) # [8, 9]
+
+findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
+findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
+
+r = findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 8) # [8, 9]
+
+# ==========================================================
 # calcTotalMiddles
 """ calculate total Middles , between a `lowerBound` & an `upperBound` """
 
@@ -958,7 +983,7 @@ function calcTotalMiddles(arr) #name displays what it supposed to do
         return 0 # -1
     end
 end
-=#
+
 
 # ==================================
 # calcVerteciesLeft
@@ -1109,8 +1134,8 @@ function calcVerteciesLeft!(_view::SubArray{Int64,1}, currentValue) # ,formula)
     end
 
 end
-
-
+#=
+#requires checkCurrentValue!
 calcVerteciesLeft!(1, 3, nothing) #1 #not correct  #checkCurrentValue!(1,3) #erroneous
 
 
@@ -1130,7 +1155,9 @@ function isStoppingCondition(lowerBound::Int64, upperBound::Int64, currentValue)
     return currentValue #handleCurrentValue(currentValue)
 
 
-end#----
+end
+=#
+#----
 
 #Vital #contains effect: Depreciate
 function traverse(lowerBound, upperBound, _view) #, i)
@@ -1176,9 +1203,13 @@ end
 remap(1, 10) #missing 1 at last  +1 #fixed
 remap(5, 10) # correct
 
-# collect
+#Hard-coded values:
+lastB = 7
+# collect interval
+interval = [8,9] # the last one
+v = collect(lastB: last(interval) )
 
-v = collect((lastB, interval[2]))
+#v = collect(min(lastB,last(interval)): max(lastB, last(interval))) #interval[2]) )
 #v = collect((lastB:interval[2]))
 
 # checkCond
@@ -1187,7 +1218,6 @@ v = collect((lastB, interval[2]))
 #lowerBound ::Int64, m1::Int64, m2::Int64, upperBound::Int64, ::Bool, ::Vector{Int64})
 
 # checkCond
-
 function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1})
     isWhole = copy(getIsWhole(arr))
 
@@ -1338,6 +1368,38 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #i
 end
 
 # =================
+""" quantitatively, compare values , returns lowerBound qualitative value """
+function inferLocation(lowerBound, upperBound, x)
+
+    try # the classical approach (compare all 3 at same time )
+        #  newLocation
+
+        if x > lowerBound && x > upperBound # x is max
+            if lowerBound < upperBound #lowerBound is min
+                return lowerBound, upperBound, x
+            elseif lowerBound > upperBound  # or lowerBound is max
+                return upperBound, lowerBound, x
+            end
+        elseif x > lowerBound && x < upperBound #x is the middle
+            if lowerBound < upperBound # lowerBound is min
+                return lowerBound, x, upperBound
+            elseif lowerBound > upperBound # lowerBound is max
+                return upperBound, x, lowerBound
+            end
+        elseif x < lowerBound && x < upperBound # x is the min (how low is lowerBound )
+            if lowerBound < upperBound # lowerBound is the min
+                return x, lowerBound, upperBound
+            elseif lowerBound > upperBound # lowerBound is the max
+                return x, upperBound, lowerBound
+            end
+
+        elseif x == lowerBound || x == upperBound
+            throw(error("Different Bounds are equal "))
+        end
+    catch EqualBoundsError
+        @error "EqualBoundsError : Different Bounds,which should be different, are equal " (EqualBoundsError, catch_backtrace())
+    end
+end
 #------
 #compareSort
 #advanced: define lowerBound _stack of inputs #TODO: Check
@@ -1471,7 +1533,8 @@ function partition(lowerBound::Int64, upperBound::Int64, currentValue, kernel=mi
             #upperBound is uncompared #TOOO: add bool flag
         end # m1 , upperBound
         _view2 = collect(lowerbound:upperbound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-        compareBounds(lowerbound, upperbound, _view1)
+        compareTriad(lowerbound, upperbound, _view1)
+        #compareBounds(lowerbound, upperbound, _view1)
         #TODO: finalize : check if there is lowerBound lowerBound true bool value i.e. there exists some uncompared bool flag
         # if ther is , then the sole point has got to be compared with with the other interval
         #
@@ -1705,11 +1768,11 @@ end
 end
 
 # ================
-
+#=UncommentMe
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) # 1 4 2 3 # corrected
 
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) #compareQuartet: doCompare
-
+=#
 # checkCondition
 
 function checkCondition(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1}) #error #subtle
@@ -1780,3 +1843,4 @@ function makeView(_a, _b)
 end
 
 #newView = view(collect((lastB, interval[2])), collect((lastB:interval[2]))) # view(pts[lastB], interval[1]: interval[2])
+=#
