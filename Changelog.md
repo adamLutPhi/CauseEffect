@@ -155,10 +155,10 @@ all depreciated functions are moved into `unUsed.jl`
 
 ### Removed
 
-- Unnecessary `half-Comment` operators `#=` and `=#` across the `Utils.jl` (From Uneven Commenting ) 
+- Unnecessary `half-Comment` operators `#=` and `=#` across the `Utils.jl` (From Uneven Commenting )
 
 Now, `Utils.jl` output displays the main issue:
-`boundError` -   to be dealt with
+`boundError` -  to be dealt with
 
 ### Updated
 - `Unused.jl`
@@ -168,21 +168,30 @@ Now, `Utils.jl` output displays the main issue:
 
 ## Action Plan
 
-## Updated 
+## Updated
 
 - `UnUsed2`: files from `Utils` has been Transferred for it
 -  `Utils` : removed non-functional code
-- `demo`: spaces been addded 
+- `demo`: spaces been added
 
 # 9-18-2022
 
-## Action Plan 
+## Action Plan
 
-## Updated 
-- `novelApproach`:  requires more work on debugging 
+### Updated
+- `novelApproach`:  requires more work on debugging
+
+# 9-19-2022
+## Action Plan
+### Updated
+- `novelApproach` runs until completion, finishes with typical error type `BoundError`
+
 ## Next Action Plan
-
+Bound handling Phase:
 - Recheck `elementAt` output
+- Issues detected with functions `compareTriad`, `compareQuartet`:
+bound handling those functions
 
-- Depreciate every `_view` ,
+
+- Depreciate every **non-functional** `_view`,
 and replace it the debugged `objBounds`
