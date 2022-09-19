@@ -38,9 +38,9 @@ function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit shou
 
         nonLinearPart = count * lower # a * i
         res = upper - nonLinearPart #1 # update res [process new value ] # possibility for a negative res ( count * lower)
-        elseif res <= 0 # negative: last iteration
+    elseif res <= 0 # negative: last iteration
             #Then do nothing
-        end
+    #end
 
     end
     while res >= lower # 1
@@ -93,8 +93,7 @@ function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit shou
     #return _stack2
 
     end
-end
-end
+end #ends with errors
 
 
 #----
@@ -124,25 +123,34 @@ arr = [5, 4, 3, 2]
 
 
 #----------
-count = 1
-while count < b  # cruical #Check #unless function is event driven (called each time )
+#=UncommentMe
+local  addition = 0
+local count = 0
+while addition < b  # cruical #Check #unless function is event driven (called each time )
+
     #for i = 1 :b
     #count += 1
-    println("count = ", count)
+    #println("count = ", count) uncommentMe
     # if count % 2 == 0 #if #if even return 1
-    addition = 1
-    #1: [1,3] + addition (1) = [4,_]
-    # 2: [4,6] + 1 = [7,_]
-    #3:[] #except last one : no addition
+    if addition ==0
+        count = addition
+    else
+        count += 1 #should be +=
 
-    println("with addition = 1")
-    #println("even, with addition = 0")
-    # elseif count % 2 != 0 # if odd
-    #     addition = 0
-    #     println("odd, with addition = 1")
-    # end
-    count += 1
+        #1: [1,3] + addition (1) = [4,_]
+        # 2: [4,6] + 1 = [7,_]
+        #3:[] #except last one : no addition
+
+        println("with addition =1 ")#, addition) #" with addition = 1"
+        #println("even, with addition = 0")
+        # elseif count % 2 != 0 # if odd
+        #     addition = 0
+        #     println("odd, with addition = 1")
+        # end
+        #count += 1 #uncommentMe
+    end
 end
+=#
 
 #---------- modifyInterval
 addition = 1
@@ -162,8 +170,8 @@ for i = 1:length(_stack)  # = b-1 #should be
     push!(pts, nextStart)
 end
 #---------
-addition = 1
-nextStart = nothing
+global addition = 1
+global nextStart = nothing
 
 for i = 1:length(_stack)  # = b-1 #should be
     # addition = 1
@@ -181,10 +189,10 @@ end
 
 #--------Done
 _stack
-_stack[1][2]
+# _stack[1][2] #not works as expected  #UncommentMe
 #---------
 
-println("newBound index = ", newBound)
+#println("newBound index = ", newBound)
 
 
 # idea: if I have some index
@@ -229,19 +237,42 @@ arr = [1, 4, 8]
 i = 1
 nextLowerbound = nothing
 
-lowerbound
-upperbound
+#lowerbound #UncommentMe
+#upperbound
 #----------
 #Q.how to deal with the last item?
 #---idea
+lowerbound = 1
+upperbound = 8
+v1 = view([1, 4, 8], firstindex([1, 4, 8], 4) ) #ERROR: LoadError: BoundsError: attempt to access 3-element Vector{Int64} at index [[1, 4, 8]]
+println("v1  = ",v1) # fill(1)
 
-v1 = view([1, 4, 8], firstindex([1, 4, 8], 4))
-v2 = view([1, 4, 8], 4, lastindex([1, 4, 8]))
+#ERROR: LoadError: ArgumentError: invalid index: (1, 3) of type Tuple{Int64, Int64}
+#v1 = view([1, 4, 8], firstindex([1, 4, 8]),lastindex([1,4,8]) ) #ERROR: LoadError: BoundsError: attempt to access 3-element Vector{Int64} at index [1, 3]
+
+#v1 = view([1, 4, 8], firstindex([1, 4, 8]),4) # ERROR: LoadError: BoundsError: attempt to access 3-element Vector{Int64} at index [1, 4]
+
+#the following is erroneous:
+#v2 = view([1, 4, 8], 4, lastindex([1, 4, 8])) #LoadError: BoundsError: attempt to access 3-element Vector{Int64} at index [4, 8]
+#println("v2 = ",v2)
 #------
+#import test
+v1 = view([1, 4, 8], firstindex([1, 4, 8], lowerbound));println("v1= ",v1)
+v2 = view([1, 4, 8], lastindex([1, 4, 8], upperbound));println("v2= ",v2)
 
-v1 = view([1, 4, 8], firstindex([1, 4, 8], lowerbound))
-v2 = view([1, 4, 8], lastindex([1, 4, 8], upperbound))
-v = collect(v1: v2)
+v = vcat(v1,v2) # v(v1: v2)
+b = view([1, 0, 0], 1:2) #view(UInt8[0, 0, 0], 2:2)
+println("b = ",b)
+#@test String(b) == "a"
+b = view([0, 0, 1], 2:3) #view(UInt8[0, 0, 0], 2:3)
+println("b= ",b)
+m = 1; n  =3
+
+a = collect(1:10)
+s = view(a, 1:10); println("s= ",s) #s = view(a, 1, [2,3,5]); println("s= ",s)
+
+#r = reshape(s, length(s)); println("r = ",r)
+#= #unCommentMe
 while i < maxLength #2 not working (as expected )
     #i+=1
     if nextLowerbound === nothing
@@ -283,6 +314,7 @@ while i < maxLength #2 not working (as expected )
     nextLowerbound = upperbound + 1
     i += 1
 end
+=#
 
 #Handle last item
 #issue arr:  ends at 8 (not 9) [missing 1 ]
@@ -411,7 +443,7 @@ push!(lst, newV)
 #----
 # return newV
 #given a = 1, b = 9
-length(ar)
+# length(ar)
 lst = []
 a = 1;
 b = 9;
@@ -449,32 +481,32 @@ end
 #Objectives: do stack ops - recursively
 _lst = copy(lst) # have a list of interval, waiting to be called by a function recursively
 
-intervalVector = pop!(_lst)
-cause!(intervalVector)
+#intervalVector = pop!(_lst) # test (unintended)
+#cause!(intervalVector) # unCommentMe
 
 #popfirst!(_lst)
 if _lst == []
     return
 else
     intervalVector = popfirst!(lst) # [1, 3]
+    println("intervalVector = ",intervalVector)
     cause(intervalVector)
 
 end
 
-4 - 1 = 3
+@assert 4 - 1 == 3
+# 4, 8 - 1 == 7 -> [4, 7] # what  a creativity # ERROR: 7 not a function
 
-4, 8 - 1 = 7 -> [4, 7]
 # global a = nothing
 
+_stack = [[1,3],[4,7],[8,9]] # hard-coded _stack
+println("_stack[1][2] = ",_stack[1][2])
 
-_stack[1][2]
-f1(_stack[1][1], _stack[1][2], [1, 4, 8], 1)
-
+#f1(_stack[1][1], _stack[1][2], [1, 4, 8], 1) #unCommentMe
 
 #if nextLowerboundValue !== nothing
 # lower
 #end
-
 # [4,7]
 
 #check valid interval (e.g. if upperbound < lowerbound break #loop)
@@ -492,15 +524,15 @@ push!(_stack, [8, 9])
 
 #now what to do? #Main Objective: evaluate Mainarray content, at thise locations (positions)
 ## new problem : each stack row(vector) has only 2 items
-#Ideal idea: if we pop 2  together it forms a Quesrter
+#Ideal idea: if we pop 2  together it forms a Quartet (4) hence, can use compareQuartet
+
 # possible issue :
 # what if we have an orphaned 1 vector with 2 items at the end (with no given structure to it) ?
 #potential A: does comparing last 2 with one side of the created stucture (via compareTriad) suffice?
 
-#q2.Golden Question: ( Would we be able to guarantee it?) how could we compare & order items at the same time, in one shot?
-
-
-
+#q2.Golden Question: ( Would we be able to guarantee it?)
+#How could we Compare & Order items at the same time, in one shot?
+#Hence the use of `Event-Driven functions`
 
 #--- one liner fix
 b = 9 # for a given bound

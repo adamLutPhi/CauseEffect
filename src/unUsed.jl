@@ -90,10 +90,12 @@ function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
         newV = collect((ar[i-1], ar[i] - 1))
         # push!(lst, newV)
         return newV #, i
+
     else
         return
     end
 end
+
 f2(2)
 """
 #https://stackoverflow.com/questions/39586830/concatenating-arrays-in-julia

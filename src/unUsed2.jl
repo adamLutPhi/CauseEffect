@@ -1054,7 +1054,11 @@ euclidDistDifference
 
 # euclidDistDifference
 #added compareBounds
-
+#=
+for k = 1: min(m , n) #min(m - 1 !(T<:Real), n)
+    x = view(A, k, n) # View(A, k:m, k )
+    println("x = ",x)
+end=#
 
 
 
