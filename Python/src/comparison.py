@@ -12,11 +12,12 @@ class Comparison():
 
 
 def display(subject: str, desc  : str ="Unexpected error Occured"):
-    """Prints message, if error occured """
+    """
+    Prints message, if error occured """
     
     print("{subject} : {desc}")
 
-# 1. getIndicies(a: int, b: int, lst)
+# 1. getIndicies
 def getIndicies(a: int, b: int, lst):
 
     """ assumes a,b are values with collection object `lst`
@@ -28,15 +29,14 @@ def getIndicies(a: int, b: int, lst):
     return idxA, idxB
 
 
-# Swap
-
-def swap( a: int, b: int, lst):  # correct
+# 2. Swap
+def swap( a: int, b: int, lst):
     """ If content of indicies a,b are not ordered, swap them
             Otherwise, assume user had mistaken , entering content values in lst
             assuming the best: call procedure to return the contents' indicies
             adds a flag to check if swapping happened (or not) """
         
-    #1. Init:   # ensure these are indicies  (not procedure calls)
+    #1. Init:   # ensure these are `indicies`  (not procedure calls)
     idxA, idxB = 0, 0
     n = len(lst)
     nMax = n-1
@@ -46,13 +46,13 @@ def swap( a: int, b: int, lst):  # correct
         
     #2.1. check Indicies if above max condition):
     if a > nMax or b > nMax :  # if either indicies a,b above array limit ( suppose user provided values, instead ) 
-        # 2.2. Call procedure -  fetch the corresponding indicies :
+        # 2.1.1. Call procedure -  fetch the corresponding indicies :
         idxA, idxB = getIndicies(cls, a=a, b= b, lst=lst)
 
-        # 2.3. Swap indicies with values
+        # 2.1.2. Swap indicies with values
         a, b = idxA, idxB
 
-        #2.2 If condition is correct  #checks indicies (only)
+    #2.2 If condition is correct  #checks indicies (only)
     if a < nMax or b < nMax:
 
         #2.2.1 if content is `Ordered`
@@ -70,8 +70,8 @@ def swap( a: int, b: int, lst):  # correct
     print(f"a = {a}, b = {b}, lst[a] = {lst[a]} , lst[b] = {lst[b]}")
     return a, b, is_swapped
     
-
-def compareTriad( a:int, m1:int, b: int, arr):
+# 3. compareTriad
+def compareTriad( a:int , m1:int , b: int , arr):
 
     """  comparing is of a (3) three main comparisons
 
