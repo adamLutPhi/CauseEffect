@@ -35,6 +35,11 @@ end
 =#
 #--------
 
+function subView(lowerBound,upperBound,_view)
+    collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+end 
+_view = collect(1:9)
+res = subView(3,5,_view)
 #=
 function makeView(ab::UnitRange)#compiles
     lowerBound = ab[1]
@@ -83,9 +88,6 @@ function cause!(_stack, kernel)
 end
 
 
-
-
-
 arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 #= =#
 #------------
@@ -106,8 +108,6 @@ function calcTotalMiddles(arr) #name displays what it supposed to do
     end
 end
 =#
-
-
 
 #------
 #compareSort 
@@ -168,4 +168,5 @@ else
     end
 end
 # ArgumentError: array must be non-empty
+
 
