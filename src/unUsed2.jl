@@ -1,13 +1,14 @@
 
 #-----testing
 msg = "ERROR: Unexpected Error Occured"
+elaboration = "UnexpectedError Occured: please check stackTrace, then try again later";
 currentValue = nothing
 arr = [1, 4, 8]
 #middle!(1, 3)
 
 import causeEffect 
 
-causeEffect.
+#causeEffect.
 """ catches an error with a specified error, and displaying elaboration message """
 function writeError(msg,_error= UnexpectedError, elaboration=": please check then try again ")
     catch _error # UnexpectedError
@@ -42,7 +43,35 @@ function isNothing(valor) #TODO:debug
 end
 
 #------
+""" either drop 1 from total if isWhole (1 middle), or 2 if not Whole (twinMiddles)"""
+function getSubtractedValue(isWhole::Bool)
 
+    try
+        subtract = nothing
+        if isWhole == true
+            subtract = 1
+
+        elseif isWhole == false
+            subtract = 2
+        else
+            throw(error("Unexpected Error Occured"))
+        end
+        return subtract
+
+    catch UnexpectedError
+        @error "Unexpected Error: please check then try again" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+
+function handleNegativevalue(_value)
+        if currentValue <= 0 #  the last step
+                _value = 0 #-100 #0
+
+        end
+        _value
+
+end
 """ A custom counter: an event driven, self-decrementing function
 called upon progess with any  Function Criteria )
 initialized automatically, since first run, hence it goes at least once
@@ -61,15 +90,12 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
             currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2  #correct move #
         elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B()
             currentValue -= getSubtractedValue(isWhole)
-            println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
+            println("currentValue = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
             # println("typeof(currrentValue) = ", typeof(currentValue))
 
             println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
             # println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-            if currentValue <= 0 #  the last step
-                currentValue = 0 #-100 #0
-
-            end
+            currentValue = handleNegativevalue(currentValue)
 
             #elseif currentValue == 0
             #        return currentValue

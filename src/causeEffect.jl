@@ -1132,6 +1132,7 @@ end
 ar1 = [1, 3, 2, 4]
 swapContent(3, 2, ar1) #view(ar1,1,length(ar1)))
 ar1
+
 @inline function swapContent(aContent, bContent, _view::SubstitutionString) # ; offset=1) #new! # a,b,indicies in arr  #the less arguments the better
     contentSwapped = nothing
 
@@ -1642,6 +1643,7 @@ b
 
 #2 valid stopping conditions
 
+""" middles can be anything except for (2): the lower & upper"""
 function calcTotalMiddles(arr) #dislike this name
     return length(arr) - 2
 end

@@ -60,12 +60,33 @@ function makeView(_view::SubArray, range) # Bug # this is not the  the way
     return v
 end
 =#
+function getSubtractedValue(isWhole::Bool)
+    try
+        subtract = nothing
+        if isWhole == true
+            subtract = 1
 
+        elseif isWhole == false
+            subtract = 2
+        else
+            throw(error("Unexpected Error Occured"))
+        end
+        return subtract
 
+    catch UnexpectedError
+        @error "Unexpected Error: please check then try again" exception = (UnexpectedError, catch_backtrace())
+    end
+
+end
+"""Another variation of intervalLength (): this intervalLength is vaid , under context of sum """
+function intervalLength2(lowerBound, upperBound)
+
+    return lowerBound + upperBound  #- 1
+end
 function calcTotalMiddles(lowerBound, upperBound) #name displays what it supposed to do 
 
-    res = intervalLength(lowerBound, upperBound) - 2
-    println("currentValue (from bound pts to middles left)  = intervalLength(lowerBound, upperBound) - 2 =", res)
+    res = intervalLength2(lowerBound, upperBound) # - 2 # without 
+    println("currentValue (from bound pts to middles left)  = intervalLength2(lowerBound, upperBound) - 2 =", res)
     # res >=0 ? return res;  : return nothing 
     if res > 0
         return res

@@ -1432,37 +1432,137 @@ arr
 arr
 
 arr[length(arr)]
-function compareTriad(lowerBound, m1, upperBound, arr::Array{Int64,1})
-
+#1. 
+function function getSubtractedValue(isWhole::Bool)
     try
-        if lowerBound !== Nothing && m1 !== Nothing && upperBound !== Nothing
-            _isSwapped = nothing
+        subtract = nothing
+        if isWhole == true
+            subtract = 1
 
-            lowerBound, upperBound, _isSwapped = doCompare(lowerBound, upperBound, arr)
-            println("twinMiddles [lowerBound, upperBound]= ", lowerBound, " ", upperBound, " checked ")
-
-            lowerBound, m1, _isSwapped = doCompare(lowerBound, m1, arr)
-            println(" [lowerBound, m1]= ", lowerBound, " ", m1, " checked ")
-
-            m1, upperBound, _isSwapped = doCompare(m1, upperBound, arr)
-            println(" [lowerBound, m1]= ", m1, " ", upperBound, " checked ")
-
-            if lowerBound === nothing || upperBound === nothing || m1 === nothing
-                return nothing
-            else
-                return lowerBound, upperBound, m1
-            end
-
-            #else throw(error(""))
+        elseif isWhole == false
+            subtract = 2
+        else
+            throw(error("Unexpected Error Occured"))
         end
+        return subtract
 
     catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+        @error "Unexpected Error: please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
 
-    #catch
+end
+
+function getSubtractedValue(isWhole::Bool)
+    try
+        subtract = nothing
+        if isWhole == true
+            subtract = 1
+
+        elseif isWhole == false
+            subtract = 2
+        else
+            throw(error("Unexpected Error Occured"))
+        end
+        return subtract
+
+    catch UnexpectedError
+        @error "Unexpected Error: please check then try again" exception = (UnexpectedError, catch_backtrace())
+    end
 
 end
+getSubtractedValue(10, 5,ar1)
+
+
+function getIndicies(a::Int64, b::Int64, arr)
+
+        firstIndex = first(findall(x -> x == a, arr))
+        lastIndex = last(findall(x -> x == b, arr))
+        idxA, IdxB = firstIndex, lastIndex
+        idxA, IdxB
+end
+
+ar1= [10,5,3]
+
+a,m = getIndicies(10,5,ar1) # 1,2
+function swap(a::Int64, b::Int64, lst; first=1)
+
+    #1. Init
+    idxA, IdxB = 0,0
+    n = length(lst)
+    nMax =  n -1  + first
+    is_swapped = nothing
+
+    #2. Check conditions
+    if a > nMax || b > nMax
+
+        #2.1.1 Call Procedure
+        idxA, idxB = getIndicies(a , b, lst)
+        #2.1.2 Swap Indices
+        a,b = idxA, idxB
+    end
+
+    if a < nMax || b < nMax
+        # if collection is ordered
+        if lst[a] < lst[b]
+            is_swapped = false  # no swap
+            print(" Content is not swappable\n")
+        # If collection is not ordered
+    elseif lst[a] > lst[b]
+            lst[a], lst[b] = lst[b], lst[a] #swap
+            is_swapped = true # swap
+            print(" Content Swapped\n")
+        end
+    end
+    #3. Return
+    print("a ", a, " b ", " lst[a] = ", lst[a], " lst[b] =", lst[b])
+
+    a,b, is_swapped
+end
+
+# Demo: 
+swap(1,2 [10,5,3]) # 1,2, true 
+
+function compareTriad(a, m1, b, arr::Array{Int64,1})
+
+    try
+        #if a !== Nothing && m1 !== Nothing && b !== Nothing
+            _isSwapped = nothing
+
+            #1. 1st scan (2 ops)
+            a, m1, _isSwapped = swap(a, m1, arr) #doCompare(a, m1, arr)
+
+            print("\npost-swap: \n")
+            print("a, m1, b = ", a, " ", m1, " ", b, " swapped = ", _isSwapped, "\n")
+            println(" [a, m1]= ", a, " ", m1, " checked \n")
+
+            #a, upperBound, _isSwapped = swap(a, b, arr) #doCompare(a, b, arr)
+           # println("twinMiddles [a, b]= ", a, " ", b, " checked ")
+
+            ## swap2
+            print("swap 2: m1, b\n")
+            m1, b, _isSwapped = swap(m1, b, arr) #doCompare(m1, b, arr)
+
+            print("a, m1, b = ", a, " ", m1, " ", b, " swapped = ", _isSwapped, "\n")
+            println(" [m1, b]= ", m1, " ", b, " checked \n")
+            #2. 2nd scan (1)
+            print("swap 3: a, m1\n")
+            a, m1, _isSwapped = swap(a, m1, arr) #doCompare(a, m1, arr)
+            println(" [b, m1]= ", a, " ", m1, " checked \n")
+            print("a, m1, b = ", a, " ", m1, " ", b, " swapped = ", _isSwapped, "\n")
+
+     catch UnexpectedError
+        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+      end
+     return a, b, m1
+
+ end
+
+# Demo:
+
+ar1 = [10, 8, 3]
+a,b,m1 = compareTriad(1,2,3, ar1)
+print("a= ",a ,"  m1= ",m1," b= ",b ,"; ar1[a]= ",ar1[a] , " ar1[m]= ", ar1[m1] ," ar1[b]= ", ar1[b] ) # print a friendly message, indicating the new array values
+
 #---------
 # Compareing Three Numbers, as lowerBound  Triad (compareTriad)
 #=
