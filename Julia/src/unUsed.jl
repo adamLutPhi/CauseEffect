@@ -183,13 +183,6 @@ function elementOf(arr, n::Int64)
 end
 
 #--------
-""" subviews a view , using `lowerBound` & `upperBound`"""
-function subView(lowerBound,upperBound,_view)
-    collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-end 
-# DEMO:
-_view = collect(1:9)
-res = subView(3,5,_view)
 #=
 function makeView(ab::UnitRange)#compiles
     lowerBound = ab[1]
