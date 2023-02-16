@@ -536,6 +536,40 @@ print("subView(3,5) = ",res)
 _view = collect(1:9)
 res = subView(3,5,_view)
 
+=======
+euclidDist(1, 3) #3
+euclidDistDifference(1, 3) # the context is to subtract #i.e. TODO: to be replaced by -(1,3)
+
+""" get a `SubArray` from any view, provided a `lowerBound` & an `upperBound` with a view itself"""
+function subView(lowerBound,upperBound,_view) #ok
+    collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+end 
+
+#res = subView(3,5) #  view([3,4,5])
+#Demo
+# Create a View: from 1 to 9
+v = collect(1:9);
+v = view(v,firstindex(v): lastindex(v) ) #SubArray 
+print( typeof(v) ) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
+
+# Create a subView: from 3 to 5
+#  1 2 3 4 5 6 7 8 9
+#     [3 4 5 ] 
+#subView(3,5)   
+#res = subView(v, 3,5) view([3,4,5]) #TODO: check
+res = subView( 3,5, v)            
+print( res) # view(::Vector{Int64}, 1:3) with eltype Int64:
+print( typeof(res ) )#SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
+ 
+# view `SubArray`: it is possible to subview, with any valid index range, using starting & ending indicies 
+# subview( startIndex, endIndex, View)
+print( subView(1,2, res) )  # [1, 2]  
+print( subView(1,1, res) )  # [1] valid subView (gets a subview, from index 1 to 1 )
+print( typeof( subView(1,1, res) )) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
+
+print( subView(1,2, res) !=  subView(1,1, res) )
+#End #Warning: view is of type SubArray, not View (anymore)
+>
 #-----------
 # doCompare
 
@@ -2078,12 +2112,6 @@ function compareQuartet(lowerBound, m1, m2, upperBound, _view::SubArray)
 
 end
 
-
-
-
-
-
-
 #---------
 
 
@@ -2149,16 +2177,14 @@ numMiddles = currentValue # 1 #FYI
 #lowerBound m1-1 m2+1 upperBound
 
 # CompareBounds
-#
 
-
-
+                    
 arr = collect(1:7)
 pts = [1, 3, 4, 7]
 #pts[1] # proxy for lowerBound lower bound
 #compareBounds(pts[1], pts[2], arr) #input # solved #requires pts #Bounds Error
 #---------
-#compareQuartet(1, 2, 3, 4, [1, 2, 3, 4])  # 1 4 2 3  # <----- buggy
+#compareQuartet(1, 2, 3, 4, [1, 2, 3, 4])  # 1 4 2 3  # <----- bug
 
 view(v, firstindex(v):lastindex(v))#done
 
@@ -2209,7 +2235,8 @@ upper = Int(ceil(mid))
 #---------------------------
 
 # getSingleMiddle
-# ow, you have a triad of Points (1,2,3) , which can compare & sort
+                    
+# if you have a triad of Points (1,2,3) [order]: should you also compare & sort?
 
 #Int(floor(5.5))
 
@@ -2234,7 +2261,7 @@ function getFractionalMiddle(mid, isItEven::Bool)
 
     # calculate fractionalMid
     println("Even = ", isItEven)
-    println("fractionalMiddle, twinMiddles ") # worrisome: one be 1 other -1
+    println("fractionalMiddle, twinMiddles ") # Warning: one be 1 other -1
     lower = -1
     upper = -1
     lower = Int(floor(mid))
@@ -2432,7 +2459,7 @@ function Compare(lowerBound, upperBound, arr::Array{Int64,1}) # should #unimplem
 
 end
 
-function Compare(lowerBound, upperBound, _view::SubArray) #
+function Compare(lowerBound, upperBound, _view::SubArray)
     #implicit docompare() function
     m1, m2, isWhole = middle(lowerBound, upperBound)
     _length = copy(intervalLength(lowerBound, upperBound))
@@ -4379,8 +4406,6 @@ if lowerBound !== Nothing && m1 !== Nothing && upperBound !== Nothing && arr !==
             end
         elseif mid == upperBound #lowerBound , m1, upperBound
 
-
-
             #=
                 #if isEven()
                 #else
@@ -4495,7 +4520,7 @@ end
 
 #_view = collect(lowerBound:m1) |>
 
-#suggest: use lowerBound,upperBound as bounds of the current _view
+#Suggest: use lowerBound,upperBound as bounds of the current _view
 # fail_safe mechanism
 _msg = "lowerBound == upperBound scalar situation: lowerBound = ", lowerBound, " upperBound = ", upperBound
 #lowerBound != upperBound ? _view = view(_view, firstindex(lowerBound):lastindex(upperBound)) : return _msg  # lowerBound = 1 , upperBound = 1  #scalar  3
@@ -4542,7 +4567,6 @@ else
         return lowerBound, upperBound, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
     end
 end
-# end
 
 #----
 
@@ -4604,7 +4628,7 @@ if group == 1 && _length == 0 #i == _length - 1 # && reached the end i.e.  #<---
     #lastB = getlastB(_stack)
     lastB = oldInterval[2]
 
-    # lastB iwth interval[2]
+    # lastB with interval[2]
     #compareTriad(lastB,interval[1], interval[2]) #TODO: store return
     #points : lastB, interval[2]
     #compare() # compareTriad  : lastB , interval[1], interval[2]
@@ -4763,22 +4787,21 @@ function compareIntervals(_stack, _newView::SubArray, interval=nothing, group=0,
     _newView = NewView(1, _length - 1) #<--------------
     compareIntervals(_stack, _newView)
     if group == 1
-
+        
         lastB = getlastB(_stack)
-
+        
+        #Union()
         #compare() # compareTriad  : lastB , interval[1], interval[2]
         #generate _view : from lastB to interval[2]
         union_old = union(min(oldInterval[first(oldInterval)]), oldInterval[lastindex(oldInterval)]) #a1,b1
         union_new = union(min(interval[firstindex(interval)]), interval[lastindex(interval)]) # a2, b2
         unifiedPts = union(min(first(union_old), first(union_new)), max(last(union_old), last(union_new)))
 
-        #golden line:
+        #Golden line:
         v = collect(first(unifiedPts):last(unifiedPts))
-        _newView = view(v, firstindex(v), lastindex(v))
-        # _newView = view(lastB:interval[2], (lastB, interval[2]))
+        _newView = view(v, firstindex(v), lastindex(v)) # _newView = view(lastB:interval[2], (lastB, interval[2]))
 
-
-        #Compare() # compareTriad
+        # compareTriad
         lowerBound, upperBound, m1 = compareTriad(lastB, interval[1], interval[2], _newView) #_newView[lastB] > _newView[interval[2]] ? compareTriad(lastB, interval[1], interval[2], _newView) : return
         group = 0
         return lowerBound, upperBound, m1
@@ -4803,7 +4826,7 @@ function compareIntervals(_stack, _newView::SubArray, interval, group=0) # _view
         i = 1
     end
 
-    for _ in 1:length(_stack)  #_view)
+    for _ in 1:length(_stack)  #_view (?)
         group += 1
         #do
         if (interval === nothing) == false #ismissing(interval) ==false #i.e. has lowerBound value  #interval !== nothing # on the 2nd, 4th , every even Run # if it has lowerBound value (from previous run) # interva==nothing
@@ -4826,6 +4849,7 @@ function compareIntervals(_stack, _newView::SubArray, interval, group=0) # _view
         lowerBound, upperBound, m1, m2 = compareBounds(oldInterval, interval, _view)
         #------
         if group == 2
+            # Union()
             # if so compare contents then, reset group
 
             #TODO: define _newView (from combb) # done
@@ -5076,15 +5100,15 @@ function compareIntervals(_stack, arr::Array{Int64,1}, interval=nothing, group=0
     m2 = -1
     _length = copy(length(_stack))
 
-    #  i += 1  #1 #TODO: increment
-    if i == 1 #length(_stack) #- 1
+    #  i += 1  #1 increment
+    if i == 1 # length(_stack) #- 1
         return
     else
         # for _ in 1:length(_stack)
         group += 1
         #do
         if interval !== nothing
-            oldInterval = interval # the issue: inside the if  oldInterval cannot be
+            oldInterval = interval # the issue: inside the if  oldInterval cannot be [...]
         end
         interval = pop!(_stack) # 1. pop the next _stack iterm , get interval bounds
         #2. vectorize interval (or extern interval to include rationals (indicies) between first & last bound)
@@ -5092,12 +5116,12 @@ function compareIntervals(_stack, arr::Array{Int64,1}, interval=nothing, group=0
         interval = collect(first(interval):last(interval))
 
         if group == 2
-            # if so  then, reset group
+            # if so,  then, reset group
             lowerBound, upperBound, m1, m2 = compareBounds(oldInterval, interval, arr)
             group = 0
             return lowerBound, upperBound, m1, m2
         end
-        #finally call next  , subarray #TODO:
+                #finally call next subarray [subView]
 
     end
 
@@ -5139,7 +5163,7 @@ arr
 _stack = [[1, 3], [4, 7], [8, 9]]
 #---------
 #checked(#1)
-group = 0 # we got to have some form of group (structure)
+group = 0 # count groups (we got to have some form of group `structure` ) 
 interval = nothing
 oldInterval = nothing
 lowerBound = -1
@@ -5174,11 +5198,11 @@ if i <= _length - 1
 
 end
 
-#finally last check if group = 1
-#=UncommentMe
+#Finally: last check if group = 1
+#=UncommentMe 
 if group == 1 # done
 
-    lastB = oldInterval[2] #getlastB(_stack) # TODO:
+    lastB = oldInterval[2] #getlastB(_stack) # TODO:check
     #interval
     make
     lowerBound, upperBound, m1 = compareBounds(lastB, interval[1], interval[2], arr) #arr[lastB] > arr[interval[2]] ?  : return #compareTriad(lastB, interval[1], interval[2], arr) # updates are Reflected on the arr
@@ -5188,15 +5212,15 @@ end
 =#
 _view = union(min(lastB, interval[1], interval[2]), max(lastB, interval[1], interval[2])) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #TODO: please Check
 
-interval# 4 7
-oldInterval#1 3
+interval# 4, 7
+oldInterval#1, 3
 #---------
 A
 _stack = [[1, 3], [4, 7], [8, 9]]
 res
 #res = compareIntervals(_stack, arr, i) #removed
 res
-_stack = [[1, 3], [4, 7], [8, 9]]
+    
 arr
 # res = compareIntervals(_stack, arr, i + 1)
 # 7, 9, 8, 4  lowerBound,upperBound ,m1, m2 ; should've been 1, 9,
@@ -5314,7 +5338,7 @@ end
 =#
 #end
 
-# using isEndReached, at the end
+# using isEndReached (at the end)
 if euclidDistDifference(lowerBound, upperBound) == 1 #(m2, upperBound) == true # compilese
 else
     return false
@@ -5326,7 +5350,4 @@ isUnitDistanceReached(1, 2)
 isUnitDistanceReached(1, 1)
 
 #----
-
-# CompareSort(1, 3, [1, 2, 3]) = # returns answer (with error ) # TODO: fix )last
-
-#-----
+# CompareSort(1, 3, [1, 2, 3]) = # returns answer (with error ) # TODO: fix `last`
