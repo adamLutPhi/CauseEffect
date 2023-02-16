@@ -1641,8 +1641,8 @@ b
 # isStop2(a, m1, m2, b) #a!=m1 as 1!=2 -> there's still an Interval
 
 #2 valid stopping conditions
-
-function calcTotalMiddles(arr) #dislike this name
+"""function calcTotalMiddles(arr)"""
+function calcTotalMiddles(arr) #todo: consider renaming
     return length(arr) - 2
 end
 
