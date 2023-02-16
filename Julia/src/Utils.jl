@@ -522,16 +522,19 @@ intervalLength(1, 10)
 (1:2)[1]:(1:2)[length(1:2)] #2
 collect(1:2) # Vector{Int64} [1 2]T
 
-euclidDist(1, 3) #3
-euclidDistDifference(1, 3) # the context is to subtract #i.e. TODO: to be replaced by -(1,3)
-
+euclidDist(1, 3) #3  #euclidDist(1,3) =?=  -(1,3) + 1
+euclidDistDifference(1, 3) # the context is: to subtract #i.e. TODO: to be replaced by -(1,3)
+            
 """ get a subView from any view, provided a `lowerBound` & an `upperBound` """
-function subView(lowerBound,upperBound,_view) #ok
+function subView(lowerBound,upperBound,_view)
     collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 end 
 
-res = subView(3,5) #  view([3,4,5])
 
+res = subView(3,5) #  view([3,4,5])
+print("subView(3,5) = ",res)
+_view = collect(1:9)
+res = subView(3,5,_view)
 
 #-----------
 # doCompare
@@ -547,7 +550,7 @@ res = subView(3,5) #  view([3,4,5])
     _length = copy(length(arr))
 
     if lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperBound >= 0 # && upperBound >= m2 # if lowerBound <= _length && upperBound <= _length
-         aContent = arr[lowerBound] #<-------
+         aContent = arr[lowerBound] #<------
          bContent = arr[upperBound]
 
         contentSwapped = nothing
