@@ -15,7 +15,7 @@ def display(subject: str, desc  : str ="Unexpected error Occured"):
     """
     Prints message, if error occured """
     
-    print("{subject} : {desc}")
+    print(f"{subject} : {desc}")
 
 # 1. getIndicies
 def getIndicies(a: int, b: int, lst):
