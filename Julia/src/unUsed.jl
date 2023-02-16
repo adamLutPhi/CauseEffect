@@ -183,7 +183,6 @@ function elementOf(arr, n::Int64)
 end
 
 #--------
-
 #=
 function makeView(ab::UnitRange)#compiles
     lowerBound = ab[1]
@@ -245,7 +244,10 @@ upperBound: current Upper Bound
 ```
 
 ```output:
-if
+- if there is no `_view`: return nothing
+- if there is (1) value: return the first value of `_view
+- if there are (2) : return the bounds 
+        
 
 ```
 """
@@ -253,11 +255,11 @@ function checkNextView!(_view, lowerBound, upperBound) # warning: lowerBound,upp
     if length(_view) === Nothing
         return #-1
     elseif length(_view) == 1
-        #TODO: Contemplate the usefulness of including lowerBound different dataType ( i.e. scalar typeof _view[1] )
+        #TODO: Ponder: the usefulness of including lowerBound different dataType ( i.e. scalar typeof _view[1] )
         return _view[1]  #scalar: either lowerBound, or upperBound
 
-    elseif length(_view) == 2
-        #only return the current _view
+    elseif length(_view) >= 2
+        # return the current `_view`  only 
         #return
         v = collect(lowerBound:upperBound) #|>
         _view = view(_view, firstindex(v):lastindex(v))
