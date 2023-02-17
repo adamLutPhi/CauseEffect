@@ -245,10 +245,6 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
 
             println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
             # println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
-            if currentValue <= 0 #  the last step
-                currentValue = 0 #-100 #0
-
-            end
 
             #elseif currentValue == 0
             #        return currentValue
@@ -298,7 +294,6 @@ end
 
 
 calcVerteciesLeft!(1, 3, nothing) #1 #not correct  #checkCurrentValue!(1,3) #erroneous
-
 println("lowerBound",lowerBound)
 println("upperBound", upperBound)
 println("currentValue",currentValue)
