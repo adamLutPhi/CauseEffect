@@ -140,9 +140,7 @@ println("_firstIndex,  _lastIndex,  _firstValue, _lastValue = ",_firstIndex,  _l
 
 
 """
-An array remaping of a view bounds are applied on the original
-example
-
+    
 v = collect(1:3)
 arr = collect(1:9)
 
@@ -173,9 +171,9 @@ for that reason use notation:
 arr[ v[lastIndex(v)]] ]
 
 #---------------------------------------
-Note: n is optional
 
-"""
+
+#=
 function handleReturnedvalue(_firstIndex,  _lastIndex,  _firstValue, _lastValue;n)
 
 
@@ -193,6 +191,7 @@ function handleReturnedvalue(_firstIndex,  _lastIndex,  _firstValue, _lastValue;
 
     #end
 end
+=#
 
 """returns 2 collections: 1st is index(ies) , 2nd is value(s)
 
