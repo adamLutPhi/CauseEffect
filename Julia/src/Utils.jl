@@ -71,7 +71,7 @@ Update: euclidDist #(is debugged?)
 =#
 #TODO: compareIntervals, recursively
 
-export lineLengthAcceptable
+export lineLengthAcceptable, subView
 import Base: @propagate_inbounds
 global msg = "Unexpected Error"
 
