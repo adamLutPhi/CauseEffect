@@ -1,3 +1,6 @@
+include('./unUsed.jl')
+export subView 
+
 function swapContent(aContent, bContent, arr)# compiles #; offset=1) #new! # lowerBound,upperBound,indicies in arr
 
     contentSwapped = nothing
@@ -29,3 +32,18 @@ end
 ar1 =  [3,2,1]
 
 a,b,isSwapped = swapContent(3,2,ar1)
+
+# Demo : subView 
+loBound = 1; upBound=9;
+arr = collect(loBound:upBound)
+# hypothetical middle
+m1, m2 = 5, 6 # Intervals should be [1, 4] [5, 6] [ 7, 9]
+using Base.
+Int.Inf 
+tmpBound = m1-1
+_stack = []
+if tmpBound >0:
+_stack.append( subView(loBound, tmpBound) ) 
+    
+subView(loBound, tmpBound) 
+subView(1,1)
