@@ -14,18 +14,24 @@ import causeEffect
 # isTrue 
 
 function isTrue(_value) #TODO:debug
+    
+    try
+
     _value == true
         return true
     _value == false
         return false
     else
-        writeError(msg) #,_error , elaboration
+        
+        return writeError(msg) #,_error , elaboration
     end
-
+    catch UnexpectedError
+        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
+    end
 end
 
-# isNothing 
 
+# isNothing 
 function isNothing(_value) #TODO:debug
     try
         response = nothing
@@ -37,6 +43,8 @@ function isNothing(_value) #TODO:debug
             writeError(msg )
         end
         return currentValue
+    catch UnexpectedError
+        @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
 end
 
@@ -70,13 +78,21 @@ function getSubtractedValue(isWhole::Bool)
 
 end
 
+
+"""Another variation of intervalLength (): this intervalLength is vaid , under context of sum """
+function intervalLength2(lowerBound, upperBound)
+
+    return lowerBound + upperBound  #- 1
+end
+
+
 function handleNegativevalue(_value)
-        if currentValue <= 0 #  the last step
-                _value = 0 #-100 #0
+    
+    if currentValue <= 0 #  the last step
+        _value = 0 #-100 #0
+    end
 
-        end
-        _value
-
+    _value
 end
 
 
@@ -98,16 +114,17 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
             currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2  #correct move #
         elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B()
             currentValue -= getSubtractedValue(isWhole)
-            println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
+            println("currentValue = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
             # println("typeof(currrentValue) = ", typeof(currentValue))
 
             println("getSubtractedValue(isWhole) = ", getSubtractedValue(isWhole))
             # println("typeof (getSubtractedValue(isWhole)) = ", typeof(getSubtractedValue(isWhole)))
+            currentValue = handleNegativevalue(currentValue)
+            #=
             if currentValue <= 0 #  the last step
                 currentValue = 0 #-100 #0
 
-            end
-
+            end =#
             #elseif currentValue == 0
             #        return currentValue
 
@@ -119,6 +136,7 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
         @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
 end
+
 
 #------
 # calcVerteciesLeft
@@ -308,7 +326,8 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
     end
 end
 
-#TODO: t
+
+#TODO: t..
 #preferred
 function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
 
@@ -358,6 +377,7 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #i
     #m1,m2,isWhole = callMiddle() #checkCond(lowerBound,m1,m2,upperBound,view) #is it acceptable to pass it lowerBound view?
 end
 
+
 function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #in: _view  #uses view #error #no isStop(lowerBound,upperBound,view) ==false
 
     ##if isStop(lowerBound, upperBound, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
@@ -389,6 +409,7 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #i
 
     #m1,m2,isWhole = callMiddle() #checkCond(lowerBound,m1,m2,upperBound,view) #is it acceptable to pass it lowerBound view?
 end
+
 
 #DEMO:
 lowerBound = 1;
@@ -436,7 +457,8 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
     end
 end
 
-#new : use of kernel as input  #TODO:
+
+#New : use of kernel as input  #TODO:
 function cause(pts, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
 
     condition = isStoppingCondition(_view, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
@@ -464,6 +486,7 @@ function cause(pts, _view::SubArray, kernel, currentValue) #working  #uses arr o
 end
 
 #-------------
+
 
 function effect!(lowerBound, upperBound, _stack, kernel=middle)
 
@@ -540,7 +563,8 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1})#, curr
 
     end
 end
-#strategy pass-in an arr, for now  #
+
+#strategy: to  pass-in an arr, for now
 
 
 function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, currentValue) #working  #uses arr only *Warning*
@@ -556,6 +580,8 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, curren
 
     end
 end
+
+
 #effect
 """ from arr , get the view(arr, lowerBound:upperBound)"""
 function effect(lowerBound::Int64, upperBound::Int64, _view::SubArray) # = view(_view, lowerBound, upperBound))
@@ -685,6 +711,7 @@ end
 
 # isStoppingCondition
 
+
 function isStoppingCondition(lowerBound::Int64, upperBound::Int64, currentValue) #vital
 
     #m1, m2, isWhole = callMiddle(lowerBound, upperBound) #Occurs before this function
@@ -695,6 +722,7 @@ function isStoppingCondition(lowerBound::Int64, upperBound::Int64, currentValue)
 
     return currentValue #handleCurrentValue(currentValue)
 end#----
+
 
 #---------
 #Vital #contains effect: Depreciate
@@ -708,6 +736,7 @@ function traverse(lowerBound, upperBound, _view) #, i)
 
     end
 end
+
 
 #uses isStoppingCondition, calcVerteciesLeft!, handleCurrentValue
 function traverse!(lowerBound, upperBound, _view, currentValue=nothing)  # , i) #TODO: Depreciate #reason: has oldfunction: effect
@@ -731,6 +760,7 @@ function traverse!(lowerBound, upperBound, _view, currentValue=nothing)  # , i) 
 
 
 end
+
 
 #uses calcVerteciesLeft
 function partition(lowerBound::Int64, upperBound::Int64, currentValue, kernel=middle)
@@ -858,6 +888,7 @@ function partition(lowerBound::Int64, upperBound::Int64, currentValue, kernel=mi
     end
 end
 
+
 #-------
 
 
@@ -948,8 +979,8 @@ function isStop(a, b, arr; offset=1) #TODO :  euclidDist , doCompare  #review#2:
     end
 end
 
-#depreciate #re-consider 
 
+#depreciate #re-consider 
 function isStop(a, b, _view)
     try
         safelyReturns = nothing
@@ -986,6 +1017,7 @@ end
 """ returned structure would be m1 in the middle, a on the left (min), b on the right (max)"""
 #_type = typeof(arr)
 
+#==
 function compareTriad(a, m1, b, arr::Array{Int64,1})
     
     try
@@ -1063,6 +1095,7 @@ function compareTriad(a, m1, b, _view)
     end
     #return a, b, m1
 end
+=#
 #--------
 
 
@@ -1149,9 +1182,11 @@ end
     end
 end
 
+
 #demo:
 m1, m2, isWhole = callMiddle(1, 1) #issue: this returns 2 , while main function expects 3 return arguments
 m1, m2, isWhole = callMiddle(firstindex(arr), lastindex(arr)) #was callMiddle(a, b, arr) #old thinking
+
 
 #----
 function remap(a::Int64, b::Int64) # 1 2  abs(max(a, b) - min(a, b)) + 1 ; 2 -1 = 1 + 1 = 2
@@ -1182,7 +1217,6 @@ m1, m2, isWhole = callMiddle(a, b) #, arr) #TODO: callmiddle with arr
 #=
 remap(1, 10) #missing 1 at last  +1 #fixed
 remap(5, 10) # correct
-
 
 #requires compareQuartet, compareTriad
 #lowerBound ::Int64, m1::Int64, m2::Int64, upperBound::Int64, ::Bool, ::Vector{Int64})
@@ -1233,7 +1267,6 @@ function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, a
 end
 
 #---------
-
 # custom Kernel functions
 
 ## kernel: of Two Point
