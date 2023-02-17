@@ -41,18 +41,19 @@
 (Assuming: potential scenarios are provided )
 =#
 #Start from the top, downwards
----
 
 ### Possible issue: potential error in the lower functions:
 #### Completed: boundComparisonCondition
 #### Completed: doCompare()
 #### Completed: depreciate goleft & goright
 #### completed: compareTriad, compareQuartet  #[correcting ]
-### count number of function calls
-### extra: function frequency
 
-### the thing : there's no direct relationship with index
-### solution: look for: lowerBound, upperBound (i.e. look for the higher order function that is calling them)
+### The thing : there's no direct relationship with index
+### Solution: look for: lowerBound, upperBound (i.e. look for the higher order function that is calling them)
+### Extra:
+
+###1. Function frequency
+###2. Count number of function calls
 
 #=
 
@@ -80,32 +81,33 @@ global msg = "Unexpected Error"
 Gets the firstIndex & the lastIndex of
 """
 function lineLengthAcceptable(a,b,_length)
-try
-    if a <= _length && b <= _length && a >= 0 && b >= 0
-        return true
-    elseif a > _length  || b > _length || a<0 || b < 0
-        return false
-    else throw(error("Unexpected Error occured"))
-    end
+    try
+        if a <= _length && b <= _length && a >= 0 && b >= 0
+            return true
+        elseif a > _length  || b > _length || a<0 || b < 0
+            return false
+        else throw(error("Unexpected Error occured"))
+        end
     catch UnexpectedError
     @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
     end
+
 end
 
+"""
 function processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
 
     #if scalar
     if _firstIndex == _lastIndex #&& _firstValue == _lastValue  # mind the: values could be equal
-    # the same 1 answer (use one of them only )
-    #but more likely: it's highly possible to return multiple values
+        # the same 1 answer (use one of them only )
+        #but more likely: it's highly possible to return multiple values
         return 1 , _firstIndex,_firstValue # i.e. (numOcurrences, valueOfInterst, firstIndex):  (3, 3) -> 2, 3  ( 7 , 7 ) -> 2, 7 , 1 
     # if 2 (or more) # then indicies are identical
     elseif _firstIndex != _lastIndex #&& _firstValue != _lastValue # index used: must be unique
         return 2, _firstIndex,  _firstValue,  _lastIndex,  _lastValue
     end
-
 end
-
+"""
 #TODO: check output :
 """ checks the array `arr` for a content , returns the first & the last """
 function elementAt(arr, xContent)
@@ -119,25 +121,37 @@ function elementAt(arr, xContent)
     #i.e. the first & the last . Hence, we got to return them
     # *(& consider, by-chance, if both point to the same value)*
 
-    first(newXIndex) # that'll be always 1 (in julia) 
+    firstIndex =first(newXIndex) # that'll be always 1 (in julia)
+    _firstIndex = newXIndex[firstIndex]
 
-    _firstIndex = newXIndex[1]
-    _firstValue =  arr[_firstIndex] # gets the first occurence of newXIndex in array `arr`
-
+    # get the first occurence of newXIndex in array `arr`
+    _firstValue =  arr[_firstIndex] 
     _lastIndex = length(newXIndex)#-1 #reson: at beginning : cannot have index 0
 
-    _lastValue = arr[newXIndex[ _lastIndex]] # gets the last occurence of newXIndex in array `arr`
+    # get the last occurence of newXIndex in array `arr`
+    _lastValue = arr[newXIndex[ _lastIndex]]
 
     #  lastIndex = NumMatches (last)
-    return _firstIndex,  _firstValue,_lastIndex, _lastValue # processing done after it
-end
+    _firstIndex,  _firstValue,_lastIndex, _lastValue # processing done after it
 
-ar1=  [1,1,1,2] # consider indicies 
 
-_firstIndex,  _firstValue, _lastIndex,   _lastValue = elementAt(ar1,1)
+    r1=  [1,1,1,2] # consider indicies 
 
-println("_firstIndex,  _lastIndex,  _firstValue, _lastValue = ",_firstIndex,  _lastIndex,  _firstValue, _lastValue )
+    
+    println("_firstIndex,  _lastIndex,  _firstValue, _lastValue = ",_firstIndex,  _lastIndex,  _firstValue, _lastValue )
 
+end 
+#DEMO:
+#_firstIndex,  _firstValue, _lastIndex,   _lastValue = elementAt(ar1,1) # return Nothing 
+
+newXIndex = findall((x -> x == xContent), arr) # it could be array (if has multiple occurences)
+
+    #multiple occurences possible, but we are interested mainly in bounds (for indicies & values) 
+    #i.e. the first & the last . Hence, we got to return them
+    # *(& consider, by-chance, if both point to the same value)*
+
+firstIndex =first(newXIndex) # that'll be always 1 (in julia)
+_firstIndex = newXIndex[firstIndex]
 
 """
 An array remaping of a view bounds are applied on the original
@@ -189,9 +203,9 @@ function handleReturnedvalue(_firstIndex,  _lastIndex,  _firstValue, _lastValue;
         # bit complicated ( than anticipated)
         #(at most ) return all information gathered
         # return [_firstIndex,  _lastIndex,  _firstValue, _lastValue]
-        return _firstIndex, _firstValue,_lastIndex, _lastValue # size 2 #suggest: (_firstIndex, _firstValue), (_lastIndex, _lastValue) 
-
     #end
+    _firstIndex, _firstValue,_lastIndex, _lastValue # size 2 #suggest: (_firstIndex, _firstValue), (_lastIndex, _lastValue) 
+
 end
 
 """returns 2 collections: 1st is index(ies) , 2nd is value(s)
@@ -221,7 +235,6 @@ listHandling(_list)
 #lastIndex(arr) = length(arr)- 1 #or it 2 was it? # last index
 
 #---
-
 ## objBounds of a view , of an array (or view)
 
 function objBounds( arr ) # compiles # rechecked
@@ -246,7 +259,7 @@ return index1, value1, index2, value2
 
 """
 function objBounds(_view, arr) # requires elementAt
-# 1 .check if _view is bounder by arr
+    # 1 .check if _view is bounder by arr
     if firstindex(_view ) >= firstindex(arr) && lastindex(_view) <= lastindex(arr)
 
         #newXIndex = findall((x -> x == _XContent), arr)
@@ -284,6 +297,7 @@ function objBounds(_view, arr) # requires elementAt
         """
     end
 end
+
 #---------
 #Experimental
 function objBounds2(_view, arr)
@@ -536,7 +550,7 @@ print("subView(3,5) = ",res)
 _view = collect(1:9)
 res = subView(3,5,_view)
 
-=======
+
 euclidDist(1, 3) #3
 euclidDistDifference(1, 3) # the context is to subtract #i.e. TODO: to be replaced by -(1,3)
 
@@ -556,6 +570,7 @@ print( typeof(v) ) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, 
 #  1 2 3 4 5 6 7 8 9
 #     [3 4 5 ] 
 #subView(3,5)   
+
 #res = subView(v, 3,5) view([3,4,5]) #TODO: check
 res = subView( 3,5, v)            
 print( res) # view(::Vector{Int64}, 1:3) with eltype Int64:
@@ -569,7 +584,7 @@ print( typeof( subView(1,1, res) )) # SubArray{Int64, 1, Vector{Int64}, Tuple{Un
 
 print( subView(1,2, res) !=  subView(1,1, res) )
 #End #Warning: view is of type SubArray, not View (anymore)
->
+
 #-----------
 # doCompare
 
@@ -600,7 +615,6 @@ print( subView(1,2, res) !=  subView(1,1, res) )
         #Base.@inbounds
         #TODO: situation where both contents are equal # current: do nothing
         # elseif
-
         # elseif aContent <= bContent  # arr[lowerBound] < arr[upperBound] #review#1 #<----- # includes bothContents are equal
         #don't swap # return values
         #  return
@@ -624,6 +638,7 @@ print( subView(1,2, res) !=  subView(1,1, res) )
 
     end
 end
+
 ## doCompare: compare two indicies, on lowerBound view
 #--------------
 
@@ -651,34 +666,37 @@ end
 
 
         lowerBound, upperBound, contentSwapped = swapContent(_view[lowerBound], _view[upperBound], _view)  #oldSchoolSwap(firstindex(findall((x -> x == _view[lowerBound]), _view))(lowerBound), firstindex(findall((x -> x == _view[upperBound]), _view))(upperBound), _view) #<--
+        return lowerBound, upperBound, contentSwapped
 
         # swapContent(_view[lowerBound], _view[upperBound], _view)  #oldSchoolSwap(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
-
         #lowerBound, upperBound = oldSchoolSwap(lowerBound, upperBound, _view)
         # contentSwapped = true   #arr[lowerBound], arr[upperBound]
-
         #  elseif aContent > bContent
         #do nothing
         #  contentSwapped = false
         #  end
-        return lowerBound, upperBound, contentSwapped
+        #return lowerBound, upperBound, contentSwapped
+
     elseif isUnitDistanceReached(lowerBound, upperBound) == true # 3, 4 ,d = 1
         _view = collect(lowerBound:upperBound)
         _view = view(_view, firstindex(_view):lastindex(_view))
         lowerBound, upperBound, contentSwapped = swapContent(_view[lowerBound], _view[upperBound], _view) # # swapContent(_view[lowerBound], _view[upperBound], _view)  #oldSchoolSwap(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap #<-
         return lowerBound, upperBound, contentSwapped
+
         # elseif lowerBound == lowerBound == _length-1 || upperBound == _length-1
         #     return isUnitDistanceReached(lowerBound,upperBound) #1, 2)
     elseif lowerBound == _length || upperBound == _length # last step  #scalar
+        return lowerBound,upperBound, nothing  #isEndReached(lowerBound, upperBound) #1, 1)
+
         # isUnitDistanceReached(lowerBound,upperBound)
         # return getLastElement2(lowerBound, upperBound)
         # return end
         # return isUnitDistanceReached(lowerBound,upperBound) #1, 2)
-        return lowerBound,upperBound, nothing  #isEndReached(lowerBound, upperBound) #1, 1)
+
 
     end
 end
-#-------
+
 #TODO: finish the recursive checkNextView(_view)
 function checkNextView(_view)
                     
@@ -695,7 +713,7 @@ function checkNextView(_view)
     end
 end
 
- """ specific: for lowerBound given bounds lowerBound, upperBound, calculates the next view """
+""" specific: for lowerBound given bounds lowerBound, upperBound, calculates the next view """
 function checkNextView(_view, lowerBound, upperBound;_first=1)
     _length = length(_view) # no method matching length(::var"#5#6")#TODO
     if _length === Nothing
@@ -711,12 +729,13 @@ function checkNextView(_view, lowerBound, upperBound;_first=1)
         return view(x, firstindex(x)+1:lastindex(x)-1)
     end
 end
-#checkNextView()
+
+#TODO: #checkNextView()
                         
 lowerBound = 1
 upperBound = 9
 
-#fabricate view from points only
+#m ake a view from points only
 v = collect(lowerBound:upperBound)
                         
 # Experienced Note: in `divide-conquer`: while dividing 1:9
@@ -734,22 +753,18 @@ _view = _view = collect(3:5) |> _view -> view(_view, firstindex(_view)+1:lastind
 #_view = lowerBound = lowerBound + 1 && upperBound =  upperBound + 1 <= upperBound - 1 ? _view -> view(_view, firstindex(_view)+1:lastindex(_view) -1) : return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
 println(_view)
 println(typeof(_view))
-          
-#_Interval = collect(3: 5) # subView( interest):  1: 3
-                        
+ _view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+
+#_Interval = collect(3: 5) # subView( interest):  1: 3            
 #euclidDist( _Interval[1], _Interval[2] ) # 3 euclidDist: form is like:  -(a,b) +1 
 #-( _Interval[2], _Interval[1]) # 2
-
 # resolved:# _rangeNew |> _view -> view( _view, firstindex(_view):lastindex(_view))
-_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-
 # ---
-  
 #v = collect(1:9)
 # res = view(v,firstindex(v): lastindex(v))
-
 #_view = length(_view)> 2 ?_view -> view(_view,firstindex(_view),lastindex(_view)) : return
 
+#last:
 if length(res) > 2 #ok #TODO:Q. how about length(res) <2 ?
     _view -> view(_view, firstindex(_view):lastindex(_view))
     return _view
