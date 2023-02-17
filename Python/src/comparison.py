@@ -12,9 +12,12 @@ class Comparison():
 
 
 def display(subject: str, desc  : str ="Unexpected error Occured"):
-    """Prints message, if error occured """
+
+    """
+    Prints message, if error occured """
     
-    print("{subject} : {desc}")
+    print(f"{subject} : {desc}")
+
 
 # 1. getIndicies
 def getIndicies(a: int, b: int, lst):
@@ -24,24 +27,34 @@ def getIndicies(a: int, b: int, lst):
 
     # TODO: Check if values are in list
 
+
+    idxA, idxB = lst.index(a), lst.index(b)  # val2index(a, b, lst)
+    return idxA, idxB
+
+
+# 2. Swap
+def swap( a: int, b: int, lst):
+
     idxA, idxB = lst.index(a), lst.index(b)
     return idxA, idxB
 
 
-#2. Swap
-def swap( a: int, b: int, lst):  # correct
     """ If content of indicies a,b are not ordered, swap them
             Otherwise, assume user had mistaken , entering content values in lst
             assuming the best: call procedure to return the contents' indicies
             adds a flag to check if swapping happened (or not) """
         
-    #1. Init:   # ensure these are indicies  (not procedure calls)
+
+    #1. Init:   # ensure these are `indicies`  (not procedure calls)
+
     idxA, idxB = 0, 0
     n = len(lst)
     nMax = n-1
     is_swapped = None
 
-    #2. Compare      
+
+    #2. Compare
+
     #2.1. check Indicies if above max condition):
     if a > nMax or b > nMax :  # if either indicies a,b above array limit ( suppose user provided values, instead ) 
         # 2.1.1. Call procedure -  fetch the corresponding indicies :
@@ -69,7 +82,9 @@ def swap( a: int, b: int, lst):  # correct
     return a, b, is_swapped
     
 # 3. compareTriad
-def compareTriad( a:int, m1:int, b: int, arr):
+
+def compareTriad( a:int , m1:int , b: int , arr):
+
 
     """  comparing is of a (3) three main comparisons
 
