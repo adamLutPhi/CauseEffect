@@ -1,5 +1,6 @@
-
 #-----testing
+using Base.@propagate_inbounds , @error
+
 msg = "ERROR: Unexpected Error Occured"
 currentValue = nothing
 arr = [1, 4, 8]
