@@ -63,10 +63,11 @@ _n1= append!(a:_first) # compiles
 #issue arr ends at 8
 # moved to upper scope of the function
 #  v = collect((firstindex([1,4,8],nextLowerbound), firstindex([1,4,8],nextLowerbound+1))) #[8,9]
-
 # ========================
 # Unknown Function f2
 #to be named Meaningfully # uses collect #successs
+
+
 function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
 
     if i > ar[1] && i <= length(ar)  #b # i = 2 [4]
@@ -96,6 +97,7 @@ function f2(i, ar=[1, 4, 8]) #,_first=nothing)#,lst=[])
     end
 end
 
+
 f2(2)
 """
 #https://stackoverflow.com/questions/39586830/concatenating-arrays-in-julia
@@ -116,9 +118,7 @@ julia> vcat(a, b)
 #----------
 ar = [1, 4, 8] # collection of cut points
 b = 9 # b was set to 2
-
 ar
-
 _lst = vcat(last(ar),b) # [8,9] (Expected) [now last vector is glued]
 #_lst = tuple(_lst)
 lst = vcat(_1st,lst)
@@ -142,17 +142,15 @@ println("_lst = ", _lst)
 #E(x) = ar  = Any[[1, 3], [4, 7], [8,9]]
 #result = vcat(last(_1st),_lst ) # collect(_1st:_lst) #
 #result = pushlast(_1st,_lst)
-
 result = vcat(last(_1st),_lst )   #collect(_1st:_lst)
-
 println("result = ",result)
 println("ar = ",ar)
-
 #push!(lst, collect(last(ar), b))
 println("\nlast(ar) = ",last(ar)) # 8
 #ar2 =  collect(last(ar): b) # [8,9]
 #lst = append!(lst,ar2)
 print("\n1st =",lst) # compiles
+
 
 #  remapCompare
 function remapCompare(m2, upperBound, _view::SubArray)
@@ -164,6 +162,7 @@ function remapCompare(m2, upperBound, _view::SubArray)
 
 end
 
+
 #1 function implementation
 function cause!(_stack, kernel)
     if _stack > 0
@@ -174,6 +173,8 @@ function cause!(_stack, kernel)
     end
 
 end
+
+
 #helpers of Util file:
 
     #unused
@@ -181,6 +182,7 @@ end
 function elementOf(arr, n::Int64)
     return first(arr, n)[n] #return the first n elements i.e. 2nd: [1:4] , [1:4][2] = 4
 end
+
 
 #--------
 #=
@@ -192,6 +194,7 @@ function makeView(ab::UnitRange)#compiles
     return view(v, firstindex(v):lastindex(v))
     # return view(collect(ab), (ab)[1]:(ab)[length(ab)])
 end
+
 
 v = collect(1:2)
 view(v, 1:2)#done
@@ -207,6 +210,8 @@ end
 # checkNextView #(question its integrity)
 
 ## next View, from lowerBound view, alont
+
+
 """main:  checks from only lowerBound view """
 function checkNextView(_view)
     if length(_view) === Nothing
@@ -222,6 +227,7 @@ function checkNextView(_view)
     end
 end
 
+
 """ specific: for lowerBound given bounds lowerBound, upperBound, calculates the next view """
 function checkNextView(_view, lowerBound, upperBound)
     if length(_view) === Nothing
@@ -235,6 +241,7 @@ function checkNextView(_view, lowerBound, upperBound)
     end
 end
 
+
 """ checks the next view, of type `naive`, via lowerBound function call, recursively
 
 ```input:
@@ -246,11 +253,12 @@ upperBound: current Upper Bound
 ```output:
 - if there is no `_view`: return nothing
 - if there is (1) value: return the first value of `_view
-- if there are (2) : return the bounds 
-        
+- if there are (2) : return the bounds
 
 ```
 """
+
+
 function checkNextView!(_view, lowerBound, upperBound) # warning: lowerBound,upperBound unused
     if length(_view) === Nothing
         return #-1
@@ -259,7 +267,7 @@ function checkNextView!(_view, lowerBound, upperBound) # warning: lowerBound,upp
         return _view[1]  #scalar: either lowerBound, or upperBound
 
     elseif length(_view) >= 2
-        # return the current `_view`  only 
+        # return the current `_view`  only
         #return
         v = collect(lowerBound:upperBound) #|>
         _view = view(_view, firstindex(v):lastindex(v))
@@ -298,6 +306,8 @@ function checkNextView!(_view, lowerBound, upperBound) # warning: lowerBound,upp
     end
 
 end
+
+
 #=
 function checkNextView!(_view)
     if length(_view) # === Nothing isa nothing  #isa nothing
@@ -330,6 +340,8 @@ function checkNextView!(_view)
     end
 end
 =#
+
+
 #TODO: CheckNextView: check this Implementation: #note: needcheckNextView to to recursive i.e.
 #checkNextView!(_view) #<----------
 _view = nothing # TODO: replace with checkNextView!
@@ -366,6 +378,7 @@ function traverse(_stack, lowerBound, upperBound) # traverse , lowerBound,upperB
 
     end
 end
+
 
 function traverse2!(_stack, kernel)
 
@@ -436,10 +449,10 @@ function traverse2!(_stack, kernel)
         #or can we call directly cause (lowerBound la toute suite)
 
     end
-
 end
 
-#experimental
+
+# Experimental
 function traverse2!(_stack)
 
     l = length(_stack)
@@ -506,9 +519,9 @@ function traverse2!(_stack)
         #or can we call directly cause (lowerBound la toute suite)
 
     end
-
 end
-# =================
+
+
 # remap
 function remap(a::Int64, b::Int64) # 1 2  abs(max(a, b) - min(a, b)) + 1 ; 2 -1 = 1 + 1 = 2
     b = euclidDist(a, b) + 1 # + 1 #warning you added 1 to the end: recheck new bounds (are all ranges fit) - some got to be out
@@ -519,6 +532,7 @@ end
 remap(1, 10) #missing 1 at last  +1 #fixed
 remap(5, 10) # correct
 # ================
+
 # requires remap
 function compareTriad(a, m1, b, _view) #applied remap
     try
@@ -538,6 +552,7 @@ function compareTriad(a, m1, b, _view) #applied remap
     end
     #return a, b, m1
 end
+
 
 function compareTriad(a, m1, b, arr) #applied remap
     try
@@ -560,7 +575,6 @@ function compareTriad(a, m1, b, arr) #applied remap
 end
 
 # =============
-
 # mappedIndex
 
 #newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
@@ -595,6 +609,7 @@ function evaluateValue(arr::Array{Int64,1}, mappedIndex::Int64; op=+)
     return op(firstindex(arr, mappedIndex), 1) #,addition) ) #warning: Unassigned operation
 end
 
+
 #Intent: reach last index
 mappedIndex = firstindex([1, 4, 8]) # + 2 # -1 # line: for view (only)
 mappedIndex = lastindex([1, 4, 8]) # + 2 # -1 # line: for view (only)
@@ -606,18 +621,14 @@ view([1, 4, 8], (firstindex([1, 4, 8]): lastindex([1,4,8])) ) #1
 # newRow = view(arr, mappedIndex:newBound) # want to access sth larger than the () itself
 arr = collect(1:9)
 newRow = view(arr, mappedIndex-1:mappedIndex) # this works  #[4 8] # Does not Work # Use ObjBounds
-
-
 #return newRow
-
-# ============================
 
 
 # ==========================================================
-
 # findSubIntervals
-
 ## findSubIntervals
+
+
 """event driven function """
 function findSubIntervals(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op can be - too
     #0. init: define variables
@@ -704,19 +715,16 @@ function findSubIntervals(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op 
     return lista
 end
 
-# index(3,)
 
+# index(3,)
 #synthetic subinterval
 findSubIntervals([1, 2, 3], 1)# [1,2]
 findSubIntervals([1, 2, 3], 2)# [2,3]
 findSubIntervals([1, 2, 3], 3)# last subinterval (uncalculated) , Done # n#1 thing
-
 _stack = [[1,3],[4,7],[8,9]]
 l = copy(length(_stack))
 l.*2 #if vector i.e. d=1 : 2 *2
-
 #----------------
-
 
 #=
 r == [] #when return an empty array  this is true
@@ -735,12 +743,12 @@ for i in 1:3
     end
 end
 
-mainstack
 
+mainstack
 # ==========================================================
 
-## findSubIntervals2
 
+## findSubIntervals2
 function findSubIntervals2(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op can be - too
     #0. init: define variables
     a = firstindex(arr) #unrequired
@@ -830,8 +838,10 @@ function findSubIntervals2(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
     return lista
 end
 
+
 """ find the subinterval, of an array """
 ## findSubIntervals3
+
 
 function findSubIntervals3(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op can be - too
 
@@ -930,6 +940,8 @@ function findSubIntervals3(arr::Array{Int64,1}, intervalBound1::Int64; op=+) #op
      end =#
     return lista
 end
+
+
 # ==========================================================
 
 findSubIntervals([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
@@ -946,6 +958,7 @@ findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 3) #  Any[[1, 2, 3], 3] # [3, 4]
 findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 6) # Any[[1, 2, 3, 4, 5, 6], 6] # [6, 7]
 
 r = findSubIntervals3([1, 2, 3, 4, 5, 6, 7, 8, 9], 8) # [8, 9]
+
 
 # ==========================================================
 # calcTotalMiddles
@@ -964,18 +977,14 @@ function calcTotalMiddles(lowerBound, upperBound) #name displays what it suppose
 end
 
 
-
-
-
-
 arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-#= =#
+
 # ==================================
 
 ### A:  calcTotalMiddles
 
-#Depreciate
 
+#Depreciate
 function calcTotalMiddles(arr) #name displays what it supposed to do
 
     res = length(arr) - 2
@@ -991,6 +1000,7 @@ end
 
 # ==================================
 # calcVerteciesLeft
+
 
 ## calcVerteciesLeft with a _view & a currentValue
 function calcVerteciesLeft!(_view::SubArray{Int64,1}, currentValue) # ,formula)
@@ -1056,8 +1066,8 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, isWhole::Bool; currentValue) # 
 
 end
 
-# calcVerteciesLeft! #depreciate
 
+# calcVerteciesLeft! #depreciate
 #------
 
 """ A custom counter: an event driven, self-decrementing function
@@ -1066,12 +1076,11 @@ initialized automatically, since first run, hence it goes at least once
 
 checks
 """ # scaffold #light #Best #TODO: depreciate
-
 ## calcVerteciesLeft  with an arr
+
 
 function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
 
-    #
     # msg = "Unexpected Error"
     isWhole = isEven(length(arr))
     try
@@ -1103,8 +1112,8 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
 
 end
 
-## calcVerteciesLeft  with a view
 
+## calcVerteciesLeft  with a view
 function calcVerteciesLeft!(_view::SubArray{Int64,1}, currentValue) # ,formula)
 
     #
@@ -1136,16 +1145,15 @@ function calcVerteciesLeft!(_view::SubArray{Int64,1}, currentValue) # ,formula)
     catch UnexpectedError
         @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
+
+
 #=
 #requires checkCurrentValue!
 calcVerteciesLeft!(1, 3, nothing) #1 #not correct  #checkCurrentValue!(1,3) #erroneous
 
 
 currentValue = calcVerteciesLeft!(lowerBound, upperBound, currentValue)
-
-
 # isStoppingCondition
 
 function isStoppingCondition(lowerBound::Int64, upperBound::Int64, currentValue) #vital
@@ -1158,12 +1166,12 @@ function isStoppingCondition(lowerBound::Int64, upperBound::Int64, currentValue)
 
     return currentValue #handleCurrentValue(currentValue)
 
-
 end
 =#
 #----
 
 #Vital #contains effect: Depreciate
+
 function traverse(lowerBound, upperBound, _view) #, i)
 
     #length(_stack) > 1
@@ -1171,11 +1179,11 @@ function traverse(lowerBound, upperBound, _view) #, i)
     if euclidDistDifference(lowerBound, upperBound) >= 1  # that cindition is too classical
         #the only plac wher we can check the euclid distance
         effect(lowerBound, upperBound, _view)
-
     end
 end
 
-#uses isStoppingCondition, calcVerteciesLeft!, handleCurrentValue
+
+#Uses isStoppingCondition, calcVerteciesLeft!, handleCurrentValue
 function traverse!(lowerBound, upperBound, _view, currentValue=nothing)  # , i) #TODO: Depreciate #reason: has oldfunction: effect
 
     currentValue = copy(isStoppingCondition(lowerBound, upperBound, currentValue))
@@ -1194,9 +1202,8 @@ function traverse!(lowerBound, upperBound, _view, currentValue=nothing)  # , i) 
     # length(_view) !==
     #if euclidDistDifference(lowerBound, upperBound) >= 1
     #the only place for checking the euclid distance
-
-
 end
+
 
 # ============
 #kernel #is passed
@@ -1215,11 +1222,11 @@ v = collect(lastB: last(interval) )
 
 #v = collect(min(lastB,last(interval)): max(lastB, last(interval))) #interval[2]) )
 #v = collect((lastB:interval[2]))
-
 # checkCond
 #checkCond(1, m1, m2, 3, isWhole, [1, 2, 3]) #deprecate
 #requires compareQuartet, compareTriad
 #lowerBound ::Int64, m1::Int64, m2::Int64, upperBound::Int64, ::Bool, ::Vector{Int64})
+
 
 # checkCond
 function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1})
@@ -1268,6 +1275,7 @@ function checkCond(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, a
     end
 end
 
+
 # ===============
 # cause
 
@@ -1289,6 +1297,7 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
     end
 end
 
+
 ## cause with a currentValue
 #preferred
 function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
@@ -1306,6 +1315,7 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
 
     end
 end
+
 
 function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #in: _view  #uses view #error #no isStop(lowerBound,upperBound,view) ==false
 
@@ -1339,6 +1349,7 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #i
     #m1,m2,isWhole = callMiddle() #checkCond(lowerBound,m1,m2,upperBound,view) #is it acceptable to pass it lowerBound view?
 end
 
+
 function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #in: _view  #uses view #error #no isStop(lowerBound,upperBound,view) ==false
 
     ##if isStop(lowerBound, upperBound, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
@@ -1370,6 +1381,7 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel) #i
 
     #m1,m2,isWhole = callMiddle() #checkCond(lowerBound,m1,m2,upperBound,view) #is it acceptable to pass it lowerBound view?
 end
+
 
 # =================
 """ quantitatively, compare values , returns lowerBound qualitative value """
@@ -1404,6 +1416,8 @@ function inferLocation(lowerBound, upperBound, x)
         @error "EqualBoundsError : Different Bounds,which should be different, are equal " (EqualBoundsError, catch_backtrace())
     end
 end
+
+
 #------
 #compareSort
 #advanced: define lowerBound _stack of inputs #TODO: Check
@@ -1463,6 +1477,7 @@ else
     end
 end
 # ArgumentError: array must be non-empty
+
 
 #---------
 # partition
@@ -1583,8 +1598,8 @@ function partition(lowerBound::Int64, upperBound::Int64, currentValue, kernel=mi
     else
         throw(error(msg))
     end
-
 end
+
 
 #-------
 # isStop
@@ -1650,8 +1665,8 @@ function isStop(a, b, arr; offset=1) #TODO :  euclidDist , doCompare  #review#2:
     end
 end
 
-#depreciate
 
+# Depreciate
 # isStop for a view
 function isStop(a, b, _view)
     try
@@ -1681,11 +1696,11 @@ function isStop(a, b, _view)
     end
 end
 
+
 # callMiddle!
-
 ## callMiddle! for an Array
-
 #experimental : TODO: Complete Skip for now
+
 
 @propagate_inbounds function callMiddle!(a::Int64, b::Int64, arr::Array{Int64,1})
     try
@@ -1727,7 +1742,6 @@ end
 
 
 ## callMiddle! for a view
-
 @propagate_inbounds function callMiddle!(a::Int64, b::Int64, _view::SubArray)
     try
         # Reviewr#2: removed distance() should be here ( distance is only in isStop )
@@ -1771,6 +1785,7 @@ end
     end
 end
 
+
 # ================
 #=UncommentMe
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) # 1 4 2 3 # corrected
@@ -1778,6 +1793,7 @@ compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) # 1 4 2 3 # corrected
 compareBounds([1, 2], [3, 4], [1, 2, 3, 4]) #compareQuartet: doCompare
 =#
 # checkCondition
+
 
 function checkCondition(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int64, arr::Array{Int64,1}) #error #subtle
 
@@ -1813,7 +1829,6 @@ function checkCondition(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int
             compareBounds(v[1], v[2], _view)
         end
 
-
     elseif cond == false  #isEven(lowerBound,upperBound) == #one middle m1 (with lowerBound,upperBound)
         # 1,3  4, 7 , 8, 9
         upperbound = m2 + 1
@@ -1836,6 +1851,7 @@ function checkCondition(lowerBound::Int64, m1::Int64, m2::Int64, upperBound::Int
         end
     end
 end
+
 
 #TODO: check usability
 #=

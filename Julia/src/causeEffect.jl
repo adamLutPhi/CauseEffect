@@ -89,7 +89,7 @@ m2 -= 1 ; b -= 1
 
 =#
 
-import Utils: lineLengthAcceptable
+include("Utils.jl"):lineLengthAcceptable
 import Base: @propagate_inbounds
 Middles = []
 offset = 1
@@ -163,9 +163,7 @@ end
         println(_view[a], " ", _view[b], " ", contentSwapped)
 
     end
-
     return a, b, contentSwapped #returns index
-
 end
 
 #=
@@ -202,6 +200,8 @@ end
         return a, b, contentSwapped
     end
 end
+
+#DEMO:
 arr
 arr[length(arr)]
 
@@ -275,6 +275,7 @@ function compareQuartet(a, m1, m2, b, arr::Array{Int64,1})
 
 end
 
+
 function compareQuartet(a, m1, m2, b, _view)
     try
         twinMiddles = nothing
@@ -344,6 +345,7 @@ function isEven(a, b) # review#1 corrected: adds offset adjustment #review#2: ; 
     end
 end
 
+
 function isEven(number::Int64) # =  #review#2: offset & number are independent
     isItEven = nothing
     try
@@ -363,10 +365,12 @@ function isEven(number::Int64) # =  #review#2: offset & number are independent
     return isItEven #number
 end
 
+
 function getIsWhole(a::Int64, b::Int64)
     isWhole = isEven(a, b) # sumInterval(a,b) % 2 == 0
     return isWhole
 end
+
 
 function getIsWhole(arr::Array{Int64,1})
     isWhole = firstindex(arr) + lastindex(arr) % 2 == 0
@@ -378,6 +382,7 @@ function getIsWhole(_view::SubArray)
     return isWhole
 end
 #----
+
 
 @propagate_inbounds function middle(a::Int64, b::Int64) # b  + a -1  # Acceptable #review#2 ; offset = 1 #rule-found: offset only used in an array (at its start)
     try
@@ -422,6 +427,8 @@ end
         @error "Unexpected error occured" exception = (UnexpectedError, catch_backtrace()) #<-----
     end
 end
+
+
 """
 Vital helper functions
 1. middle Index : fetches middle (m1), m1+1
@@ -527,7 +534,7 @@ a, b, m = compareTriad(a, m1, lastindex(arr), arr) # (1, 9, 5) #ok # BoundsError
 #Int(firstindex(arr))
 #Int(lastindex(arr))
 
-#_-----
+#------
 #vital functions:
 """right side function: to evalualte a,b, arr, & their subsequent intervals -used at first run """
 function goright!(a::Int64, b::Int64, arr::Array{Int64,1}) #to evalualte a,b, view1 (& their subsequent intervals )
@@ -538,6 +545,7 @@ function goright!(a::Int64, b::Int64, arr::Array{Int64,1}) #to evalualte a,b, vi
     #update new value bounds:
     checkRightCondition(arr)
 end #<-------
+
 
 function goright!(_view::SubArray) #to evalualte a,b, view1 (& their subsequent intervals )
     #to go right, fix b, increase a
@@ -552,9 +560,11 @@ function goright!(_view::SubArray) #to evalualte a,b, view1 (& their subsequent 
 
 end
 
+
 #done remap
 #compareTriad
 #maybe remap including b+1 is exclusive to special case, & not all
+
 
 """right side function: to evalualte a,b, view1, & their subsequent intervals """
 function goright!(a::Int64, b::Int64, _view::SubArray) #ok #<------
@@ -567,6 +577,7 @@ function goright!(a::Int64, b::Int64, _view::SubArray) #ok #<------
     #  checkRightCondition(_view) #uncommentMe
     #<---ends
 end
+
 
 function checkRightCondition(arr::Array{Int64,1})
 
@@ -591,8 +602,8 @@ function checkRightCondition(arr::Array{Int64,1})
         @error msg * " Occured" exception = (UnexpectedError, catch_backtrace())
     end
 end
-
 #------
+
 
 function checkRightCondition(_view::SubArray) #correct #<----- this is called  after algorithm finishes
 
@@ -624,9 +635,13 @@ function checkRightCondition(_view::SubArray) #correct #<----- this is called  a
         @error msg * " Occured" exception = (UnexpectedError, catch_backtrace())
     end
 end
+
+
+#DEMO:
 #checkLeftCondition(arr) for view only
 arr
 #checkRightCondition(arr)
+
 
 function goleft!(a::Int64, b::Int64, _view::SubArray) #compiles correctly #todo: Update a,b
     #to go left, fix a, decrease b
@@ -640,13 +655,13 @@ function goleft!(a::Int64, b::Int64, _view::SubArray) #compiles correctly #todo:
     #b-a >0 #b-a>1
 end
 
+
 function goleft!(_view::SubArray)
     a = firstindex(_view)
     b = lastindex(_view)
 
     cause(a, b, _view)
     # checkLeftCondition(_view) #<--------- #uncommentMe
-
 end
 
 
@@ -720,10 +735,11 @@ function checkLeftCondition(_view::SubArray)
         @error msg * " Occured" exception = (UnexpectedError, catch_backtrace())
     end
 end
+
+
 #checkLeftCondition finishes correctly
 #----
 #cause
-
 
 #check both funcs below are identically equal
 #Rule: cause must always get the updated a & b (of the current view )
@@ -753,6 +769,7 @@ function cause(a::Int64, b::Int64, _view::SubArray) #in: _view  #uses view #erro
     #m1,m2,isWhole = callMiddle() #checkCond(a,m1,m2,b,view) #is it acceptable to pass it a view?
 end
 
+
 currentValue
 # init
 #before first cause, call init
@@ -771,6 +788,7 @@ function cause(a::Int64, b::Int64, arr::Array{Int64,1})#, currentValue) #working
 end
 #strategy pass-in an arr, for now  #
 
+
 function cause(a::Int64, b::Int64, arr::Array{Int64,1},currentValue) #working  #uses arr only *Warning*
     condition = isStoppingCondition(arr, currentValue) #isStop(a, b, arr) # view #TODO: change to a practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -784,6 +802,8 @@ function cause(a::Int64, b::Int64, arr::Array{Int64,1},currentValue) #working  #
 
     end
 end
+
+
 #effect
 """ from arr , get the view(arr, a:b)"""
 function effect(a::Int64, b::Int64, _view::SubArray) # = view(_view, a, b))
@@ -801,10 +821,8 @@ function effect(a::Int64, b::Int64, _view::SubArray) # = view(_view, a, b))
 end
 
 
-
 #checkCond
 #----
-
 #requires compareQuartet, compareTriad
 function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _view::SubArray) #is there a way to convert view to arr
     if isWhole == true
@@ -841,7 +859,6 @@ function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _vie
         #2. length -= 1
         # remapForm1m2
 
-
         compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
         #view1 = view(arr, a:m1) #correct result
         #Index changes: need for Remapping: m2, b
@@ -865,6 +882,8 @@ function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _vie
     end
 
 end
+
+
 function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _view::SubArray) #is there a way to convert view to arr
     if isWhole == true
         #m region
@@ -900,7 +919,6 @@ function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _vi
         #2. length -= 1
         # remapForm1m2
 
-
         compareQuartet(a, m1, m2, b, _view) #compare arr values at 4 index points: a,m1,m2,b  #ok
         #view1 = view(arr, a:m1) #correct result
         #Index changes: need for Remapping: m2, b
@@ -925,8 +943,8 @@ function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _vi
         # effect(m2, b, view(_view, m2:b))
         return m2, b, isWhole
     end
-
 end
+
 
 function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, _view::SubArray) #is there a way to convert view to arr
     isWhole = getIsWhole(a, b)
@@ -990,8 +1008,8 @@ function checkCond2(a::Int64, m1::Int64, m2::Int64, b::Int64, _view::SubArray) #
         # effect(m2, b, view(_view, m2:b))
         return m2, b, isWhole
     end
-
 end
+
 
 function explore(a, m1, m2, b, _view::SubArray)
     upper = nothing
@@ -1020,6 +1038,7 @@ function explore(a, m1, m2, b, _view::SubArray)
 
 end
 
+
 explore(1,2,3,3,view(ar1,1:3))
 euclidDist(1, 3) + 1 # 3 max = 2 = 3-1
 euclidDist(1, 3)
@@ -1042,7 +1061,6 @@ function effectVector(a, b, arr) #passing arguments
 end
 
 =#
-
 #=
 TODO:
 #if left a b : fix a , decrease b by 1 i.e. b-1
@@ -1095,6 +1113,8 @@ goleft!(arr) #does sorting
 arr
 #Cross-Reference: compare right & left , apply good changes of Left on right
 #-----
+
+
 #callMiddle
 @inline function swapContent(aContent, bContent, arr::Array{Int64,1}) # ; offset=1) #new! # a,b,indicies in arr  #the less arguments the better
     contentSwapped = nothing
@@ -1128,6 +1148,7 @@ arr
 
     return a, b, contentSwapped #returns index (more practical)
 end
+
 
 ar1 = [1, 3, 2, 4]
 swapContent(3, 2, ar1) #view(ar1,1,length(ar1)))
@@ -1165,6 +1186,7 @@ ar1
     return a, b, contentSwapped #returns index (more practical)
 end
 
+
 #b = _v
 # b = b[lastindex(b)]
 
@@ -1195,11 +1217,13 @@ function isInBounds(a::Int64, b::Int64, arr::Array{Int64,1}) #working
 
 end #lesson:find the conjugate to get the opposite
 
+
 a = firstindex(arr)
 b = lastindex(arr)
 if isInBounds(a, b, arr) #checks if a,b in bounds of vector arr
     m1, m2, isWhole = calcMiddle(a, b, arr)
 end
+
 
 #Experimental
 #left side function
@@ -1233,24 +1257,17 @@ swapContent(1, 5, view1)
 view2 = view(arr, a:a+1) #view(arr, a:m1)
 view1 = view(arr, a:m1-1)
 view1 = view(arr, a:_len)
-
 view1
 _v1 = view1[1:5] #view out of bounds #view has 2 items, but request expect [1:5] 5  items
-
 # BoundsError: attempt to access 2-element view(::Vector{Int64}, 1:2) with eltype Int64 at index [1:5]
 v1 = view(_v1, 1:5)
 goleft!(1, 5, v1)
-
 # goright!()
 #goleft!(1, 2, v1) #compiles
-
 arr
-
-
 #v1
 #--------
-a
-b
+a; b;
 view1
 #a != b ? effect(a, b, view1) : return
 effect(1, 2, view1)
@@ -1285,9 +1302,9 @@ end
 arr
 a = firstindex(arr);
 b = lastindex(arr);
-a
-b
+a;b;
 isStop(a, b, view(arr, a:b))
+
 
 #=
 function effect(a, b, arr) # = view(arr, a, b)) #just pass the array iself #do not manipulate arr manually
@@ -1298,6 +1315,7 @@ end
 =#
 
 #----
+
 
 #demo only
 #view([1, 2, 3], 3) #3rd argument dimension (discarded)
@@ -1317,8 +1335,8 @@ stoppingCondition(1, 2, view([1, 2], 1:2)) # true #Correct #true  # <-----------
 #view(arr, a, b) #possible errors(if mantual entering): wrong interval bounds Error : BoundsError #uncommentMe
 #view([2, 3, 4], 1, 2)
 #boundsError: attempt to access 3-element vector at index [1,2]
-
 #doCompare()
+
 
 arr
 _v = view(arr, 1)
@@ -1327,27 +1345,26 @@ _v[1]
 #_view[1]
 
 
-
 view(arr, 1:2)# 1 2
 view(arr, 5:9)# 5 9
 view(arr, 2:3)# 2 3
+
 
 #try
 arr
 a = 1
 m1 = 5
-
 view1 = view(arr, a:m1)
 view2 = view(arr, a:a+1) #view(arr, a:m1)
 
-# compareTriad(a,m1,b,view1)
 
+# compareTriad(a,m1,b,view1)
 doCompare(a, m1, view1) #<------- Error Here : (length(_view)), swapContent(_view[a], _view[b], _view)
 _length = copy(length(view1))
 if view1[a] > view1[length(view1)]
     swapContent(view1[a], view1[b], view1)
 end
-a
+println(a)
 view1
 length(view1)
 swapContent(view1[a], view1[length(view1)], view1)
@@ -1360,17 +1377,17 @@ b #oldIndex
 _view = view(arr, m2:b) #Proportionate: make a new portion
 #reMap(m,b,_view) OR findBounds function
 view2 = view(_view, firstindex(_view):length(_view))
-#gotcha
 length(_view)# 4
 offset
 
-# function findBounds
 
+# function findBounds
 euclidDist(m2, b)#valid
 euclidDist(offset, length(_view))
 euclidDist(m2, b) === euclidDist(offset, length(_view)) #Both distances are equivalent
 #EntryCondition:  1st check: Is euclidDist(m2,b) <= length(_view)
 #reIndex m2= 6
+
 
 """ use arr: generates a view(s) """
 function checkCond(a, m1, m2, b, isWhole, arr::Array{Int64,1}) #error in bounds, please check again # need to use view?
@@ -1431,6 +1448,7 @@ function checkCond(a, m1, m2, b, isWhole, arr::Array{Int64,1}) #error in bounds,
 
 end
 
+
 function checkCond(a, m1, m2, b, arr::Array{Int64,1}) #error in bounds, please check again # need to use view?
     isWhole = getIsWhole(a,b)
     a != m1 ? view1 = view(arr, a:m1) : return #correct result #index [3:4] #true
@@ -1489,6 +1507,7 @@ function checkCond(a, m1, m2, b, arr::Array{Int64,1}) #error in bounds, please c
     #goleft!(view1[offset], length(view1), view1)
 
 end
+
 
 function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _view::SubArray) #error in bounds, please check again # need to use view?
     a != m1 ? view1 = view(_view, a:m1) : return #correct result #index [3:4] #true
@@ -1549,6 +1568,7 @@ function checkCond(a::Int64, m1::Int64, m2::Int64, b::Int64, isWhole::Bool, _vie
 
 end
 
+
 m1 = 5;
 #b = 9;
 arr
@@ -1594,7 +1614,6 @@ checkCond(a, m1, m2, b, isWhole, arr) #TODO: want to use arr here  # no method m
 effect(a, m1, arr) #Correct #false (yet another range to come) #error: kills terminal !
 effect(m1, b, arr)
 #----
-
 typeof(view1)
 
 
@@ -1602,8 +1621,6 @@ typeof(view1)
 function newView{T,N}(a::Array{T}, dims::NTuple{N,Int64}; start=1::Int64)
     # pointer_from_objref()
 end
-
-
 
 view(collect(1:5), 1:5)  #correct syntax # 1 5
 view(arr, 1:2) # 1 2
@@ -1615,7 +1632,6 @@ b = 3;
 arr = [1, 2, 3]
 #before callMiddle #calcVerteciesLeft! = 1
 currentValue = calcVerteciesLeft!(arr, getIsWhole(arr)) #correct value appearantly
-
 m1, m2, isWhole = callMiddle(a, b)
 
 # getSubtractedValue(get)
@@ -1624,15 +1640,14 @@ currentValue = calcVerteciesLeft!(arr, getIsWhole(arr), currentValue)
 #if currentValue < 0 currentValue = 0
 isStop(currentValue) #value is 1
 
+
 #checkCond
-
 checkCond(a, m1, m2, b, isWhole, arr) # <-------------------- works #m1 m2 are lost (not retrieved )-> isStop2 cannot be used in this context #not working
-
 arr
 
 #compare here, if you will
-a
-b
+a; b;
+
 #next stop ? # review: why are you evaluating next stop & not the current one ?
 # maybe we are "previewing the next step"
 #isStop(a, b - 1, arr[a:b-1]) #returns 0 #working #correct #ture #OR
@@ -1641,6 +1656,8 @@ b
 # isStop2(a, m1, m2, b) #a!=m1 as 1!=2 -> there's still an Interval
 
 #2 valid stopping conditions
+
+
 """function calcTotalMiddles(arr)"""
 function calcTotalMiddles(arr) #todo: consider renaming
     return length(arr) - 2
@@ -1664,17 +1681,20 @@ function getSubtractedValue(isWhole::Bool)
     catch UnexpectedError
         @error "Unexpected Error: please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
+
+
 #[1,2,3]
 length(arr)
 x = 1
 y = 3
 x + y - 1
 
+
 function intervalLength(a, b)
     return a + b - 1
 end
+
 
 """ called after function Criteria """ # scaffold #light #Best
 function calcVerteciesLeft!(a::Int64, b::Int64, currentValue=nothing) # ,formula)
@@ -1698,11 +1718,12 @@ function calcVerteciesLeft!(a::Int64, b::Int64, currentValue=nothing) # ,formula
     catch UnexpectedError
         @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
 
+
 function calcVerteciesLeft!(a::Int64, b::Int64, isWhole::Bool, currentValue=nothing::Int64) # ,formula)
-    # great subtle error detected
+
+    # Great subtle error detected
     try
         msg = "Unexpected Error"
         if currentValue === nothing # or ===
@@ -1721,11 +1742,11 @@ function calcVerteciesLeft!(a::Int64, b::Int64, isWhole::Bool, currentValue=noth
     catch UnexpectedError
         @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
 
+
 function calcVerteciesLeft!(arr::Array{Int64,1}, isWhole::Bool, currentValue=nothing::Int64) # ,formula)
-    #
+
     try
         msg = "Unexpected Error"
         if currentValue === nothing # or ===
@@ -1742,8 +1763,8 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, isWhole::Bool, currentValue=not
     catch UnexpectedError
         @error msg * ": please check then try again" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
+
 
 """ checks if function has reached a stopping condition
 At any rate, this is a fine function that will expose any further `Hidden Deformalities`, in the function Implementation:
@@ -1766,6 +1787,7 @@ function isStop(currentValue) #scaffold
     end
 end
 
+
 #=function calcUnexplored()
      if calcTotalMiddles(arr) - getSubtractedValue(isWhole) == 0 #useful for a recursion #check if done
         #stoppage condition
@@ -1773,6 +1795,7 @@ end
      end
 end
 =#
+
 
 """for a given vector, calculate currentValue"""
 function checkCurrentValue!(a::Int64, b::Int64, currentValue=nothing) #vital
@@ -1787,6 +1810,7 @@ function checkCurrentValue!(arr::Array{Int64,1}, currentValue=nothing) #vital
     currentValue = calcVerteciesLeft!(arr, isWhole, currentValue)
     return currentValue
 end
+
 
 """ for a given view, calculate currentValue"""
 function checkCurrentValue!(_view::SubArray, currentValue=nothing) #vital
@@ -1805,10 +1829,12 @@ function init(a::Int64, b::Int64) #vital
     return currentValue
 end
 
+
 function init(arr::Array{Int64,1}) #vital
     currentValue = checkCurrentValue!(arr)
     return currentValue
 end
+
 
 """after kernel function: callMiddle: checks isStop """ #input: 3 numbers
 function isStoppingCondition(a::Int64, b::Int64, currentValue) #vital
@@ -1856,6 +1882,7 @@ function isStoppingCondition(arr::Array{Int64,1}, currentValue) # =2::Int64) #vi
     end
 end
 
+
 function isStoppingCondition(_view::SubArray, currentValue) #vital
     #m1, m2, isWhole = callMiddle(a, b) #Occurs before this function
     println(currentValue)
@@ -1877,6 +1904,7 @@ function isStoppingCondition(_view::SubArray, currentValue) #vital
         return false
     end
 end
+
 
 #=
 function stoppingCondition(_view::SubArray) #depreciate
@@ -1900,6 +1928,7 @@ function stoppingCondition(_view::SubArray) #depreciate
     end
 end
 
+
 function stoppingCondition(a, b, _view)#depreciate
     m1, m2, isWhole = callMiddle!(a, b, _view)
     #calcUnexplored
@@ -1918,7 +1947,8 @@ function stoppingCondition(a, b, _view)#depreciate
 end
 =#
 
-#-----
+
+
 if isWhole == true
     #m region
     #compare content (of 3-Fractal: a, m, b )
@@ -1950,7 +1980,6 @@ elseif isWhole == false
     #effect(a, m1, view1) #passing a view # was arr (should be  # view())
     #effect(firstindex(view2),length(view2),view2)  #m2, b, view2)
 
-
     compareQuartet(a, m1, m2, b, arr)
     #OR
 
@@ -1966,6 +1995,8 @@ elseif isWhole == false
     println("goRight: offset = ", offset, " length(view2) = ", length(view(arr, m2:b)))
     goright!(view(arr, m2:b))
 end
+
+
 #-----test
 #1. totalExplorablesLeft 1 op , 2 fun calls (which 1 is bulit-in)
 totalExplorablesLeft = length(arr) - 2 #1
@@ -1979,19 +2010,15 @@ isStop(a, b - 1, view(a:b-1, [1, 2, 3]))#this form didn't run
 isStop(a, b, view(a:b, [1, 2]))#this form didn't run
 isStop(a, b, view(a:b, [1, 2]))#this form didn't run
 isStop(a, b, view(a:b, [1, 2]))#this form didn't run
-
 # isStop(a, b-1, view([a:b-1], a:b-1)) #1, 2, 3
-
 n, m = remap(1, 2)
 v1 = view([1, 2, 3], n:m)
 v2 = view(max(n:m, [1, 2, 3]), min(n:m, [1, 2, 3]))
 v1 == v2 #equal in value
-
 n, m = remap(1, 1)
 v1 = view([1, 2, 3], n:m)
 v2 = view(max(n:m, [1, 2, 3]), min(n:m, [1, 2, 3]))
 v1 == v2 #equal in value
-
 theEnd = b - 1 #2
 
 isStop(a, b - 1, arr[a:b-1]) #returns 0 #working
@@ -2013,42 +2040,32 @@ a = 1;
 b = 3;
 arr = [1, 2, 3]
 m1, m2, isWhole = callMiddle(a, b)
-
 # checkCond(a, m1, m2, b, isWhole, arr) #pass-in whole #uncommentMe
 view1 = (arr, a:m1)  # a, m1
-
 view(arr, a:m1)
-
 view1 = view(arr, a:m1) #correct result
 m1
 a = 1
 b
 if isWhole == true
     #m region
-
     # if isWhole == false # 4 compares
-
     # elseif isWhole == true  # 3 compares
     compareTriad(a, m1, b, arr) #compare contents
-
     view1 = view(arr, a:m1) #correct result
     effect(a, m1, view1) # here arr (should be  # view())
     #Insteadof:
     m1, b = remap(m1, b)
     view2 = view(arr, m1:b)
     effect(m1, b, view2)
-
     # effect(a, m1, view1) #  effect(a, m, view(,a,b))  isStop(1, 2, view([1, 2], 1:2))
     ##effect(m1, b, view2)
     #Do
     # effect(a, m1, arr[a:m1])
-
 elseif isWhole == false
     #m1, m2 = unpackM(m)
     compareQuartet(a, m1, m2, b, arr)
-
     # arr[a:b-1]
-
     effect(a, m1, view1) # here arr (should be  # view())
     m2, b = remap(m2, b)
     view3 = view(arr, m2:b)
@@ -2111,9 +2128,12 @@ else
 end
 #  end
 arr
+
+
 function calcMiddles(arr::Array{Int64,1})
     return length(arr) - 2
 end
+
 
 if calcMiddles(arr) != 0
 
@@ -2123,6 +2143,7 @@ else
     return
 
 end
+
 
 #---test
 #a, b, m1, m2 = compareQuartet(1, 2, 3, 4, [1 2 3 4]) #correct #UncommentMe
@@ -2148,10 +2169,7 @@ a, m1, _isSwapped = doCompare(a, m1, arr)
 m2, b, _isSwapped = doCompare(m2, b, arr)   # Interpretation: context-based  # there is no m2 for
 #here you are passing an arr (isWhole : having whole middle) & testing it for a quartet 4-Fractal
 # the choice of test is erroneous: only testing compareQuartet if its mid is not isWhole (hence fractional, so that need to floor & ceil )
-
-
 m1, m2, isWhole = callMiddle(a, b)
-
 
 
 #= #UncommentMe
@@ -2168,6 +2186,8 @@ function compareTriad(a, m1, b, arr)
     #return a, b, m1
 end
 =#
+
+
 if isWhole == false # 4 compares
     a, b, m1, m2 = compareQuartet(a, m1, m2, b, arr) # view(arr, a:b)
 
@@ -2181,9 +2201,9 @@ a, m1 = doCompare(a, m1, arr) #view(arr, a:m1))
 m1, b = doCompare(m1, b, arr) #iew(arr, m1:b))
 push!(Middles, m1)
 
+
 #optional :
 deleteat!(Middles, 1) #delete function
-
 middle(a, b)
 
 #Experimental
@@ -2216,6 +2236,7 @@ function middle2!(a::Int64, b::Int64)
 
 end
 
+
 middle2(1, 3)
 middle2(1, 9) #
 middle2!(1, 90)
@@ -2239,30 +2260,25 @@ end
 
 
 cause(1, 9, 1:9)
-
 ar = [5, 4, 3, 2, 1]
 cause(firstindex(ar), lastindex(ar), ar)
 ar
-
-
 ar1 = [3, 2, 1]
 cause(firstindex(ar1), lastindex(ar1), ar1)
+
 
 #---------
 #start
 
 currentValue = init(firstindex(ar1), lastindex(ar1)) # 2 i.e.
 numMiddles = currentValue #- 1 #FYI
-
 m1, m2, isWhole1 = callMiddle!(firstindex(ar1), lastindex(ar1), ar1) #should be true #true  # odd members have an actual middle
-
 m1, m2, isWhole2 = callMiddle!(1, 4, [1, 2, 3, 4]) # should be false #false #reasoning: Even members don't have actual middle
 
 #find a way to make the following true
 xor(isWhole1, isWhole2) == true #close (inverse values ) #now it's correct : correct formula
 
 #---euclidDist
-
 euclidDist(1, 3) # 2 == 3-1  #true
 euclidDist(4, 2) # 2 == 4-2 # true
 
@@ -2281,8 +2297,8 @@ cause(x, y, ar1)
 isStop(currentValue)
 currentValue #TODO: implement the decrement of currentValue inside
 euclidDist(1, 2) #1
-
 endAlgorithmSafely(_view::SubArray)
+
 
 function getMiddleInterval(a, b) #,_view::SubArray)
     isWhole = getIsWhole(a, b)
