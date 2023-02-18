@@ -28,7 +28,7 @@
 5. newView : depreciate
 6. objBounds(arr)
 7. objBounds(_view, arr) #<------------ # some arr has _view
-# subView(lowerBound,upperBound,_view) #some _view has subView 
+# subView(lowerBound,upperBound,_view) #some _view has subView
 
 =#
 ### TODO: ensure to convert functions, above, into Event-driven functions
@@ -56,7 +56,7 @@
 
 #=
 
-Use only lowerBound of the generic `_stack` , then you pop the next arbitrary interval, 
+Use only lowerBound of the generic `_stack` , then you pop the next arbitrary interval,
 and redo the same thing: call the  kernel function `middle`, partition & Sort
 
 # Correct-Form of view
@@ -98,7 +98,7 @@ function processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
     if _firstIndex == _lastIndex #&& _firstValue == _lastValue  # mind the: values could be equal
     # the same 1 answer (use one of them only )
     #but more likely: it's highly possible to return multiple values
-        return 1 , _firstIndex,_firstValue # i.e. (numOcurrences, valueOfInterst, firstIndex):  (3, 3) -> 2, 3  ( 7 , 7 ) -> 2, 7 , 1 
+        return 1 , _firstIndex,_firstValue # i.e. (numOcurrences, valueOfInterst, firstIndex):  (3, 3) -> 2, 3  ( 7 , 7 ) -> 2, 7 , 1
     # if 2 (or more) # then indicies are identical
     elseif _firstIndex != _lastIndex #&& _firstValue != _lastValue # index used: must be unique
         return 2, _firstIndex,  _firstValue,  _lastIndex,  _lastValue
@@ -115,11 +115,11 @@ function elementAt(arr, xContent)
 
     newXIndex = findall((x -> x == xContent), arr) # it could be array (if has multiple occurences)
 
-    #multiple occurences possible, but we are interested mainly in bounds (for indicies & values) 
+    #multiple occurences possible, but we are interested mainly in bounds (for indicies & values)
     #i.e. the first & the last . Hence, we got to return them
     # *(& consider, by-chance, if both point to the same value)*
 
-    first(newXIndex) # that'll be always 1 (in julia) 
+    first(newXIndex) # that'll be always 1 (in julia)
 
     _firstIndex = newXIndex[1]
     _firstValue =  arr[_firstIndex] # gets the first occurence of newXIndex in array `arr`
@@ -132,24 +132,22 @@ function elementAt(arr, xContent)
     return _firstIndex,  _firstValue,_lastIndex, _lastValue # processing done after it
 end
 
-ar1=  [1,1,1,2] # consider indicies 
+ar1=  [1,1,1,2] # consider indicies
 
 _firstIndex,  _firstValue, _lastIndex,   _lastValue = elementAt(ar1,1)
 
 println("_firstIndex,  _lastIndex,  _firstValue, _lastValue = ",_firstIndex,  _lastIndex,  _firstValue, _lastValue )
 
-
-"""
-    
 v = collect(1:3)
 arr = collect(1:9)
 
 #---------------------------------------------------
+"""
 Law Properties:
 
 1. v must be contained in arr:
 an extreme case would be that v === arr
-equal to arr, then bounds should be equal 
+equal to arr, then bounds should be equal
 
 On index remapping [depreciated idea]:
 the last index in v  might not be the last in arr (most of the time)
@@ -157,7 +155,7 @@ the last index in v  might not be the last in arr (most of the time)
 v[1] , v[-1 ] # dirty python
 1: v[1] = 1
 -1:v[-1] = 3
-    
+
 Plug those in the Original arr :
 #stick to the plan: retrieve only the bounds
 # arr[v[1] : v[-1 ] ]
@@ -169,7 +167,7 @@ last(v) ===  #arr[lastIndex(v)]]
 for that reason use notation:
 
 arr[ v[lastIndex(v)]] ]
-
+"""
 #---------------------------------------
 
 
@@ -187,7 +185,7 @@ function handleReturnedvalue(_firstIndex,  _lastIndex,  _firstValue, _lastValue;
         # bit complicated ( than anticipated)
         #(at most ) return all information gathered
         # return [_firstIndex,  _lastIndex,  _firstValue, _lastValue]
-        return _firstIndex, _firstValue,_lastIndex, _lastValue # size 2 #suggest: (_firstIndex, _firstValue), (_lastIndex, _lastValue) 
+        return _firstIndex, _firstValue,_lastIndex, _lastValue # size 2 #suggest: (_firstIndex, _firstValue), (_lastIndex, _lastValue)
 
     #end
 end
@@ -306,7 +304,7 @@ function objBounds2(_view, arr)
             #n,_firstIndex,  _lastIndex,  _firstValue, _lastValue = processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
 
             # Return would be 2 values (may require additional unpacking, (but that's good for now))
-            # index1, value1  = handleReturnedvalue(n,_firstIndex,  _lastIndex,  _firstValue, _lastValue) # TODO:convert (from old to new thinking) 
+            # index1, value1  = handleReturnedvalue(n,_firstIndex,  _lastIndex,  _firstValue, _lastValue) # TODO:convert (from old to new thinking)
 
             _firstIndex2,  _firstValue2, _lastIndex2,   _lastValue2 = elementAt(arr, _last)
             #index2, value2  = handleReturnedvalue(m,_firstIndex1,  _lastIndex,  _firstValue, _lastValue)
@@ -382,7 +380,7 @@ firstXIndex = firstindex(newXIndex)
 newXIndex = lastindex(newXIndex)
 
 #end
-# v = collect(1:3) #3; intervalLength(v[1],v[2]) # 2 
+# v = collect(1:3) #3; intervalLength(v[1],v[2]) # 2
 #--------------------------
 euclidDist(lowerBound::Int64, upperBound::Int64) = 0 <= lowerBound && 0 <= upperBound ? abs(max(lowerBound, upperBound) - min(lowerBound, upperBound)) + 1 : 0 #+ 1 : 0 #-1 #both lowerBound,upperBound > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
 #euclidDistDifference(lowerBound::Int64, upperBound::Int64) = 0 <= lowerBound && 0 <= upperBound ? abs(max(lowerBound, upperBound) - min(lowerBound, upperBound)) : 0 #+ 1 : 0 #-1 #both lowerBound,upperBound > 1 positive  #review#2: offset is meaningless in this context #&& 0 <= offset
@@ -390,7 +388,7 @@ euclidDistDifference(lowerBound::Int64, upperBound::Int64) = 0 < lowerBound && 0
 
 #euclidDist(3, 1)
 # intervalLength2(v[1],v[2]) # 3
-    
+
 euclidDist(3, 1) #+ 1 # 1 2 3  #valid value
 
 #euclidDist(3, 1)
@@ -479,7 +477,7 @@ end
 #1. get isWhole
 isWhole = getIsWhole(1, 3)
 # ar1 = [10,5,3]; getIsWhole(ar1) # false
-        
+
 ### B: getSubtractedValue
 """ either drop 1 from total if isWhole (1 middle), or 2 if not Whole (twinMiddles)"""
 function getSubtractedValue(isWhole::Bool)
@@ -523,46 +521,49 @@ collect(1:2) # Vector{Int64} [1 2]T
 
 euclidDist(1, 3) #3  #euclidDist(1,3) =?=  -(1,3) + 1
 euclidDistDifference(1, 3) # the context is: to subtract #i.e. TODO: to be replaced by -(1,3)
-            
+
 """ get a subView from any view, provided a `lowerBound` & an `upperBound` """
 function subView(lowerBound,upperBound,_view)
     collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-end 
+end
 
-
-res = subView(3,5) #  view([3,4,5])
+v = collect(1:9)
+#v = view(v, firstindex(v):lastindex(v))
+res = subView(3,5,v) #  view([3,4,5])
 print("subView(3,5) = ",res)
-_view = collect(1:9)
-res = subView(3,5,_view)
 
-=======
+_view = collect(3:5)
+_view = view(_view, firstindex(_view):lastindex(_view))
+res = subView(1,2, _view )
+
+
 euclidDist(1, 3) #3
 euclidDistDifference(1, 3) # the context is to subtract #i.e. TODO: to be replaced by -(1,3)
 
 """ get a `SubArray` from any view, provided a `lowerBound` & an `upperBound` with a view itself"""
 function subView(lowerBound,upperBound,_view) #ok
     collect(lowerBound:upperBound) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-end 
+end
 
 #res = subView(3,5) #  view([3,4,5])
 #Demo
 # Create a View: from 1 to 9
 v = collect(1:9);
-v = view(v,firstindex(v): lastindex(v) ) #SubArray 
+v = view(v,firstindex(v): lastindex(v) ) #SubArray
 print( typeof(v) ) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
 
 # Create a subView: from 3 to 5
 #  1 2 3 4 5 6 7 8 9
-#     [3 4 5 ] 
-#subView(3,5)   
+#     [3 4 5 ]
+#subView(3,5)
 #res = subView(v, 3,5) view([3,4,5]) #TODO: check
-res = subView( 3,5, v)            
+res = subView( 3,5, v)
 print( res) # view(::Vector{Int64}, 1:3) with eltype Int64:
 print( typeof(res ) )#SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
- 
-# view `SubArray`: it is possible to subview, with any valid index range, using starting & ending indicies 
+
+# view `SubArray`: it is possible to subview, with any valid index range, using starting & ending indicies
 # subview( startIndex, endIndex, View)
-print( subView(1,2, res) )  # [1, 2]  
+print( subView(1,2, res) )  # [1, 2]
 print( subView(1,1, res) )  # [1] valid subView (gets a subview, from index 1 to 1 )
 print( typeof( subView(1,1, res) )) # SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}
 
@@ -680,7 +681,7 @@ end
 #-------
 #TODO: finish the recursive checkNextView(_view)
 function checkNextView(_view)
-                    
+
     if length(_view) === Nothing
         return -1
         #but lowerBound view can be at least 3(makes senselength  3->1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
@@ -696,12 +697,12 @@ end
 
  """ specific: for lowerBound given bounds lowerBound, upperBound, calculates the next view """
 function checkNextView(_view, lowerBound, upperBound;_first=1)
-    _length = length(_view) # no method matching length(::var"#5#6")#TODO
+    _length = length(_view) # no method matching length(::var"#5#6")#TODO: add subView
     if _length === Nothing
         return -1
-                        
+
      #but lowerBound view can be at least 3 (without 2 bounds: length  3-2 = 1 ) , or even 2 FOR 1 VIEW (We are finding the nextView )
-    elseif _length == 1 #valid 
+    elseif _length == 1 #valid
         return _length
     elseif _length >= 2 * 2 - _first # 4 # at least the currrent count must be 4 = 2 * 2 (minimum bounds count(to be removed))
         println("firstindex(x)+1:lastindex(x)-1", firstindex(x)+1:lastindex(x)-1)
@@ -711,39 +712,51 @@ function checkNextView(_view, lowerBound, upperBound;_first=1)
     end
 end
 #checkNextView()
-                        
+
+function handleNegativeValue(currentValue)
+
+    if currentValue < 0
+        currentValue = 0
+    end
+    currentValue
+end
+
+
+
 lowerBound = 1
 upperBound = 9
 
 #fabricate view from points only
 v = collect(lowerBound:upperBound)
-                        
+
 # Experienced Note: in `divide-conquer`: while dividing 1:9
 # range becomes:
 subLoBound = 3;
 subUpBound = 5;
 _rangeSub = collect(3:5)
-                        
-subView(
+
+_rangeNew = subView(firstindex(_view),lastindex(_view), _view)
 _rangeNew = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #input
 
 #_view = collect(lowerBound:upperBound) |> lowerBound = lowerBound + 1;upperBound = upperBound + 1 |> lowerBound + 1 <= upperBound - 1 ? _view -> view(x, firstindex(lowerBound + 1):lastindex(upperBound - 1)) : return  #Note: collect(lowerBound:upperBound) is rendered unused
 
-_view = _view = collect(3:5) |> _view -> view(_view, firstindex(_view)+1:lastindex(_view)-1):return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
+_view = subView(firstindex( _view)+1, lastindex(_view)-1, _view)
+
+#_view = _view = collect(3:5) |> _view -> view(_view, firstindex( _view)+1:lastindex(_view)-1):return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
 #_view = lowerBound = lowerBound + 1 && upperBound =  upperBound + 1 <= upperBound - 1 ? _view -> view(_view, firstindex(_view)+1:lastindex(_view) -1) : return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
 println(_view)
 println(typeof(_view))
-          
+
 #_Interval = collect(3: 5) # subView( interest):  1: 3
-                        
-#euclidDist( _Interval[1], _Interval[2] ) # 3 euclidDist: form is like:  -(a,b) +1 
+
+#euclidDist( _Interval[1], _Interval[2] ) # 3 euclidDist: form is like:  -(a,b) +1
 #-( _Interval[2], _Interval[1]) # 2
 
 # resolved:# _rangeNew |> _view -> view( _view, firstindex(_view):lastindex(_view))
 _view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 
 # ---
-  
+
 #v = collect(1:9)
 # res = view(v,firstindex(v): lastindex(v))
 
@@ -761,8 +774,8 @@ end
 rangeOrginal = 1:9
 _view = view(v, rangeOrginal) #makes a view
 _rangeNext = 3:7
-_subview = subView(_rangeNext, _view) 
-                        
+_subview = subView(_rangeNext[1], _rangeNext[2], _view)
+
 v = collect(3:7)
 _view = subView(3 , 7 ,v) #todo  view(v, firstindex(v): length(v)) #v, firstindex(v):length(v))
 #currentVal = checkCurrentValue!(_view, currentVal)
@@ -771,23 +784,23 @@ _view = subView(3 , 7 ,v) #todo  view(v, firstindex(v): length(v)) #v, firstinde
 
 #--------------
 ##WARNING: IntervalLength #Tampers with the sum (Q.how?)
-                        
+
 totalLength = intervalLength(1, 3)
 # copy(intervalLength(lowerBound, upperBound)) #lowerBound+upperBound -1 (or euclidDist +1)
-                        
+
 sum = totalLength # + 1 #  this is for euclidDist # (removes 1 )  #Done
 
 isWhole = isEven(sum)
 currentValue = 1
 getSubtractedValue(isWhole) # (subtract length(midddle): 1 or 2)
-                        
+
 currentValue -= getSubtractedValue(isWhole)
 # handleCurrentValue(currentValue) #TODO: re-check now
-                        
+
 length([1, 2, 3]) == intervalLength(1, 3) # == 3 #true
 isEven(length([1, 2, 3]))
 #isEven(length([1, 2, 3]) + 1) #Rule: in isEven: always add 1 to the total length
-                        
+
 #---------
 
 # Sort & Swap
@@ -1072,9 +1085,9 @@ function isUnitDistanceReached(lowerBound, upperBound,kernel)
 
     if euclidDistDifference(lowerBound, upperBound) <= 1 || euclidDistDifference(lowerBound, upperBound) == 0 #TODO: chage inside the function
         return true
-    
+
     else
-        # v = collect(lowerBound:upperBound) 
+        # v = collect(lowerBound:upperBound)
         # subView(3,7,v) #todo:check # _view = view(v, firstindex(v):lastindex(v))
         m1, m2, _flag = kernel(lowerBound, upperBound) #lowerBound - 1, lowerBound, upperBound, upperBound + 1, _view) #<-----sumInterval not defined
         # lower = 4 , upper = 5
@@ -1313,7 +1326,7 @@ if lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperBound
     # try
     # Base.@propagate_inbounds
     # if aContent > bContent # arr[lowerBound] > arr[upperBound] n# <--- [critial] decision
-    
+
     lowerBound, upperBound, contentSwapped = oldSchoolSwap(lowerBound, upperBound, arr) #swapContent(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
     #    contentSwapped = true   #arr[lowerBound], arr[upperBound]
     println("at index lowerBound = ", lowerBound, " upperBound = ", upperBound, ", aContent = ", arr[lowerBound], " , bContent = ", arr[upperBound])
@@ -1402,8 +1415,8 @@ arr
 
 arr[length(arr)]
 
-#1. 
-function function getSubtractedValue(isWhole::Bool)
+#1.
+function  getSubtractedValue(isWhole::Bool)
     try
         subtract = nothing
         if isWhole == true
@@ -1440,7 +1453,7 @@ function getSubtractedValue(isWhole::Bool)
     end
 
 end
-getSubtractedValue(10, 5,ar1)
+#getSubtractedValue(10, 5,ar1) #TODO: uncommentMe
 
 
 function getIndicies(a::Int64, b::Int64, arr)
@@ -1489,9 +1502,9 @@ function swap(a::Int64, b::Int64, lst; first=1)
     a,b, is_swapped
 end
 
-# Demo: 
-swap(1,2 [10,5,3]) # 1,2, true 
-
+# Demo:
+#swap(1,2 [10,5,3]) # 1,2, true
+#=
 function compareTriad(a, m1, b, arr::Array{Int64,1})
 
     try
@@ -1526,12 +1539,12 @@ function compareTriad(a, m1, b, arr::Array{Int64,1})
      return a, b, m1
 
  end
-
+=#
 # Demo:
 
 ar1 = [10, 8, 3]
-a,b,m1 = compareTriad(1,2,3, ar1)
-print("a= ",a ,"  m1= ",m1," b= ",b ,"; ar1[a]= ",ar1[a] , " ar1[m]= ", ar1[m1] ," ar1[b]= ", ar1[b] ) # print a friendly message, indicating the new array values
+# a,b,m1 = compareTriad(1,2,3, ar1)
+# print("a= ",a ,"  m1= ",m1," b= ",b ,"; ar1[a]= ",ar1[a] , " ar1[m]= ", ar1[m1] ," ar1[b]= ", ar1[b] ) # print a friendly message, indicating the new array values
 #done
 #---------
 # Comparing Three Numbers, as lowerBound  Triad (compareTriad)
@@ -2074,7 +2087,7 @@ end
 
 ## compareQuartet: on lowerBound view
 """ input vector array , applied on lowerBound view  (on each Interval) """
-function compareQuartet(lowerBound, m1, m2, upperBound, _view::SubArray)
+function compareQuartet(lowerBound, m1, m2, upperBound, _view::SubArray) #TODO: fix
 
     try
 
@@ -2177,7 +2190,7 @@ numMiddles = currentValue # 1 #FYI
 
 # CompareBounds
 
-                    
+
 arr = collect(1:7)
 pts = [1, 3, 4, 7]
 #pts[1] # proxy for lowerBound lower bound
@@ -2234,7 +2247,7 @@ upper = Int(ceil(mid))
 #---------------------------
 
 # getSingleMiddle
-                    
+
 # if you have a triad of Points (1,2,3) [order]: should you also compare & sort?
 
 #Int(floor(5.5))
@@ -4157,6 +4170,7 @@ if [1, 2, 3, 4][1] > [1, 2, 3, 4][2]
 end
 #m1
 
+# DEMO:
 doCompare(1, 4, [1, 2, 3, 4]) # 1 4
 lowerBound = 1;
 upperBound = 1;
@@ -4786,9 +4800,9 @@ function compareIntervals(_stack, _newView::SubArray, interval=nothing, group=0,
     _newView = NewView(1, _length - 1) #<--------------
     compareIntervals(_stack, _newView)
     if group == 1
-        
+
         lastB = getlastB(_stack)
-        
+
         #Union()
         #compare() # compareTriad  : lastB , interval[1], interval[2]
         #generate _view : from lastB to interval[2]
@@ -5162,7 +5176,7 @@ arr
 _stack = [[1, 3], [4, 7], [8, 9]]
 #---------
 #checked(#1)
-group = 0 # count groups (we got to have some form of group `structure` ) 
+group = 0 # count groups (we got to have some form of group `structure` )
 interval = nothing
 oldInterval = nothing
 lowerBound = -1
@@ -5198,7 +5212,7 @@ if i <= _length - 1
 end
 
 #Finally: last check if group = 1
-#=UncommentMe 
+#=UncommentMe
 if group == 1 # done
 
     lastB = oldInterval[2] #getlastB(_stack) # TODO:check
@@ -5219,7 +5233,7 @@ _stack = [[1, 3], [4, 7], [8, 9]]
 res
 #res = compareIntervals(_stack, arr, i) #removed
 res
-    
+
 arr
 # res = compareIntervals(_stack, arr, i + 1)
 # 7, 9, 8, 4  lowerBound,upperBound ,m1, m2 ; should've been 1, 9,

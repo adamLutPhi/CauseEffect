@@ -483,8 +483,9 @@ _lst = copy(lst) # have a list of interval, waiting to be called by a function r
 
 #intervalVector = pop!(_lst) # test (unintended)
 #cause!(intervalVector) # unCommentMe
-
 #popfirst!(_lst)
+
+
 if _lst == []
     return
 else
@@ -496,14 +497,11 @@ end
 
 @assert 4 - 1 == 3
 # 4, 8 - 1 == 7 -> [4, 7] # what  a creativity # ERROR: 7 not a function
-
 # global a = nothing
-
 _stack = [[1,3],[4,7],[8,9]] # hard-coded _stack
 println("_stack[1][2] = ",_stack[1][2])
 
 #f1(_stack[1][1], _stack[1][2], [1, 4, 8], 1) #unCommentMe
-
 #if nextLowerboundValue !== nothing
 # lower
 #end
@@ -515,7 +513,6 @@ upperboundValue = 8
 
 
 #the main point: on how to add & fetch iterval items (using stack) using push! & pop!
-
 #preload values:
 _stack = []
 push!(_stack, ([1, 3]))
@@ -526,11 +523,11 @@ push!(_stack, [8, 9])
 ## new problem : each stack row(vector) has only 2 items
 #Ideal idea: if we pop 2  together it forms a Quartet (4) hence, can use compareQuartet
 
-# possible issue :
-# what if we have an orphaned 1 vector with 2 items at the end (with no given structure to it) ?
-#potential A: does comparing last 2 with one side of the created stucture (via compareTriad) suffice?
+# Possible issue :
+# What if we have an orphaned 1 vector with 2 items at the end (with no given structure to it) ?
+# Potential A: does comparing last 2 with one side of the created stucture (via compareTriad) suffice?
 
-#q2.Golden Question: ( Would we be able to guarantee it?)
+#Q2.Golden Question: ( Would we be able to guarantee it?)
 #How could we Compare & Order items at the same time, in one shot?
 #Hence the use of `Event-Driven functions`
 
