@@ -70,7 +70,7 @@ Solution:
 #try#1: correct misspecified function arguments: adds type for arr::Array{Int64,1}
 REVEALED A GIGANTIC ISSUE If left Uncorrected
 For functions arr , _view
-(bef    ore: compiler has been thinking  they are the same 1 function(view & arr are same) , after correction, they are 2 expected functions [as Expected] (view, arr are different ))
+(before: compiler has been thinking  they are the same 1 function(view & arr are same) , after correction, they are 2 expected functions [as Expected] (view, arr are different ))
 
 BoundsError: attempt to access 1-element view(::Vector{Int64}, 1:1) with eltype Int64 at index [1:2]
 
@@ -81,15 +81,14 @@ local sorting finished successfully of sorting _view:
 b =1
 a =1 b =2
 
-Seeing enough evidence: I became sure the error is after merging m1 m2 as one Unity
-as it's forgot to autoadjust, on the interval m2:b:
+Seeing enough evidence:  the error must be:  after merging m1 m2 (as one Unity)
+as it's forgotten to autoadjust, on the interval m2:b:
 m2 -= 1 ; b -= 1
 
-
-
 =#
+#module CauseEffect
 
-include("Utils.jl"):lineLengthAcceptable
+include("Utils.jl"): lineLengthAcceptable
 import Base: @propagate_inbounds
 Middles = []
 offset = 1
@@ -115,8 +114,10 @@ end
 =#
 """ if m is bi-valued, unpack it """
 function unpackM(m)
+
     _m1 = 0
     _m2 = 0
+
     try
         if m !== 0
             _m1 = m[1]
@@ -128,14 +129,15 @@ function unpackM(m)
             throw(error("Unexpected error occured"))
         end
         return _m1, _m2
-    catch UnexpectedError
-        @error "Unexpected Error occured" exception(UnexpectedError, catch_backtrace())
+    catch #UnexpectedError
+        writeError()
+        #@error "Unexpected Error occured" exception(UnexpectedError, catch_backtrace())
     end
 
 end
 
 """From the content, get its index, compareContents & swap them accordingly"""
-@inline function swapContent(aContent, bContent, _view) #TODO: check?
+@inline function swapContent( aContent :: Int64, bContent :: Int64, _view) #TODO: check?
 
     a = findall(x -> x == aContent, _view)
     # a = a[offset] #ok, but it's offset dependent
@@ -179,26 +181,34 @@ end
 
 
 
-@inline function doCompare(a, b, _view) #TODO: check?
+@inline function doCompare(a, b, _view;) #TODO: check?
 
+#try
+    #try_block
+
+
+#end
+    contentSwapped = nothing
+    aContent = _view[a] #view(_view, a) #arr[a]
+    bContent = _view[b] #view(_view, b) #arr[b]
+    triplet = 0 , 0, nothing
     _length = copy(length(_view)) #ok
     #a <= _length && b <= _length && a >= 0 && b >= 0
-    if lineLengthAcceptable(a,b,_length) == true
-        aContent = _view[a] #view(_view, a) #arr[a]
-        bContent = _view[b] #view(_view, b) #arr[b]
-
-        contentSwapped = nothing
-
+    _linelength = lineLengthAcceptable(a,b,_length)
+    if _linelength == false
+        return triplet
+    elseif _linelength == true
         if aContent > bContent # arr[a] > arr[b]
-
             a,b,contentSwapped = swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
-
         elseif aContent > bContent
             #do nothing
             contentSwapped = false
         end
         return a, b, contentSwapped
+    else raise(exception)
     end
+    triplet
+    #catch
 end
 
 #DEMO:
@@ -206,7 +216,7 @@ arr
 arr[length(arr)]
 
 #index, value space  [vital]
-@inline function doCompare(a, b, arr::Array{Int64,1}) #works
+@inline function doCompare(a:: Int64 , b :: Int64 , arr::Array{Int64,1}) #works
     #[1...8] length = 8+1 -1 = 8
 
     _length = copy(length(arr))
@@ -255,13 +265,13 @@ function compareQuartet(a, m1, m2, b, arr::Array{Int64,1})
             compareQuartet(a, m1, m2, b, arr)
         =#
 
-        m1, m2, _isSwapped = doCompare(m1, m2, arr) #view(arr, m1:m2)) #<------
-        a, b, _isSwapped = doCompare(a, b, arr) # view(arr, a:b))
-        a, m1, _isSwapped = doCompare(a, m1, arr) #view(arr, a:m1))
+        m1, m2, _isSwapped = swapContent(m1, m2, arr) #view(arr, m1:m2)) #<------
+        a, b, _isSwapped = swapContent(a, b, arr) # view(arr, a:b))
+        a, m1, _isSwapped = swapContent(a, m1, arr) #view(arr, a:m1))
 
         #m2, b = remap(m2, b)
         # println("a, m2, b = ", a, m2, b)
-        m2, b = doCompare(m2, b, arr)  #view(arr, m2:b)) #<------
+        m2, b = swapContent(m2, b, arr)  #view(arr, m2:b)) #<------
         #m2, b, _isSwapped = doCompare(m2, b, view(arr, m2:b))
 
 
@@ -290,14 +300,14 @@ function compareQuartet(a, m1, m2, b, _view)
 
         #   a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
 
-        m1, m2, _isSwapped = doCompare(m1, m2, view(_view, m1:m2)) #compare twinMiddles' content
-        a, b, _isSwapped = doCompare(a, b, view(_view, a:b)) #compare bounds' content
-        a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
+        m1, m2, _isSwapped = swapContent(m1, m2, view(_view, m1:m2)) #compare twinMiddles' content
+        a, b, _isSwapped = swapContent(a, b, view(_view, a:b)) #compare bounds' content
+        a, m1, _isSwapped = swapContent(a, m1, view(_view, a:m1))
 
 
         m2, b = remap(m2, b)
         println(" m2,b = ", m2, b)
-        m2, b = doCompare(m2, b, view(_view, m2:b))
+        m2, b = swapContent(m2, b, view(_view, m2:b))
 
 
         twinMiddles = [m1, m2] # vector (Array{Int64, 1})
@@ -307,7 +317,6 @@ function compareQuartet(a, m1, m2, b, _view)
     catch UnexpectedError
         @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
     end
-
 end
 
 function endAlgorithmSafely()
@@ -447,7 +456,8 @@ Ms: vector for middes m1, m2
 contentSwapped: Bool vector for  whether (note: the first one is always isWhole)
 ```
 """
-@propagate_inbounds function callMiddle(a::Int64, b::Int64) #, arr) #vital function  (middle , docompare...)
+@propagate_inbounds function callMiddle(a :: Int64, b :: Int64) #, arr) #vital function  (middle , docompare...)
+
     try
         # Reviewr#2: removed distance() should be here ( distance is only in isStop )
         #distance = euclidDist(a,b) # response = isStop(a, b, arr)
@@ -514,9 +524,10 @@ contentSwapped: Bool vector for  whether (note: the first one is always isWhole)
             return 0, 0, nothing # 0, 0, 0 # depends on Expected return return
 
         else
-            throw(error("UnexpectedError occured"))
+           raise(exceptionParameter)    #throw(error("UnexpectedError occured"))
         end
-    catch UnexpectedError
+    end
+    catch exceptionParameter # UnexpectedError
         @error "UnexpectedError occured" exception = (UnexpectedError, catch_backtrace())
     end
 
@@ -612,7 +623,6 @@ function checkRightCondition(_view::SubArray) #correct #<----- this is called  a
     msg = "UnexpectedError"
     #update new value bounds:
     try
-
         a = a + 1 #update a  #[remapping is required]]
 
         if a != b
@@ -644,8 +654,8 @@ arr
 
 
 function goleft!(a::Int64, b::Int64, _view::SubArray) #compiles correctly #todo: Update a,b
-    #to go left, fix a, decrease b
 
+    #To go left: fix a, decrease b
     # call cause on original view once
     cause(a, b, _view)
 
@@ -657,6 +667,7 @@ end
 
 
 function goleft!(_view::SubArray)
+
     a = firstindex(_view)
     b = lastindex(_view)
 
@@ -702,9 +713,10 @@ function goleft!(a::Int64, b::Int64, arr::Array{Int64,1}) #compiles correctly #t
     =#
 end
 
-
+global     msg = "UnexpectedError"
 function checkLeftCondition(_view::SubArray)
-    msg = "UnexpectedError"
+
+
     try
         a = firstindex(_view)
         b = lastindex(_view)
@@ -1905,50 +1917,7 @@ function isStoppingCondition(_view::SubArray, currentValue) #vital
     end
 end
 
-
-#=
-function stoppingCondition(_view::SubArray) #depreciate
-    # m1, m2, isWhole = callMiddle!(first(_view), last(_view), _view)
-    isWhole = getIsWhole(_view)
-    #calcUnexplored
-    # # length(arr) - 2 - isWhole= 1 : 2
-    formula = calcTotalMiddles(_view)
-    formula -= getSubtractedValue(isWhole)
-    if formula == 0 #useful for a recursion #check if done
-        #stoppage condition
-        return true #0
-    #end
-    else
-        #instead
-        #callMiddle!(a, m1,) #TODO: compllete this logic
-        #create view
-        #callMiddle!(a,b,view)
-        #isWhole == true ? callMiddle(m1, b) : callMiddle(m2, b)
-        return false
-    end
-end
-
-
-function stoppingCondition(a, b, _view)#depreciate
-    m1, m2, isWhole = callMiddle!(a, b, _view)
-    #calcUnexplored
-    if calcTotalMiddles(_view) - getSubtractedValue(isWhole) == 0 #useful for a recursion #check if done
-        #stoppage condition
-        return true #0
-    #end
-    else
-        #instead
-        #callMiddle!(a, m1,) #TODO: compllete this logic
-        #create view
-        #callMiddle!(a,b,view)
-        #isWhole == true ? callMiddle(m1, b) : callMiddle(m2, b)
-        return false
-    end
-end
-=#
-
-
-
+# Demo:
 if isWhole == true
     #m region
     #compare content (of 3-Fractal: a, m, b )
@@ -2207,11 +2176,12 @@ deleteat!(Middles, 1) #delete function
 middle(a, b)
 
 #Experimental
+using Test
+
 function middle2!(a::Int64, b::Int64)
 
     if a != b
         m1, m2, isWhole = middle(a, b)
-
         ma1, ma2, isWhole_a = middle(a, m1) #left  #make interval: in relation  to a, b
         middle2!(a, m1)
         if isWhole == false
@@ -2228,10 +2198,10 @@ function middle2!(a::Int64, b::Int64)
             end
 
         else
-            return
+            return m1, m2, isWhole
         end
     elseif a == b
-        return a, b
+        return a, b, nothing
     end
 
 end
@@ -2299,7 +2269,6 @@ currentValue #TODO: implement the decrement of currentValue inside
 euclidDist(1, 2) #1
 endAlgorithmSafely(_view::SubArray)
 
-
 function getMiddleInterval(a, b) #,_view::SubArray)
     isWhole = getIsWhole(a, b)
     if isWhole == true  #1middle m1
@@ -2313,11 +2282,11 @@ function getMiddleInterval(a, b) #,_view::SubArray)
 end
 
 #---------
+#Demo:
 #start
 ar1
 currentValue = init(firstindex(ar1), lastindex(ar1)) # 1 i.e.
 numMiddles = currentValue # 1 #FYI
-
 stopFlag = isStoppingCondition(a, b, currentValue)
 
 m1, m2, isWhole = callMiddle!(firstindex(ar1), lastindex(ar1), ar1) #should be true #true  # odd members have an actual middle
@@ -2334,3 +2303,4 @@ b=3
 checkCond2(a, m1, m2, b, view(ar1, a:b)) #check & sort content
 explore(a, m1, m2, b, view(ar1, a:b))
 #correct return [1] , [3]
+# end  # module CauseEffect

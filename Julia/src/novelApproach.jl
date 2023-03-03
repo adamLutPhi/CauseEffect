@@ -3,6 +3,8 @@ to create another  problem & fix it ,
 Hence the solution of the original problem lies in the difference between them
 
 =#
+module novelApproach
+
 include("./Utils.jl")
 #import "Utils.jl"
 #using "Utils.jl"
@@ -41,9 +43,10 @@ function trivialPartitionFunction(a=1::Int64, b=4::Int64; limit=4) #1 limit shou
     elseif res <= 0 # negative: last iteration
             #Then do nothing
     #end
-
     end
+
     while res >= lower # 1
+
         if limit < 5 #geometric Criteria: if an Interval is less than the available engineered structure (i.e. 4 or 3) && count >0
             count = i #copy(i)
 
@@ -153,8 +156,9 @@ end
 =#
 
 #---------- modifyInterval
+#
 addition = 1
-nextStart = nothing
+nextStart = nothing # nullable
 
 for i = 1:length(_stack)  # = b-1 #should be
     # addition = 1
@@ -169,23 +173,29 @@ for i = 1:length(_stack)  # = b-1 #should be
     #either push to pts
     push!(pts, nextStart)
 end
+
+
 #---------
 global addition = 1
 global nextStart = nothing
 
 for i = 1:length(_stack)  # = b-1 #should be
+
     # addition = 1
     #TODO: apply addition on the interval
     println("last interval bound = ", _stack[1][2])
     nextStart = _stack[i][2] + addition #3 ->4 , 6 ->7,
+
     #1: [1,3] + addition (1) = [4,_]
     # 2: [4,6] + 1 = [7,_]
     #3:[8,9] #except last one : no addition needed
+
     println("with addition = 1")
     println("nextStart = ", nextStart)
     #either push to pts
     push!(pts, nextStart)
 end
+
 
 #--------Done
 _stack
@@ -195,26 +205,44 @@ _stack
 #println("newBound index = ", newBound)
 
 
+
+#last added function
+#=
+[a b]
+arr = [1,2,3,4,5,6]
+index1 = 1
+index2 = 1
+ans = 0
+if idx <= length(arr) - 1
+
+    index1 = findfirst(x -> x == arr[idx], arr) # 2
+    index2 = index1 + 1 # 3   # isn't this unethically wrong
+    ans = arr[index2] - arr[index1] #-1 # 8-4 = 4
+end
+=#
+
+#=
 # idea: if I have some index
 """ calculates the distance of nearest neighbor
 note: assumes values ordered, in an Ascending order"""
-#last added function
-[a b]
-function findNext(arr::Array{Int64,1}, idx::Int64) #works
+function findNext(arr::Array{Int64,1}, idx::Int64) #compiles
     # a = findfirst(arr[idx])
     # a = []
+
     index1 = 1
     index2 = 1
     ans = 0
     if idx <= length(arr) - 1
 
-        index1 = findfirst(x -> x == arr[idx], arr) # 2
+        index1 = findfirst( x -> x == arr[idx], arr) # 2
         index2 = index1 + 1 # 3   # isn't this unethically wrong
         ans = arr[index2] - arr[index1] #-1 # 8-4 = 4
     end
 
     return ans
 end # corrected return
+
+=# # unCommentMe
 #end
 mainstack = []
 _mop = findNext([1, 4, 8], 1) # 3  = 4 -1
@@ -266,7 +294,7 @@ println("b = ",b)
 #@test String(b) == "a"
 b = view([0, 0, 1], 2:3) #view(UInt8[0, 0, 0], 2:3)
 println("b= ",b)
-m = 1; n  =3
+m = 1; n  = 3
 
 a = collect(1:10)
 s = view(a, 1:10); println("s= ",s) #s = view(a, 1, [2,3,5]); println("s= ",s)
@@ -534,3 +562,5 @@ push!(_stack, [8, 9])
 #--- one liner fix
 b = 9 # for a given bound
 upperbound = b # lowerbound +1 # upper is the bound    # 9
+
+end  # module novelApproach
