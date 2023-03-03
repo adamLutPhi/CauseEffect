@@ -962,7 +962,7 @@ _view = subView(3 , 7 ,v) #todo  view(v, firstindex(v): length(v)) #v, firstinde
 ##WARNING: IntervalLength #Tampers with the sum (Q.how?)
 
 totalLength = intervalLength(1, 3)
-# copy(intervalLength(lowerBound, upperBound)) #lowerBound+upperBound -1 (or +1)
+# copy(intervalLength(lowerBound, upperBound)) #lowerBound+upperBound -1 (or euclidDist +1)
 
 sum = totalLength # + 1 #  this is for euclidDist # (removes 1 )  #Done
 
