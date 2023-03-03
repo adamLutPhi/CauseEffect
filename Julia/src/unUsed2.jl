@@ -1,69 +1,117 @@
-#-----testing
+#-----testing # File compiles
+module unUsed2
+#TODO: check: minimax :requires compareTriad
+#completed :SwapContent undefined
+# Debugs
+
+export writeError
+include("helper.jl")
+
+import Test: @test
 using Base: @propagate_inbounds , @error
 # include("Utils.jl")
 
-msg = "ERROR: Unexpected Error Occured"
+#msg = "ERROR: Unexpected Error Occured"
 currentValue = nothing
-arr = [1, 4, 8]
+arr = [1, 4, 8, 10]
+m1 = 4 ;  m2 = 8
 
-""" catches an error with a specified error, and displaying elaboration message """
-function writeError(msg,_error= UnexpectedError, elaboration=": please check then try again ")
-    @error msg * elaboration exception = (UnexpectedError, catch_backtrace())
+""" Catch an error on the `backtrace` with specified error, and display elaboration message, by default """
+function writeError(msg :: String; _error= UnexpectedError :: String, elaboration :: String = ": please check then try again ")
+    @error msg + elaboration + exception = (UnexpectedError, catch_backtrace())
+    #@error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
 end
 
 # --- Q. Is It True, or Nothing?
 
 # isTrue
-function isTrue(_value) #TODO:debug
+""" Checks if `_value` is equal to `true` or not; otherwise, raises an `exception` with a custom `msg` """
+function isTrue( _value ; msg :: String , exceptionParameter :: String = UnexpectedError) #TODO:debug
+
+    #0. Set Bool `_flag` to true
+    _flag :: Bool = true
     try
 
-        _value == true
-            return true
-        _value == false
-            return false
+        #1. Check if `_value` equals `false`
+        if _value == false
+            _flag =  false
 
-    catch UnexpectedError
-        writeError(msg,UnexpectedError) #,_error , elaboration
-    end
+        #2. Check if `_value` equals `true`
+        elseif _value == true
 
-end
-
-
-function isNothing(_value) #TODO:debug
-    try
-        response = nothing
-        if _value === nothing
-            response = true
-        elseif _value !== nothing
-            response = false
+        #3. Otherwise: raise an exception
         else
-            raise( UnexpectedError) #writeError(msg )
+            raise(exception)
         end
-        return currentValue
-    catch UnexpectedError
-        writeError(msg,UnexpectedError)
+        #4. Return `_flag`
+        _flag
+
+    #5. Catch an `exceptionParameter` (in optional parameters)
+    catch exceptionParameter
+
+        #5.1 Write an error `msg`, with `exceptionParameter` [default]
+        writeError(msg, exceptionParameter)
     end
 end
 
-""" either drop 1 from total if isWhole (1 middle), or
-2 if not Whole (twinMiddles)"""
-+
-function getSubtractedValue(isWhole::Bool)
+
+""" Checks  `_value` if equals nothing: If `true`, return `nothing`, otherwise, throw an exception """
+function isNothing( _value ; msg :: String , exceptionParameter :: String = UnexpectedError ; exceptionParameter = UnexpectedError ) #TODO:debug
 
     try
-        subtract = nothing
-        if isWhole == true
-            subtract = 1
 
+        #0. Set `response` of type `None` to `nothing`
+        response :: bool =  true # nothing
+
+        #1. Check `_value` is not of class `Nothing`
+        if _value !== Nothing
+            response = false
+
+        #2. If `_value` equals `Nothing`, do nothing
+        elseif _value === Nothing
+
+        #3. Otherwise: raise an exception (from optional parameters) [default]
+        else
+            raise(exceptionParameter)
+        end
+
+        #4. Return `response`
+        response
+
+    #5. Catch `exceptionParameter` (Optional)
+    catch exceptionParameter
+
+        #5.1 Write an error: from given `msg` and `exceptionParameter` (Optional)
+        writeError( msg, exceptionParameter)
+    end
+end
+
+
+""" drop either 2 (not even),  if even (i.e. with 1 middle), or 2 if not Whole ( i.e. twinMiddles)"""
+function getSubtractedValue( isWhole :: Bool ; msg :: String = msg, exceptionParameter :: String = UnexpectedError )
+
+    try
+        #0. Initialize
+        subtract :: Int64 = 1
+
+        #1.checks if  `isWhole` is `true` (1 Middle)
+        if isWhole == true
+            # subtract = 1
+
+        #2. Check if `isWhole` is `false` (2 Middles)
         elseif isWhole == false
             subtract = 2
+
+        #3. raise an `exceptionParameter` [default]
         else
-            raise(UnexpectedError) #throw(error("Unexpected Error Occured"))
+            raise(exceptionParameter)
         end
-        return subtract
+
+        #4. Return `subtract` value
+        subtract
 
     catch UnexpectedError
-        writeError(msg, UnexpectedError)
+        writeError( msg, exceptionParameter)
     end
 end
 
@@ -71,23 +119,22 @@ end
 """Another variation of intervalLength (): this
 intervalLength is vaid , under context of sum """
 function intervalLength2(lowerBound, upperBound)
-return lowerBound + upperBound #- 1
+     lowerBound + upperBound
 end
 
-""" A custom counter: an event driven, self-decrementing function
-called upon progess with any  Function Criteria )
+""" A custom Counter: an event-driven, self-decrementing function
+called upon progess with any `Function Criteria` )
 initialized automatically, since first run, hence it goes at least once
 
 checks
-""" # scaffold #light #Best #TODO: depreciate
-
-function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
+""" # scaffold #light #Best
+function calcVerteciesLeft!(arr ::Array{Int64,1}, currentValue :: Int64) # ,formula)
 
     isWhole = isEven(length(arr))
     try
-        if currentValue === nothing # or ===
+        if currentValue === Nothing # or ===
             currentValue = calcTotalMiddles(arr) # #A()= length(arr) - 2  #correct move #
-        elseif currentValue !== nothing  # subtract from currentValue (1 or 2 ) , subtract B()
+        elseif currentValue !== Nothing  # subtract from currentValue (1 or 2 ) , subtract B()
             currentValue -= getSubtractedValue(isWhole)
             println("currentVaule = ", currentValue) # = [1, 3] #<--------- the issue not one value (same as interval)
             # println("typeof(currrentValue) = ", typeof(currentValue))
@@ -107,7 +154,7 @@ function calcVerteciesLeft!(arr::Array{Int64,1}, currentValue) # ,formula)
 end
 
 function calcTotalMiddles(arr=[1,2,3,4,5])
-    return 5
+    return length(arr) #5
 end
 
 isWhole=false; arr = [1,2,3,4,5];
@@ -125,7 +172,7 @@ elseif currentValue !== Nothing  # subtract from currentValue (1 or 2 ) , subtra
         currentValue = 0
     end
 end=#
-function handleNegativeValue
+function handleZeroNegativeValue(currentValue :: Int64)
 
     if currentValue <= 0 # the last step
         currentValue = 0 #-100 #0 125 currentValue = 0 #-100 #0
@@ -139,19 +186,12 @@ println("upperBound", upperBound)
 println("currentValue",currentValue)
 # Cause
 
-
-
-#TODO: Demo below
-lowerBound = 1;
-upperBound = 9;
-
-view(collect(lowerBound:upperBound), (lowerBound:upperBound))
 #cause(lowerBound, upperBound, view(collect(lowerBound:upperBound), lowerBound:upperBound), middle) #TODO:uncomment Me
 # init
 #before first cause, call init
 
 
-function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
+function cause(lowerBound ::Int64, upperBound ::Int64, arr ::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
 
     condition = isStoppingCondition(arr, currentValue) #(lowerBound, upperBound, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -188,10 +228,41 @@ function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel
     end
 end
 =#
+function isEven(number::Int64) # =  #review#2: offset & number are independent
+    isItEven = nothing
+    try
+        if number > 0 #&& number % 2 == 0 #isEven
+            # number += offset - 1        #  number = number + offset -1  #review#2
+            if number % 2 == 0
+                isItEven = true
+            else
+                isItEven = false
+            end
+        else
+            throw(error("not positive error"))
+        end
+    catch nonPositiveError
+        @error "ERROR: input not Positive" exception = (nonPositiveError, catch_backtrace())
+    end
+    return isItEven #number
+end
+function isEven(a, b) # review#1 corrected: adds offset adjustment #review#2: ; offset = 1 #offset is Independent
+    try
+        number = -1
+        if a > 0 && b > 0
+            number = b + a  # calculates Interval length  #  offset - 1
+            number > 0 && number % 2 == 0 ? true : false   #always exists (if conditions apply)
 
+        else
+            throw(error("Unexpected value error"))
+        end
+    catch UnexpectedError
+        @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace) #passing function pointer to catch_backtrace
+    end
+end
 
 #New : use of kernel as input  #TODO:
-function cause(pts, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
+function cause(pts, _view ::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
 
     try
         condition = isStoppingCondition(_view, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
@@ -207,7 +278,7 @@ function cause(pts, _view::SubArray, kernel, currentValue) #working  #uses arr o
 
             #TODO: traverse(pts)
             if isEven(lowerBound, upperBound) == true #1 middle m1
-                compareBounds(lowerBound, m1, upperBound, _view)
+                ## compareBounds(lowerBound, m1, upperBound, _view) #todo: unCommentMe
                 println("Even")
                 #  compareBounds(lowerBound, m1)
             elseif isEven(lowerBound, upperBound) == false
@@ -228,7 +299,7 @@ end
 
 #effect #depreciate
 """ from arr , get the view(arr, lowerBound:upperBound)"""
-function effect(lowerBound::Int64, upperBound::Int64, _view::SubArray) # = view(_view, lowerBound, upperBound))
+function effect(lowerBound ::Int64, upperBound ::Int64, _view ::SubArray) # = view(_view, lowerBound, upperBound))
 
     #to subarray the view
     #=
@@ -249,7 +320,7 @@ end
 #Rule: cause must always get the updated lowerBound & upperBound (of the current view )
 
 
-function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray) #in: _view  #uses view #error #no isStop(lowerBound,upperBound,view) ==false
+function cause(lowerBound ::Int64, upperBound ::Int64, _view ::SubArray) #in: _view  #uses view #error #no isStop(lowerBound,upperBound,view) ==false
     ##if isStop(lowerBound, upperBound, view) == false # continue processing  #callMiddle #checkCond #sub-interval #UncommentMe
     #isStop(lowerBound, upperBound, view) #Error here
     #isStop(lowerBound, upperBound, view(collect(lowerBound:upperBound), lowerBound:upperBound))
@@ -291,7 +362,7 @@ currentValue
 
 
 #before first cause, call init
-function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
+function cause(lowerBound ::Int64, upperBound ::Int64, arr ::Array{Int64,1})#, currentValue) #working  #uses arr only *Warning*
 
     condition = stoppingCondition(lowerBound, upperBound, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -308,7 +379,7 @@ end
 
 
 #strategy pass-in an arr, for now
-function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, currentValue) #working  #uses arr only *Warning*
+function cause(lowerBound ::Int64, upperBound ::Int64, arr ::Array{Int64,1}, currentValue) #working  #uses arr only *Warning*
 
     condition = isStoppingCondition(arr, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -326,7 +397,7 @@ end
 
 
 """ from arr , get the view(arr, lowerBound:upperBound)"""
-function effect(lowerBound::Int64, upperBound::Int64, _view::SubArray) # = view(_view, lowerBound, upperBound))
+function effect(lowerBound ::Int64, upperBound ::Int64, _view ::SubArray) # = view(_view, lowerBound, upperBound))
     #to subarray the view
     #=
     condition = isStop(lowerBound, upperBound, _view)
@@ -345,7 +416,7 @@ end
 
 
 """Event-Driven function  """
-function cause(lowerBound::Int64, upperBound::Int64, _view, kernel, currentValue, i) #working  #uses arr only *Warning*
+function cause(lowerBound ::Int64, upperBound ::Int64, _view, kernel, currentValue, i) #working  #uses arr only *Warning*
 
     condition = isStoppingCondition(_view, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -361,7 +432,7 @@ end
 
 
 """Event-Driven function  """
-function cause(lowerBound::Int64, upperBound::Int64, arr, kernel, currentValue, i) #working  #uses arr only *Warning*
+function cause(lowerBound :: Int64, upperBound :: Int64,  arr, kernel, currentValue, i) #working  #uses arr only *Warning*
 
     try
     condition = isStoppingCondition(arr, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
@@ -381,7 +452,7 @@ function cause(lowerBound::Int64, upperBound::Int64, arr, kernel, currentValue, 
 end
 
 
-function cause(lowerBound::Int64, upperBound::Int64, arr::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
+function cause(lowerBound :: Int64, upperBound :: Int64, arr ::Array{Int64,1}, kernel, currentValue) #working  #uses arr only *Warning*
 
     try
         condition = isStoppingCondition(arr, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
@@ -402,7 +473,7 @@ end
 
 
 #preferred
-function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
+function cause(lowerBound :: Int64, upperBound :: Int64, _view::SubArray, kernel, currentValue) #working  #uses arr only *Warning*
 
     condition = isStoppingCondition(_view, currentValue) #isStop(lowerBound, upperBound, arr) # view #TODO: change to lowerBound practical & tested working function (Erroneous function) #untrustworthy #<--------
     if condition == true
@@ -415,27 +486,27 @@ function cause(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel, cu
         if cond == true  #2 middle m1: next check bounds lowerBound,m1 m1, upperBound
 
             v, _view = newView(lowerBound, m1)
-            compareBounds(v[1], v[2], _view)
+            ## compareBounds(v[1], v[2], _view) #todo: unCommentMe
 
             #v, _view = newView(m1, m2)
             #compareBounds(v[1], v[2], _view)
 
             v, _view = newView(m2, upperBound)
-            compareBounds(v[1], v[2], _view)
+            ## compareBounds(v[1], v[2], _view) #Todo: unCommentMe
 
         elseif cond == false  #isEven(lowerBound,upperBound) == #twin middles
             # 1,3  4, 7 , 8, 9
 
             if lowerBound < m1 - 1 #in lower part
                 v, _view = newView(lowerBound, m1 - 1) #  lowerBound != m1-1 or lowerBound< m -1
-                compareBounds(v[1], v[2], _view)
+                # compareBounds(v[1], v[2], _view) # todo: unCommentMe
             end
             v, _view = newView(m1, m2) # 4, 7
-            compareBounds(v[1], v[2], _view)
+            ## compareBounds(v[1], v[2], _view) # todo: unCommentMe
 
             if m2 + 1 < upperBound # in upper side
                 v, _view = newView(m2 + 1, upperBound) # 8, 9
-                compareBounds(v[1], v[2], _view)
+                # compareBounds(v[1], v[2], _view) # todo: unCommentMe
             end
         end #endIf2
 
@@ -460,7 +531,7 @@ function effect(lowerBound::Int64, upperBound::Int64, _view::SubArray, kernel, c
 end
 
 
-function effect(a, b, view = view(arr, a, b))
+function effect(a :: Int64 , b :: Int64 , view = view(arr, a, b))
     cause(a, b, view)
 end
 
@@ -468,7 +539,7 @@ end
 # ==================================================
 #applied space: Materialized
 
-function goleftVector(a, b, arr) #tobeRemoved
+function goleftVector(a :: Int64 , b :: Int64 , arr) #tobeRemoved
     #fix a , decrease b
     #condition = areInbounds(a, b, arr)
     # if areInbounds(a, b, arr) == true
@@ -476,7 +547,7 @@ function goleftVector(a, b, arr) #tobeRemoved
 end
 
 
-function gorightVector(a, b, arr)
+function gorightVector(a :: Int64 , b :: Int64 , arr)
 
     #fix b, increase a
     cause(a+1, b, arr) #causeVector(a + 1, b, arr) #or is it effect?
@@ -484,7 +555,7 @@ end
 
 
 #compareTriad functions : doCompare ,  push!(Middles, m1)
-""" returned structure would be m1 in the middle, a on the left (min), b on the right (max)"""
+##""" returned structure would be m1 in the middle, a on the left (min), b on the right (max)"""
 #_type = typeof(arr)
 
 # =========================
@@ -547,8 +618,29 @@ b = 8
 arr = [1, 2, 3, 4, 5, 6, 7, 8]
 #m1, m2, isWhole = callMiddle(a, b) #, arr) #TODO: callmiddle with arr
 #-------
+function boundComparisonCondition(ranges, arr) # promising # :Vector{Vector{Int64}}
+    #try #unCommentMe
+        # for i in 1:length(ranges)
+        _length = length(arr)
+        i = _length #  # i is inferred by the length of arr
+        if i == 1
+            return
+        end
+        _last = copy(length(ranges) - 1)
 
-
+        lowerBound = max(ranges[i-1][_last])
+        upperBound = min(ranges[i][1])
+        contentSwapped = nothing
+        if i >= 2 && lowerBound < upperBound # max(lastRange) # if i>=1
+        println("i = ", i)
+        else
+        raise(UnexpectedError) #throw(error(msg))
+        end
+        lowerBound, upperBound, contentSwapped
+    #catch UnexpectedError
+    #    @error msg exception = (UnexpectedError, catch_backtrace())
+    #end
+end
 ## ranges on lowerBound vector array
 """Recursive function : compares lowerBound bounds in ranges of lowerBound Vector arr """
 function boundComparisonCondition(ranges, arr) # promising
@@ -581,7 +673,7 @@ end
 
 ## ranges on lowerBound _view
 """Recursive function : compares lowerBound bounds in ranges of lowerBound Vector _view """
-function boundComparisonCondition(ranges, _view) # promising
+function boundComparisonCondition(ranges ::Vector{Vector{Int64}}, _view) # promising
 
     try
         # for i in 1:length(ranges)
@@ -615,7 +707,7 @@ end
 
 ranges = [[1, 3], [4, 7], [8, 9]]
 print("ranges = ",ranges)
-boundComparisonCondition(ranges, view(collect(1:9-1), 1:9-1))
+# boundComparisonCondition(ranges, view(collect(1:9-1), 1:9-1)) # 9-1 (try 9 as well) #unCommentMe
 popfirst!(ranges)
 
 #ranges[i] #3 # [8 9]
@@ -631,9 +723,9 @@ ranges[1][2]
 #boundComparisonCondition([[1, 3], [4, 7], [8, 9]], [1:9], 2)# start from 2 at least #<------
 
 
-#highly Experimental
+#highly Experimentalg
 """f: Unknown function """
-function f(_sets, arr) # O = length(_sets)
+function f(_sets, arr; ranges ::Vector{Vector{Int64}} = ranges ) # O = length(_sets)
 
     for i in 1:length(_sets)   # O = length(_sets)
 
@@ -649,7 +741,7 @@ end
 
 # Minimax
 """Minimax function"""
-function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
+function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr) #TODO: check
 
     lowerBound = _unsortedInterval[1]
     upperBound = _unsortedInterval[2]
@@ -657,7 +749,7 @@ function minimax(_sortedInterval1, _sortedInterval2, _unsortedInterval, arr)
     lowerBound, upperBound, contentSwapped = doCompare(lowerBound, upperBound, _unsortedInterval)
 
     # locally sort _unsortedInterval elemts pairwise with their sorted counterparts
-    lowerBound, _sortedInterval1[2], _sortedInterval2[2] = compareTriad(lowerBound, _sortedInterval1[2], _sortedInterval2[2], arr)
+     lowerBound, _sortedInterval1[2], _sortedInterval2[2] = compareTriad(lowerBound, _sortedInterval1[2], _sortedInterval2[2], arr)
 
     upperBound, _sortedInterval1[1], _sortedInterval2[1] = compareTriad(upperBound, _sortedInterval1[1], _sortedInterval2[1], arr)
 
@@ -787,7 +879,7 @@ end
 
 
 """update location, given an Index X """
-function updateLocation(lowerBound, upperBound, X, arr) #sophisticated #TODO: test
+function updateLocation(lowerBound :: Int64 , upperBound :: Int64 , X, arr) #sophisticated #TODO: test
 
     #aIndex = indexOf(arr, lowerBound)[1] # arr[indexOf(arr, lowerBound)[1]] # == lowerBound
     aIndex = firstindex(findall((x -> x == arr[lowerBound]), arr)) #[1]
@@ -797,7 +889,7 @@ function updateLocation(lowerBound, upperBound, X, arr) #sophisticated #TODO: te
     XIndex = nothing
     X < length(arr) ? XIndex = arr[X] : nothing
 
-    #logically:  lowerBound <upperBound & arr is sorted (i.e contentA < contentB )
+    #Logically:  lowerBound <upperBound & arr is sorted (i.e contentA < contentB )
     aIndex < bIndex && arr[aIndex] < arr[bIndex] && XIndex <= bIndex == true #always
 
     # x index
@@ -837,7 +929,7 @@ end
 
 
 """update location, given an Index X """
-function updateLocation(lowerBound, upperBound, _XContent, arr) #sophisticated #TODO: test
+function updateLocation(lowerBound :: Int64 , upperBound :: Int64 , _XContent, arr) #sophisticated #TODO: test
 
     #aIndex = indexOf(arr, lowerBound)[1] # arr[indexOf(arr, lowerBound)[1]] # == lowerBound
     aIndex = findall((x -> x == arr[lowerBound]), arr)[1]
@@ -914,7 +1006,7 @@ try
             # _view = view(collect(lowerBound:upperBound), lowerBound:upperBound) #main _view  #generatef
             m1, m2, isWhole = kernel(lowerBound, upperBound)#, _view)
             # conquer(m1,m2,isWhole,_view)
-            conquer(popped, kernel) # partitions & sorts
+            ## conquer(popped, kernel) # partitions & sorts #unCommentMe
             fRecurse(_stack, kernel)
 
         else
@@ -927,7 +1019,9 @@ try
 
 end
 #------
-kernel(m2, upperBound)
+# Demo:
+# todo: unCommentMe
+## kernel(m2, upperBound)
 #=
 if rightDist > 1 #?
     kernel(m2, upperBound) #, view(collect(m2:upperBound), m2:upperBound)) #: return
@@ -940,9 +1034,11 @@ elseif euclidDist(m2 + 1, upperBound - 1) == 1
 else
     raise UnexpectedError(UnexpectedError) #throws(error(msg)) # <----
 end=#
-
+euclidDistDifference(a,b) = -(a,b)
+UnexpectedError = "UnexpectedError"
 # Conquer function with Conquer function
-function conquer(interval, kernel=middle)
+#= unCommentMe #erroneous expected end (not UnexpectedError")
+function conquer(interval, kernel=middle; UnexpectedError :: String = UnexpectedError)
 
     #  count = 0
     lowerBound = firstindex(interval)
@@ -992,24 +1088,28 @@ function conquer(interval, kernel=middle)
 
     if euclidDist(m2 + 1, upperBound - 1) > 2 #?
         conquer(collect(m2+1:upperBound-1), kernel) #: return
-    elseif euclidDist(m2 + 1, upperBound - 1) == 1
+    elseif euclidDist(m2 + 1, upperBound - 1) == 1 #<---
         compareQuartet(m2, m2 + 1, upperBound - 1, upperBound, collect(m2:upperBound))
     else
         raise UnexpectedError(UnexpectedError) #throws(error(msg)) # <----
     end
+    #end
     return
+
 catch UnexpectedError
     writeError(msg, UnexpectedError)
 end
 
 end
-
-euclidDistDifference(2, 3)
+=#
+# euclidDistDifference(2, 3) #<--- undefined #todo: unCommentMe
 _view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 #res = remap(v[1], v[length(v)])
 
 #TODO: check where this implemenetation:
-_view = collect(res[1]:length[s]) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #compiles no bugs
+res= collect(1:9) #; s =
+#_view = collect(res[1]:length[s]) |> _view -> view(_view, firstindex(_view):lastindex(_view)) #compiles no bugs #replace with `SubArray`#todo : rewrite
+
 _view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 #----
 #------
@@ -1017,7 +1117,7 @@ _view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 #_view = view( v, firstindex(v):lastindex(v))
 
 _view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
-compareBounds(2, 3, _view)
+# compareBounds(2, 3, _view) # <-- undefined  #todo: unCommentMe
 
 #=
             if euclidDist(m2 + 1, upperBound - 1) > 2 #?
@@ -1029,8 +1129,55 @@ compareBounds(2, 3, _view)
                 #og
             end
 =#
+sumInterval(a,b) =  b + a - 1
 
-fRecurse([[1, 3], [4, 7], [8, 9]], middle)
+@propagate_inbounds function middle(a::Int64, b::Int64) # b  + a -1  # Acceptable #review#2 ; offset = 1 #rule-found: offset only used in an array (at its start)
+    try
+        _sum = sumInterval(a, b)  #    b + a - 1  # distance between them  <---- Error
+        println("a,b =", a, " ", b)
+        println("sum = ", _sum)
+        isItEven = isEven(_sum)# #even is a proxy for divisibility # TODO: surround by a copy()  #homeMade Heuristic  <------
+        println("iseven  = ", isItEven)
+        mid = _sum / 2 #  -1  # precalculate mid (_sum /2 )  #Float32(64)
+        println("mid( sum / 2) = ", mid)
+
+        # isWhole = getIsWhole(arr) # uncommentMe if everything else not working
+
+        if isItEven == true
+            # 1 middle calculate
+            println("Even = ", isItEven)
+            mid = Int(mid) #Int
+            println("Rational mid(index)= ", mid)
+            isWhole = true
+            println("is whole = ", isWhole)
+
+            return mid, mid + 1, isWhole
+
+        elseif isItEven == false
+            # calculate fractionalMid
+            println("Even = ", isItEven)
+            println("fractionalMiddle, twinMiddles ")
+            lower = -1
+            upper = -1
+            lower = Int(floor(mid))
+            upper = Int(ceil(mid))
+            isWhole = false
+            println("lower = ", lower)
+            println("upper = ", upper)
+            println("isWhole = ", isWhole)
+
+            return lower, upper, isWhole # the differenece is still 1, only way to discriminate is by using isWhole
+        else
+            throw(error("Unexpected error occured")) #<-------
+        end
+    catch UnexpectedError #errors out
+        @error "Unexpected error occured" exception = (UnexpectedError, catch_backtrace()) #<-----
+    end
+end
+
+mid =  middle(1,9) #(?)
+
+fRecurse([[1, 3], [4, 7], [8, 9]], mid ) #middle)#< ---
 #=
 lowerBound,upperBound =1 3
 sum = 4
@@ -1048,18 +1195,139 @@ v = collect(2:3)
 #ERROR: ArgumentError: invalid index: (1, 2) of type Tuple{Int64, Int64}
 #bug when euclidDist(2,3) == 1
 
-#since 2:3, only  2 is correct i.e.e
-#correct form
+#since 2:3, only  2 is correct
+#i.e. correct form:
 
 v = collect(2:3)
-view(v, v[1])
-view(collect((2:3)), 2:3) # view is correct
-
+println("v = (2:3):",v)
+##view(v, v[1]) #unCommentMe
+##view(collect((2:3)), 2:3) # view is correct
 ##view(collect((2:3)), remap(2,3)) # view is correct
-#_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+#_view = collect(2:3) |> _view -> view(_view, firstindex(_view):lastindex(_view)) @ unCommentMe
+"""
+Gets the firstIndex & the lastIndex of
+"""
+function lineLengthAcceptable(a,b,_length)
+try
+    if a <= _length && b <= _length && a >= 0 && b >= 0
+        return true
+    elseif a > _length  || b > _length || a<0 || b < 0
+        return false
+    else throw(error("Unexpected Error occured"))
+    end
+    catch UnexpectedError
+    @error "Unexpected Error occured" exception = (UnexpectedError, catch_backtrace())
+    end
+end
 
-doCompare(2, 3, [2, 3]) #<-----------
+
+@inline function doCompare(a, b, _view;) #TODO: check?
+
+#try
+    #try_block
+
+
+#end
+    #0.Init
+    contentSwapped = nothing
+    aContent = _view[a] #view(_view, a) #arr[a]
+    bContent = _view[b] #view(_view, b) #arr[b]
+    triplet = 0 , 0, nothing
+    _length = copy(length(_view)) #ok
+    #a <= _length && b <= _length && a >= 0 && b >= 0
+    _linelength = lineLengthAcceptable(a,b,_length)
+
+    if _linelength == false
+        return triplet
+    elseif _linelength == true
+        if aContent > bContent # arr[a] > arr[b]
+            a,b,contentSwapped = swapContent(_view[a], _view[b], _view)  #oldSchoolSwap(arr[a], arr[b], arr)  #an inbounds swap #actual array swap
+        elseif aContent > bContent
+            #do nothing
+            contentSwapped = false
+        end
+        return a, b, contentSwapped
+    else raise(exception)
+    end
+    triplet
+    #catch
+end
+@inline function swapContent(aContent :: Float32 , bContent :: Float32, arr::Array{Int64,1}) # ; offset=1) #new! # a,b,indicies in arr  #the less arguments the better
+
+    contentSwapped = nothing
+
+    a = findall(x -> x == aContent, arr)
+    #a = a[offset]
+    println("a = ", a, " length = ", length(a))
+    a= firstindex(a) #first(a)
+    println("firstindex a = ", a)
+    ##  a = a[a+1] ## a[firstindex(arr)]] # first index
+    ##  a = first(a) +1
+
+    b = findall(x -> x == bContent, arr)
+    println("b = ", b, " length = ", length(b))
+
+    ##    if length(a) == 0 || length(b) == 0
+    #    return
+    ##    end
+    ## b = lastindex(b) #last(b)
+    #b = b[b-1]
+    #b = b[lastindex(b)] # copy(b[length(b)])   # -offset])
+
+    b = lastindex #last(b)
+
+    if aContent < bContent
+        # arr[a], arr[b] = arr[a], arr[b] # nothing
+        contentSwapped = false
+        println(arr[a], arr[b], contentSwapped)
+
+    elseif aContent == bContent
+        # personal preference solution:  first one, closest to lower bound is at first
+
+        contentSwapped = false
+        println(arr[a], arr[b], contentSwapped)
+
+    elseif aContent > bContent
+
+        contentSwapped = true
+        arr[a], arr[b] = arr[b], arr[a] #swap
+        println(arr[a], arr[b], contentSwapped)
+        ##   _first = arr[a]
+        #  _last = arr[b]
+        #if condition
+##
+    #=
+    if aContent > bContent
+        arr[a], arr[b] = arr[b], arr[a] #swap
+        contentSwapped = true
+        #   _first = arr[a]
+        #  _last = arr[b]
+        println(arr[a], arr[b], contentSwapped)
+
+    elseif aContent < bContent
+        # arr[a], arr[b] = arr[a], arr[b] # nothing
+        contentSwapped = false
+        println(arr[a], arr[b], contentSwapped)
+
+    elseif aContent == bContent
+        #personal preference solution , the first one close to lower bound  is at first
+
+        contentSwapped = false
+        println(arr[a], arr[b], contentSwapped)
+
+    end =#
+##
+    return a, b, contentSwapped #returns index (more practical)
+end
+
+#doCompare(2, 3, [2, 3]) #<-----------
+doCompare(1, 2, [1, 2]) #<-----------
 #-----
+
+# euclidDist( a :: Int64, b :: Int64 ) = -(a,b)+1
+
+#euclidDist(a,b) = -(a,b) + 1
+# euclidDistDifference(a,b) = euclidDist(a,b) - 1
 #  count = 0
 interval = (1, 5)
 lowerBound = firstindex(interval)
@@ -1068,16 +1336,18 @@ upperBound = interval[length(interval)]
 #_view = view(collect(lowerBound:upperBound), lowerBound:upperBound)
 m1
 m2
-ptsToView(m1, m2)
-ptsToView(m1, m1)#nothing # it should be single 1 element view
+## ptsToView(m1, m2) # unCommentMe
+## ptsToView(m1, m1)#nothing # it should be single 1 element view
 # count += 1
 m1, m2, contentSwapped = middle(lowerBound, upperBound) #, _view)
 # handle: m1,m2
 collect(m1:m2)
-doCompare(m1, m2, ptsToView(m1, m2))
+## doCompare(m1, m2, ptsToView(m1, m2)) # unCommentMe
 #handle lowerBound m1
 lowerBound
 m1
+euclidDist(a,b) = -(a,b) + 1
+ euclidDistDifference(a,b) = euclidDist(a,b) - 1
 euclidDist(1, 3)
 #--------
 
@@ -1092,20 +1362,136 @@ leftDist = euclidDistDifference(lowerBound + 1, m1 - 1) # 0 : scalar
         # compareTriad(lowerBound, lowerBound + 1, lowerBound + 2, view(collect(lowerBound:lowerBound+2), lowerBound:lowerBound+2)) # compare its Nearest neighborhood
 
     elseif leftDist ==1
-        compareTriad(lowerBound, m1, upperBound,view(collect( lowerBound:m1):lowerBound:m1))
-
+        #compareTriad(lowerBound, m1, upperBound,view(collect( lowerBound:m1):lowerBound:m1))
+        println("compareTriad")
     elseif leftDist ==2
-        compareQuartet(lowerBound, lowerBound + 1, m1 - 1, m1, view(collect(lowerBound:m1): lowerBound:m1))
-
-
+        ##compareQuartet(lowerBound, lowerBound + 1, m1 - 1, m1, view(collect(lowerBound:m1): lowerBound:m1))
+        println("compareQuartet")
     elseif leftDist >2
-        conquer(collect(lowerBound+1:m1-1), kernel) # : return 0
+        ## conquer(collect(lowerBound+1:m1-1), kernel) # : return 0
+        println("conquer")
     else
             raise(UnexpectedError)
     end
 
+    """ input vector array , applys view  on each Interval, remap last one"""
+    function compareQuartet( a :: Int64 , m1 :: Int64 , m2 :: Int64 , b :: Int64, arr::Array{Int64,1}; exceptionParameter= UnexpectedError)
+
+        # try
+            twinMiddles = nothing
+
+            # apply view(arr, a:b)
+            #=
+                compareQuartet(a, m1, m2, b, arr)
+            =#
+
+            # divide: a m1  , m2, b
+
+            #   m1, m2, _isSwapped = swapContent(m1, m2, arr)
+
+                a, m1, _isSwapped = swapContent(a, m1, arr)  # a is local min
+
+                m2, b, _isSwapped = swapContent( m2, b, arr) # b is local max
+
+                #Phase 2:
+                # post local sort: rearrange terms into 2 new groups: mins & max(es)
+                ## mins: a, ,2
+                ## maxes: m1, begin
+
+                a, m2, _isSwapped1 = swapContent(a, m2, arr)  # a is local min
+
+                m1, b, _isSwapped2 = swapContent( m1, b, arr) # b is local max
+
+                # at this point: a is global min, b is global max
+                #(still we have yet to check last 2 terms: m1, m2 )
+
+                #Phase3:
+                m1, m2, _isSwapped3 = swapContent( m1, m2, arr) # b is local max
+
+                a, m1, m2, b , [_isSwapped1, _isSwapped2, _isSwapped3 ]
+            end
+
+            #Phase2
+            # locally compare contents (& swap if necessary)
+
+
+            m1, m2, _isSwapped = swapContent(m1, m2, arr) #view(arr, m1:m2)) #<------
+            a, b, _isSwapped = swapContent(a, b, arr) # view(arr, a:b))
+            a, m1, _isSwapped = swapContent(a, m1, arr) #view(arr, a:m1))
+
+            #m2, b = remap(m2, b)
+            # println("a, m2, b = ", a, m2, b)
+            m2, b = swapContent(m2, b, arr)  #view(arr, m2:b)) #<------
+            #m2, b, _isSwapped = doCompare(m2, b, view(arr, m2:b))
+
+
+            twinMiddles = [m1, m2] # vector (Array{Int64, 1})
+            println("twinMiddles [m1, m2]= ", m1, " ", m2)
+            # push!(Middles, twinMiddles) #TODO: push each _isSwapped to swapped[] vector, as well
+            return a, b, m1, m2 #m1, m2 #should it be a,b, twinMiddles ?
+        #=catch exceptionParameter
+        #    writeError( msg, exceptionParameter)
+        end=#
+end
+euclidDist(a,b) = -(a,b) + 1
+euclidDistDifference(a,b) = euclidDist(a,b) - 1
+
+#Demo: compareQuartet
+#3 #TODO: try out  #Error
+# upperBound - 1; upperBound;
+lowerBound = 3
+upperBound = 9
+
+n, m = nothing, nothing  #MethodError: no method matching iterate(::Nothing)#thrown when 2 (or more) vars has recieved null return -nothing
+n; m;
+#m2; m2 + 1;
+
+#one way
+# m2 = lowerBound +upperBound // 2
+#m1 = m2 - 1
+#another way
+m1 = lowerBound +upperBound // 2
+m2 = m1 + 1
+
+
+
+#Note: m2 == upperBound-1 ==4 ; m2+1 ==upperBound ==5  then its only 2 points m2, m2+1
+# m1, m2 relation
+
+#=
+v = collect(m1:m2)   #(m2:m2+1)
+_view = view(v, firstindex(v):lastindex(v)) # BoundsError: attempt to access 2-element Vector{Int64} at index [1, 2] #lesson learned [x1 x2]
+# m2,upperBound-1 ||
+v = collect(3:9)
+_fst  =firstindex(v)
+_lst = lastindex(v)
+_isEnd = false
+# check
+if euclidDistDifference(_fst, _lst) == 0
+    _isEnd = true
+    endAlgorithmSafely()
+    # b -a = 0 (adjacent values)
+elseif euclidDist(_fst, _lst) == 0
+
+else
+
+_view = view(v, _fst, _lst ) # v = (2:3):[2, 3]
+end
+=#
+
+#= #suggest: change in the `compareQuartet` Algorithm (without a minus sign )
+# (m2, m2 + 1, upperBound - 1, upperBound, _view)
+
+if m2 == upperBound - 1 && m2 + 1 == upperBound
+    doCompare(m2, m2 + 1, _view)
+else
+    compareQuartet(m2, m2 + 1, upperBound - 1, upperBound, _view) # < ---
+end
+end  # module unUsed2
+=#
 
 #this part exactly
+
 m1; m2;
 euclidDist(m1, m2)
 euclidDistDifference
@@ -1122,6 +1508,18 @@ for k = 1: min(m , n) #min(m - 1 !(T<:Real), n)
 end=#
 # End Reached function
 
+ isEndReached(a,b) =
+    #ans =  euclidDistDifference(a,b)
+ if euclidDistDifference(a,b)  ==2
+     #doCompare(a,b)
+     return a,b, true
+elseif euclidDistDifference(a,b)   == 1
+    return a,a, true
+elseif euclidDistDifference(a,b) > 2
+    return a,b, false
+else #raise(exception)
+end
+
 
 if isEndReached(1, 3) == false
     return false
@@ -1129,13 +1527,35 @@ end
 isEndReached(1, 1)
 
 #---
+#f3 :
+v= collect(3 : 9 )
+# _view = _view = view(v, firstindex(v):lastindex(v))  #TODO: define
+#= #f3 TODO Add subview(m1-1, m2+1,_view )
 if euclidDistDifference(m1, m2) == 1 #TODO: chage inside the function
     return true
 else
-    compareQuartet(m1 - 1, m1, m2, m2 + 1, view(collect(m1-1:m2+1), m1-1:m2+1))
+    println("range m1 - 1: m2 + 1 = ",m1 - 1, " : ", m2 + 1)
+    #  attempt to access 7-element Vector{Int64} at index []
+    # 3 : 9 = a: b
+
+    v = collect(3 : 9 )
+    _view = _view = view(v, firstindex(v):lastindex(v))
+
+
+    _subView = SubView(m1-1, m2+1, _view)
+
+    _view = view(collect(m1-1:m2+1)) #<--------- error in generating view (no view object )#TOOD: how to pick upper & lower bound ?
+    println("view = ", _view )
+    if isEndReached(_view[1], _view[2]) == True # chesles
+        println("End is reached " )
+    else
+        checkbounds(m1 - 1, m1, m2, m2 + 1)
+        # BoundsError: attempt to access 7-element Vector{Int64} at index [3:9]
+        compareQuartet(m1 - 1, m1, m2, m2 + 1, view(collect(m1-1:m2+1), m1-1:m2+1))
+    end
     # kernel(m1, m2, view(collect(m1:m2), m1:m2))
 end
-
+=#
 m2
 m2 = upperBound - 2
 upperBound
@@ -1162,22 +1582,6 @@ elseif rightDist == 1
 end
 
 
-#3 #TODO: try out  #Error
+#Demo: compareQuartet
 
-n, m = nothing, nothing  #MethodError: no method matching iterate(::Nothing)#thrown when 2 (or more) vars has recieved null return -nothing
-n; m;
-m2; m2 + 1;
-upperBound - 1; upperBound;
-
-#Note: m2 == upperBound-1 ==4 ; m2+1 ==upperBound ==5  then its only 2 points m2, m2+1
-# m1, m2 relation
-
-v = collect(m2:m2+1)
-_view = view(v, firstindex(v):lastindex(v)) # BoundsError: attempt to access 2-element Vector{Int64} at index [1, 2] #lesson learned [x1 x2]
-# m2,upperBound-1 ||
-
-if m2 == upperBound - 1 && m2 + 1 == upperBound
-    doCompare(m2, m2 + 1, _view)
-else
-    compareQuartet(m2, m2 + 1, upperBound - 1, upperBound, _view)
 end
