@@ -48,7 +48,7 @@
 #### Completed: doCompare()
 #### Completed: depreciate goleft & goright
 #### completed: compareTriad, compareQuartet  #[correcting ]
-### Update: replace `swapContent` insteadof `doCompare` [erroneous]
+### Update: replace `swapContent` instead of `doCompare` [erroneous]
 ### Update: replace expression: `Throw(error(::String))` with raise(exception(::String))
 ### count number of function calls
 ### extra: function frequency
