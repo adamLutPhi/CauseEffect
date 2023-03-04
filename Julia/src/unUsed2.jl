@@ -1,5 +1,6 @@
 #-----testing # File compiles
 module unUsed2
+#TODO: : replace `SwapContent` with doCompare (as it's been rechecked, debuged, tested )
 #TODO: check: minimax :requires compareTriad
 #completed :SwapContent undefined
 # Debugs
@@ -559,23 +560,37 @@ end
 #_type = typeof(arr)
 
 # =========================
-#=
-function compareTriad(a, m1, b, arr::Array{Int64,1})
-    try
+""" compareTriad : Algorithm
 
-        a, b, _isSwapped = doCompare(a, b, arr)#view(arr, a:b)) #compare bounds
+#scan1
+
+    doCompare(a,m1 )
+    doCompare(m1, b)
+#now, max is found, which is at b [exclude from next scan ]
+
+#scan2:
+    doCompare(a,m1) [now scan should be finished]
+"""
+function compareTriad(a, m1, b, arr::Array{Int64,1}; exceptionParameter = UnexpectedError)
+
+    try
+        #scan1:
+
+        #a, b, _isSwapped = doCompare(a, b, arr)#view(arr, a:b)) #compare bounds
         a, m1, _isSwapped = doCompare(a, m1, arr) #view(arr, a:m1))
 
         #no need for remap, (context: arr is giiven, & not altered in this one - remap not needed at all )
         m1, b, _isSwapped = doCompare(m1, b, arr) #view(arr, m1:b))
 
+        # scan2 :
+        a, m1, _isSwapped = doCompare(a, m1, arr) #view(arr, a:m1))
+
         # push!(Middles, m1)
         println("a, m1, b = ", a, " ", m1, " ", b)
         return a, b, m1
-    catch UnexpectedError
-        @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+    catch exceptionParameter #UnexpectedError
+        writeError(msg, exceptionParameter) # @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
     end
-    #return a, b, m1
 end
 
 

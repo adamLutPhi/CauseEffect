@@ -269,7 +269,7 @@ function swap( a :: Int64 , b :: Int64, lst ; first :: Int64 = 1 )
     a, b, is_swapped
 end
 
-
+#=
 function compareTriad( a :: Int64,  m1 :: Int64 , b :: Int64, arr ; exceptionParameter = UnexpectedError)
 
     try
@@ -289,7 +289,7 @@ function compareTriad( a :: Int64,  m1 :: Int64 , b :: Int64, arr ; exceptionPar
         writeError( msg, exceptionParameter)
     end
 end
-
+=#
 
 # DEMO
 ar1 = [10, 8, 3]
@@ -323,7 +323,7 @@ function compareQuartet(a :: Int64, m1 :: Int64 , m2 :: Int64, b ::Int64 , _view
         ##   a, b, _isSwapped = doCompare(a, b, view(_view, a:b)) #compare bounds' content
         #   a, m1, _isSwapped = doCompare(a, m1, view(_view, a:m1))
 
-        a, m1, _isSwapped1 = swapContents(a, m1, _view) #swapContent(a, m1, _view)  # a is local min # 8 10 true
+        a, m1, _isSwapped1 = doCompare(a, m1, _view) #swapContent(a, m1, _view)  # a is local min # 8 10 true
         println("After swap : a, ",a, " m1 = ", m1," _view = ",_view )
 
         ## mins.append(a)
@@ -331,7 +331,7 @@ function compareQuartet(a :: Int64, m1 :: Int64 , m2 :: Int64, b ::Int64 , _view
 
         ## m2, b = remap(m2, b)
 
-        m2, b, _isSwapped2 = swapContents(m2, b, _view)  #swapContent( m2, b, _view) # b is local max # 810true  # 38true
+        m2, b, _isSwapped2 = doCompare(m2, b, _view)  #swapContent( m2, b, _view) # b is local max # 810true  # 38true
         println("after swap : m2w, ", m2," b =", b, " view = ", _view )
 
         #m2, b, _iswapped = subView(m2, b, _view )

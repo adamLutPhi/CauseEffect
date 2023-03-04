@@ -139,6 +139,7 @@ end
 """From the content, get its index, compareContents & swap them accordingly"""
 @inline function swapContent( aContent :: Int64, bContent :: Int64, _view) #TODO: check?
 
+    contentSwapped = true
     a = findall(x -> x == aContent, _view)
     # a = a[offset] #ok, but it's offset dependent
     a = firstindex(a) #fetch the first index of a #  a[firstindex(a)] #always yields the right choice
@@ -150,7 +151,7 @@ end
 
     if aContent > bContent
         _view[a], _view[b] = _view[b], _view[a] #swap
-        contentSwapped = true
+        #contentSwapped = true
         println(_view[a], " ", _view[b], " ", contentSwapped)
 
     elseif aContent < bContent
