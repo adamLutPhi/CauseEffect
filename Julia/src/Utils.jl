@@ -48,7 +48,7 @@
 #### Completed: doCompare()
 #### Completed: depreciate goleft & goright
 #### completed: compareTriad, compareQuartet  #[correcting ]
-### Update: replace `swapContent` instead of `doCompare` [erroneous]
+### Update: replace `swapContent` insteadof `doCompare` [erroneous]
 ### Update: replace expression: `Throw(error(::String))` with raise(exception(::String))
 ### count number of function calls
 ### extra: function frequency
@@ -747,58 +747,81 @@ print( subView(1,2, res) !=  subView(1,1, res) )
 #index, value space  [vital]
 #requires: oldSchoolSwap
 ## BoundsError: attempt to access 2-element view(::Vector{Int64}, 1:2) with eltype Int64 at index [3]
-@inline function doCompare(lowerBound, upperBound, arr::Array{Int64,1}) #works
+@inline function doCompare(lowerBound, upperBound, arr ; exceptionParameter = UnexpectedError )  #,  conditionSame = ) #works # arr ::Array{Int64,1}
 
-    #[1...8] length = 8+1 -1 = 8
+        try
+            #[1...8] length = 8+1 -1 = 8
 
-    _length = copy(length(arr))
+            _length = copy(length(arr))
+            contentSwapped = false  #nothing
+            if lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperBound >= 0 # && upperBound >= m2 # if lowerBound <= _length && upperBound <= _length
 
-    if lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperBound >= 0 # && upperBound >= m2 # if lowerBound <= _length && upperBound <= _length
-         aContent = arr[lowerBound] #<------
-         bContent = arr[upperBound]
+                #0. Init
+                aContent = arr[lowerBound] #<------
+                bContent = arr[upperBound]
+                contentSwapped = false #true  #  nothing
+                #= try
+                # Base.@propagate_inbounds =#
 
-        contentSwapped = nothing
-        # try
-        # Base.@propagate_inbounds
-        if aContent > bContent # arr[lowerBound] > arr[upperBound] n# <--- critial decision
-        #Base.@propagate_inbounds
-        lowerBound, upperBound, contentSwapped = swapContent(arr[lowerBound],arr[upperBound],arr) #oldSchoolSwap(lowerBound, upperBound, arr) #swapContent(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
+                #1. Check condition
+                if aContent <= bContent
+                    pass
 
-        #    contentSwapped = true   #arr[lowerBound], arr[upperBound]
-        println("at index lowerBound = ", lowerBound, " upperBound = ", upperBound, ", aContent = ", arr[lowerBound], " , bContent = ", arr[upperBound])
+                elseif aContent > bContent # arr[lowerBound] > arr[upperBound] n# <--- critial decision
+                    #Base.@propagate_inbounds
+                    lowerBound, upperBound, contentSwapped = swapContent(arr[lowerBound] , arr[upperBound] , arr) #oldSchoolSwap(lowerBound, upperBound, arr) #swapContent(arr[lowerBound], arr[upperBound], arr)  #an inbounds swap #actual array swap
 
-        #Base.@inbounds
-        #TODO: situation where both contents are equal # current: do nothing
-        # elseif
+                    #    contentSwapped = true   #arr[lowerBound], arr[upperBound]
+                    println("at index lowerBound = ", lowerBound, " upperBound = ", upperBound, ", aContent = ", arr[lowerBound], " , bContent = ", arr[upperBound])
+                #elseif aContent <= bContent  # arr[lowerBound] < arr[upperBound] #review#1 #<----- # includes bothContents are equal
+                else
+                    raise(exceptionParameter)
+                end
 
-        # elseif aContent <= bContent  # arr[lowerBound] < arr[upperBound] #review#1 #<----- # includes bothContents are equal
-        #don't swap # return values
-        #  return
-        #    contentSwapped = false #arr[lowerBound], arr[upperBound]
-        #@inbounds lowerBound[st], lowerBound[ed] = lowerBound[st] , lowerBound[ed]        #an inbounds swap
-
-        #  elseif aContent == bContent # arr[lowerBound] == arr[upperBound] #contents the same Can increase the count (in lowerBound dictionary?)
-        #lowerBound<upperBound Always
-        #   if lowerBound < upperBound
-        #     contentSwapped = false  #arr[lowerBound], arr[upperBound]
-        #do nothing
-        #else?
-        #end
-        #catch UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function
-        #    @error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
+            elseif lowerBound == _length || upperBound == _length # last step: scalar
+                return  lowerBound, upperBound, nothing  #getLastElement2(lowerBound, upperBound) #TODO:check
+                #contentSwapped = nothing
+            end
+            lowerBound, upperBound, contentSwapped #arr[lowerBound], arr[upperBound]
+        catch exceptionParameter #UnexpError #<--- exception: Caught: check for euclidDist above the scope of this function
+            writeError( msg, exceptionParameter) #@error "ERROR:UnexpError " exception = (UnexpError, catch_backtrace())
         end
-        return lowerBound, upperBound, contentSwapped #arr[lowerBound], arr[upperBound]
-
-    elseif lowerBound == _length || upperBound == _length
-        return   #getLastElement2(lowerBound, upperBound)
-
-    end
 end
 
+function docompare(a, b, arr) #debugged
+
+    # erroneous values!
+    lowerBound = a #firstindex(arr)
+    upperBound = b #length(arr)
+
+    println("lowerBound",lowerBound)
+    println("arr[first] = ", arr[lowerBound]) # 9
+    condition =  arr[lowerBound] > arr[upperBound]
+    aContent =  arr[lowerBound]
+    #upperBound = _length(arr) #lastindex(arr) # 4 wrong ! #Reasoning: julia's default function returns the `length` & not the actual real index
+    contentswapped = false
+    println("upperBound",upperBound)
+    condition =  arr[lowerBound] > arr[upperBound] # 9  >
+    if condition
+        println("before swapping: arr[lowerBound], arr[upperBound] ",arr[lowerBound]," ", arr[upperBound] )
+        println("arr = ",arr)
+        #swap
+        arr[lowerBound], arr[upperBound] =  arr[upperBound],arr[lowerBound]
+        contentswapped = true
+        println("after arr[lowerBound], arr[upperBound]  = ",arr[lowerBound]," ", arr[upperBound] )
+
+        println("arr = ",arr)
+    elseif condition == false
+
+
+    end
+    arr[lowerBound], arr[upperBound], contentswapped
+end
 
 ## doCompare: compare two indicies, on lowerBound view
 #--------------
 
+#=
 #index, value space  [vital]
 @inline function doCompare(lowerBound, upperBound, _view::SubArray) # 9-8
     _length = copy(length(_view)) #ok
@@ -851,7 +874,7 @@ end
 
     end
 end
-
+=#
 
 #-------
 #TODO: finish the recursive checkNextView(_view)
@@ -923,14 +946,14 @@ _view = subView(firstindex( _view)+1, lastindex(_view)-1, _view)
 #_view = lowerBound = lowerBound + 1 && upperBound =  upperBound + 1 <= upperBound - 1 ? _view -> view(_view, firstindex(_view)+1:lastindex(_view) -1) : return  #firstindex(_view)+1:lastindex(_view)-1) : return # # (fills) switches to the Next available _view (from Nothing to _view object)
 println(_view)
 println(typeof(_view))
-
+_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 #_Interval = collect(3: 5) # subView( interest):  1: 3
 
 #euclidDist( _Interval[1], _Interval[2] ) # 3 euclidDist: form is like:  -(a,b) +1
 #-( _Interval[2], _Interval[1]) # 2
 
 # resolved:# _rangeNew |> _view -> view( _view, firstindex(_view):lastindex(_view))
-_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
+_view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view)) # subView( interst ) : 1:3
 
 # ---
 
@@ -938,6 +961,8 @@ _view = collect(3:5) |> _view -> view(_view, firstindex(_view):lastindex(_view))
 # res = view(v,firstindex(v): lastindex(v))
 #_view = length(_view)> 2 ?_view -> view(_view,firstindex(_view),lastindex(_view)) : return
 
+
+#last:
 if length(res) > 2 #ok #TODO:Q. how about length(res) <2 ?
     _view -> view(_view, firstindex(_view):lastindex(_view))
     return _view
@@ -962,7 +987,7 @@ _view = subView(3 , 7 ,v) #todo  view(v, firstindex(v): length(v)) #v, firstinde
 ##WARNING: IntervalLength #Tampers with the sum (Q.how?)
 
 totalLength = intervalLength(1, 3)
-# copy(intervalLength(lowerBound, upperBound)) #lowerBound+upperBound -1 (or euclidDist +1)
+# copy(intervalLength(lowerBound, upperBound)) #lowerBound+upperBound -1 (or +1)
 
 sum = totalLength # + 1 #  this is for euclidDist # (removes 1 )  #Done
 
@@ -1070,6 +1095,7 @@ then swapping indicies has to happen, to ensure the process consistency of this 
 
 """
 #depreciate
+#= unCommentMe
 function oldSchoolSwap(lowerBound, upperBound, arr::Array{Int64,1}) #lowerBound,upperBound,indicies in arr
 
     #check left-most bound is lower than right most bound, if not, replace indicies
@@ -1102,7 +1128,7 @@ function oldSchoolSwap(lowerBound, upperBound, arr::Array{Int64,1}) #lowerBound,
     # _last = arr[upperBound]
     return lowerBound, upperBound, contentSwapped  #  _first, _last  #lowerBound, upperBound
 end
-
+=#
 
 ## oldSchoolSwap on lowerBound View
 """
@@ -1118,6 +1144,7 @@ then swapping indicies has to happen, to ensure the process consistency of this 
 """
 #depreciate
 # oldSchoolSwap on lowerBound view #non-practical (in arrays, or sub arrays )
+#=
 function oldSchoolSwap(lowerBound, upperBound, _view::SubArray) #lowerBound,upperBound,indicies in arr
 
     #check left-most bound is lower than right most bound, if not, replace indicies
@@ -1127,7 +1154,7 @@ function oldSchoolSwap(lowerBound, upperBound, _view::SubArray) #lowerBound,uppe
         contentSwampped = true
     end
     contentSwapped = nothing
-
+=#
 #its view[aId] = lowerBound
     aContent = lowerBound #_view[lowerBound] #<----- Rational mid(index)= 8
     bContent = upperBound #_view[upperBound-1] # issue was here
@@ -1379,7 +1406,7 @@ if lowerBound == upperBound # scalar
 
     return lowerBound, lowerBound, nothing
 end
-#=
+#
 elseif lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperBound >= 0
     # aContent = _view[lowerBound] #view(_view, lowerBound) #arr[lowerBound]
     #   bContent = _view[upperBound] #view(_view, upperBound) #arr[upperBound]
@@ -1400,7 +1427,9 @@ elseif lowerBound < _length && upperBound < _length && lowerBound >= 0 && upperB
     #do nothing
     #  contentSwapped = false
     #  end
+
     return lowerBound, upperBound, contentSwapped
+
 elseif isUnitDistanceReached(lowerBound, upperBound) == true # 3, 4 ,d = 1
     _view = collect(lowerBound:upperBound)
     _view = view(_view, firstindex(_view):lastindex(_view))
@@ -1416,7 +1445,7 @@ elseif lowerBound == _length || upperBound == _length # last step  #scalar
     return lowerBound,lowerBound,nothing #isUnitDistanceReached(lowerBound, upperBound) #isEndReached(lowerBound, upperBound) #1, 1)
 
 end
-=#
+
 #------
 lowerBound = 1
 upperBound = 2
@@ -1844,110 +1873,26 @@ end
 
 
 ## compareTriad: on lowerBound arr  # done
-function compareTriad( lowerBound :: Int64 , m1 :: Int64, upperBound :: Int64, arr::Array{Int64,1}; exceptionParameter = UnexpectedError) # erroneous function [ there is no context , i.e. arr ]
+function compareTriad(a, m1, b, arr; exceptionParameter = UnexpectedError)
 
     try
+        #scan1:
+        # a, m1
+        a, m1, _isSwapped1 = docompare(a, m1, arr) #view(arr, a:m1))
 
-        #    if lowerBound !== Nothing && m1 !== Nothing && upperBound !== Nothing && arr !== Nothing
-        if lowerBound !== Nothing && m1 !== Nothing && upperBound !== Nothing && arr !== Nothing
+        println("max is b = ", b)
+        m1, b, _isSwapped2 = docompare(m1, b, arr) #view(arr, m1:b))
+        #scan1 finishes , max is b
+        # scan2 :
+        a, m1, _isSwapped3 = docompare(a, m1, arr) #view(arr, a:m1))
 
-            _isSwapped = nothing
+        println("a, m1, b = ", a, " ", m1, " ", b)
 
-            #_view = collect(lowerBound:m1)
-            #suggest: use lowerBound,upperBound as bounds of the current _view
-            #  lowerBound != upperBound ? _view = view(_view, firstindex(lowerBound):lastindex(upperBound)) : return "lowerBound ==upperBound scalar: lowerBound = ", lowerBound, " upperBound = ", upperBound
-
-            #it boils down to lowerbound & upperBound
-            # lowerBound, m1,  or m1+1 , upperBound
-
-            lowerBound = m1 - 1 #Warning: prone to becoming 0
-
-            if lowerBound != lowerBound  #(lowerBound != m1 - 1 )# fail-safe mechanism
-
-            #v = collect(lowerBound:lowerBound)
-            #length(v)
-
-                lowerBound, lowerBound, _isSwapped = swapContent(lowerBound, lowerBound, arr) #doCompare(lowerBound, lowerBound, arr) # [lowerBound, m1]= 1 2 checked
-
-            #if lowerBound === Nothing && lowerBound === Nothing && _isSwapped == Nothing # retry: #lowerBound = m1  #TODO: check doCompare returns nothing, nothing,nothing when lowerBound==upperBound
-            else
-            #lowerBound = m1
-            #    lowerBound, lowerBound, _isSwapped = swapContent(lowerBound, lowerBound, arr) #doCompare(lowerBound, lowerBound, arr)
-                raise(exception("boundsEqualError"))  #throw(error("boundsEqualError"))
-            end
-           #= =#
-            #decide: do you continue the
-
-            elseif lowerBound == lowerBound #m1 # fallback
-                # lowerBound, m1, _isSwapped = 1, 1, nothing
-                lowerBound, lowerBound, _isSwapped = lowerBound, lowerBound, nothing
-                #TODO: can we retry here, with lowerBound different lowerBound, as well?
-
-            end
-
-            #decide the upperBound (from lowerBound) w
-            #if lowerBound == m-1 ||  lowerBound == m
-
-            upperBound == lowerBound + 1
-            println(" upperBound = ", upperBound)
-
-            # lowerBound, m1, _isSwapped = swapContent(lowerBound, m1, _view) # doCompare(lowerBound, m1, _view) # [lowerBound, m1]= 1 2 checked  # <-----
-            #println(" [lowerBound, m1]= ", lowerBound, " ", m1, " checked ")
-
-            # mid = m1 + 1 # or (m1) , upperBound
-            #rule: once lowerBound is determined, so do the upperBound, as well
-            #--------
-            if upperBound != upperBound
-
-                #if mid != upperBound
-                #  if upperBound != upperBound # fine
-
-                upperBound, upperBound, _isSwapped = swapContent(upperBound, upperBound, arr) # doCompare(upperBound, upperBound, arr) # [lowerBound, m1]= 1 2 checked
-                println(" upperBound , upperBound] checked ", upperBound, " _isSwapped = ", _isSwapped)
-
-                #  else # fallback  # Activated #where it fails   if view == 0 # throw error
-
-                #should #throw(error())
-
-            else
-                upperBound == upperBound # or length () throw error
-                #m == upperBound # does not exist
-                println("upperBound == upperBound upperBound = ", upperBound, " upperBound = ", upperBound)
-                #   p upperBound , " ", upperBound, " checked ")
-            end
-
-            #UncommentMe (or not ? )
-
-       # elseif  lowerBound === Nothing && m1 === Nothing && upperBound !== Nothing && arr !== Nothing # should be throw(error...)
-            #return
-        #    throw(error("Unexpected Error Reason : "))
-       # end
-   #end # My Bad
-        #==#
-        if lowerBound != upperBound
-            lowerBound, upperBound, _isSwapped = swapContent(lowerBound, upperBound, arr) #doCompare(lowerBound, upperBound, arr)
-        elseif lowerBound == upperBound # fallback
-            lowerBound, upperBound, _isSwapped = lowerBound, lowerBound, nothing
-        end
-
-        println(" [lowerBound, upperBound]= ", lowerBound, " ", upperBound, " checked ")
-        println("lowerBound, m1, upperBound = ", lowerBound, m1, upperBound)
-        #  if lowerBound === nothing || upperBound === nothing || m1 === nothing
-        #      return nothing, nothing, nothing
-        # else
-        #==#
-        return lowerBound, upperBound, m1 # BoundsError: attempt to access 0-element Vector{Any} at index [1]
-    #  end
-    # else
-    #     return nothing, nothing, nothing
-    #end
-    # end
-
-    catch UnexpectedError
-        @error  "Unexpected error"  exception = (UnexpectedError, catch_backtrace()) # <---- #attempt to access 0-element Vector{Any} at index [1]
+        a, b, m1 , [_isSwapped1, _isSwapped2, _isSwapped3 ]
+    catch exceptionParameter #UnexpectedError
+        writeError(msg, exceptionParameter) # @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
     end
 end
-
 
 # rule : compareTriad should not have isEven comparison ( as it is trivial we are dealing with only lowerBound triad: lowerBound m1 ,upperBound)
 #left is lowerBound question of interval set-up: lowerBound,m1 m1+1 , upperBound or lowerBound, m1-1, m1 upperBound #depends on situation -deep
@@ -2067,41 +2012,37 @@ end
 ##in lowerBound vector, as lowerBound Quartet
 
 """ Comparing 4 numbers: lowerBound,upperBound & middles: m1,m2 , input vector array , applys view  on each Interval """
-function compareQuartet( lowerBound, m1, m2, upperBound, arr::Array{Int64,1}; exceptionParameter = UnexpectedError) #<-------- input expecting indicies
+
+function compareQuartet(a, m1,m2, b, arr; exceptionParameter = UnexpectedError)
 
     try
-        twinMiddles = nothing
+        #0. Init
+        #G1: Group1
+        a = firstIndex(arr)
+        b = lastindex(arr)
+        #G2: Group2
+        m1
+        m2
 
-        #1
-        lowerBound, m1, isSwapped = swapContent(lowerBound, m1, arr) #doCompare(lowerBound, m1, arr)
-        println("twinMiddles [lowerBound, m1]= ", m1, " ", m2, " swapped ")
+        #Phase 1:
 
-        #2
-        m1, m2, isSwapped = swapContent(m1, m2, arr) #doCompare(m1, m2, arr)
-        println("twinMiddles [m1, m2]= ", m1, " ", m2, " swapped ")
-        #3
-        lowerBound, m2, isSwapped = swapContent(lowerBound, m2, arr) # doCompare(lowerBound, m2, arr)
-        println("twinMiddles [lowerBound, m2]= ", lowerBound, " ", m2, " swapped ")
+        # Group1: find local min
+        a, b, isSwapped1 = docompare(a,b,arr)
 
-        #4
-        m1, upperBound, _isSwapped = swapContent(m1, upperBound, arr)  # doCompare(m1, upperBound, arr)
-        println("twinMiddles [m1, upperBound]= ", m1, " ", upperBound, " swapped ")
+        #Group2: find local min
+        m1 , m2, isSwapped2 = docompare(m1,m2,arr)
 
-        #5
-        m2, upperBound, _isSwapped = swapContent(m2, upperBound, arr) # doCompare(m2, upperBound, arr)
-        println("twinMiddles [m2, upperBound]= ", m2, " ", upperBound, " swapped ")
+        #Phase2:
+        # find min(s): a  & m1
+        a , m1 , isSwapped3 = docompare(a,m1,arr)
 
-        #6
-        lowerBound, upperBound, _isSwapped = swapContent(lowerBound, upperBound, arr) # oCompare(lowerBound, upperBound, arr)
-        println(" [lowerBound, upperBound]= ", lowerBound, " ", upperBound, " swapped ")
-
-        twinMiddles = [m1, m2] # vector (Array{Int64, 1})
-        println("twinMiddles [m1, m2]= ", m1, " ", m2)
-        # push!(Middles, twinMiddles) #TODO: push each _isSwapped to swapped[] vector, as well
-        return lowerBound, upperBound, m1, m2 #m1, m2 #should it be lowerBound,upperBound, twinMiddles ? #no this is much practical
-    catch UnexpectedError
-        writeError( msg, exceptionParameter)
-        #@error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
+        # find max(ex)
+        m2, b , isSwapped3 = docompare(m2,b,arr)
+        Ms = [isSwapped1,isSwapped2,isSwapped3,isSwapped4]
+    #3. Return
+    a , m1 , m2, b, Ms
+    catch exceptionParameter #UnexpectedError
+        writeError(msg, exceptionParameter) # @error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
     end
 end
 

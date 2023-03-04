@@ -18,8 +18,8 @@ using Base:  LinearIndices, CartesianIndices #LinearIndex, CartesianIndex #,
 ##3.1. LinearIndices
 println("LinearIndices(1:9) = ", Base.LinearIndices(1:9) )
 
-global a=1 :: Int64
-global b=9 :: Int64
+ a=1 :: Int64
+ b=9 :: Int64
 unitRange = a:b
 ##3.2. cartesianIndex
 function getCartesianIndex( unitRange  ) #::Base.AbstracUnitRange)
@@ -38,7 +38,7 @@ function getIndex(inds, arr)
      #I = #Base.inc
      #I = (iter.I, CartesianIndices.indices) # caretesian has no field I
      #I = (iter, CartesianIndices.indices) #UnionAll
-     I = iter 
+     I = iter
      I
 end
 function getindices2(a :: Int64 , b :: Int64, arr )

@@ -37,7 +37,7 @@ _next = 5
 a = 1
 collect(a : _next - 1) # vector [1,3] #now gives [2,3]
 
-newV = collect(a :  _next)  #- 1)) #[1,3] #experimential : warning
+newV = collect(a   _next)  #- 1)) #[1,3] #experimential : warning
 newV = collect(lowerbound : upperbound )  # commit this one  #uncommentMe
 
 lowerbound = [1,4,8][1]

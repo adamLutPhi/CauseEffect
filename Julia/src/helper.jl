@@ -16,6 +16,7 @@ function writeError(msg; _error= UnexpectedError)
     @error msg + exception = (UnexpectedError, catch_backtrace())
     #@error "Unexpected error" exception = (UnexpectedError, catch_backtrace())
 end
+
 #lvl 1
 """ handleNullCount """
 function handleNullCount( count :: Int64 )
@@ -70,4 +71,13 @@ function setCondition(_condition)
     correctAnswer = true
 
     condition, correctAnswer
+end
+
+function isSame( lowerBound :: Int64 , upperBound :: Int64 , _length :: Int64 )
+
+    if lowerBound == _length || upperBound == _length
+
+      return lowerBound, upperBound, nothing
+    end
+    #TODO: include other conditions , if possible (I don't recommmend doing that for this one, in particular) 
 end
