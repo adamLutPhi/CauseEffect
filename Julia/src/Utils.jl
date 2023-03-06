@@ -47,7 +47,11 @@
 #### Completed: doCompare()
 #### Completed: depreciate goleft & goright
 #### completed: compareTriad, compareQuartet  #[correcting ]
+### count number of function calls
+### extra: function frequency
 
+### the thing : there's no direct relationship with index
+### solution: look for: lowerBound, upperBound (i.e. look for the higher order function that is calling them)
 ### The thing : there's no direct relationship with index
 ### Solution: look for: lowerBound, upperBound (i.e. look for the higher order function that is calling them)
 ### Extra:
