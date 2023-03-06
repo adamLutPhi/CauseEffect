@@ -98,7 +98,7 @@ function lineLengthAcceptable(a,b,_length)
 
 end
 
-"""
+
 function processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
 
     #if scalar
@@ -111,7 +111,7 @@ function processReturns(_firstIndex,  _lastIndex,  _firstValue, _lastValue)
         return 2, _firstIndex,  _firstValue,  _lastIndex,  _lastValue
     end
 end
-"""
+
 #TODO: check output :
 """ checks the array `arr` for a content , returns the first & the last """
 function elementAt(arr, xContent)
