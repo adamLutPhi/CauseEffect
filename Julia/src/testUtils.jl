@@ -100,8 +100,8 @@ function docompare(arr) #debugged
 
     upperBoundIndex = length(arr) # upperBound
 
-    lowerBound = getIndex(lowerBound)
-    upperBound = getIndex(uppperbound)
+    lowerBound = getIndex(lowerBoundIndex)
+    upperBound = getIndex(upperBoundIndex)
 
     println("lowerBound",lowerBound)
     println("arr[first] = ", arr[lowerBound]) # 9
@@ -124,12 +124,12 @@ function docompare(arr) #debugged
     elseif condition == false
 
     end
-    arr[lowerBound], arr[upperBound], contentswapped
+    # arr[lowerBound], arr[upperBound], contentswapped
+    lowerBound, uppedBound, contentswapped
 end
 
 function docompare(a, b, arr) #debugged
 
-    # erroneous values!
 
     lowerBound = a #firstindex(arr)
     lowerBound =  getIndex(lowerBound,arr)
@@ -160,7 +160,8 @@ function docompare(a, b, arr) #debugged
 
 
     end
-    arr[lowerBound], arr[upperBound], contentswapped
+   # arr[lowerBound], arr[upperBound], contentswapped
+    lowerBound, uppedBound, contentswapped
 end
 ar2 = [10,8,2]
 println(ar2)
@@ -195,7 +196,8 @@ function compareTriad(a, m1, b, arr; exceptionParameter = UnexpectedError)
         #scan1 finishes , max is b
         # scan2 :
         a, m1, _isSwapped3 = docompare(a, m1, arr) #view(arr, a:m1))
-
+        #scan2 finishes: min is a 
+        
         println("a, m1, b = ", a, " ", m1, " ", b)
 
         a, b, m1 , [_isSwapped1, _isSwapped2, _isSwapped3 ]
