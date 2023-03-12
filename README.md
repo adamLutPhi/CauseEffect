@@ -6,15 +6,15 @@ A novel approach on the indexing a vector, via a cause &amp; Effect model
 
 - Currently Cleaning Utils.jl
 
-- Working on  `objBounds`:
 
-(1) `objBounds(arr)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L227>
+(1) `compareTriad `
+<https://github.com/adamwillisMastery/CauseEffect/blob/09105102ef647c5ee108cdf458a8eb6f7c6235ac/Julia/src/testUtils.jl#L187>
 
-(2) `objBounds(v,arr)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L248>
+(2) `compareQuartet`
+<https://github.com/adamwillisMastery/CauseEffect/blob/09105102ef647c5ee108cdf458a8eb6f7c6235ac/Julia/src/testUtils.jl#L261>
 
- Which requires to work on `elementAt`:
+## Lessons Learned
 
-- `elementAt(arr, xContent)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L102>
+1. [x] `compareTriad`: for a 1 middle , compares bounds `a` , `b` with the middle `m1` [**3 ops**]
+2. [x] `compareQuartet`: for 2 twin middles, compares bounds `a`, `b` with middles `m1`, `m2` [**4 ops**]
+Note: both functions are of a `symmetric` structure
