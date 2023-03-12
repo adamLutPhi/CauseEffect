@@ -8,13 +8,8 @@ A novel approach on the indexing a vector, via a cause &amp; Effect model
 
 - Working on  `objBounds`:
 
-(1) `objBounds(arr)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L227>
+(1) `compareTriad `
+<https://github.com/adamwillisMastery/CauseEffect/blob/09105102ef647c5ee108cdf458a8eb6f7c6235ac/Julia/src/testUtils.jl#L187>
 
-(2) `objBounds(v,arr)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L248>
-
- Which requires to work on `elementAt`:
-
-- `elementAt(arr, xContent)`
-<https://github.com/adamwillisMastery/CauseEffect/blob/bca7c17de1110ed63cde21414baf4042eabffd9c/src/Utils.jl#L102>
+(2) `compareQuartet`
+<https://github.com/adamwillisMastery/CauseEffect/blob/09105102ef647c5ee108cdf458a8eb6f7c6235ac/Julia/src/testUtils.jl#L261>
